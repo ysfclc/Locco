@@ -2,7 +2,12 @@
 <!-- Choose one: Bug fix / Regression / Feature / Enhancement / Refactor / Documentation-governance / Infrastructure / Release. State the user outcome. -->
 
 ## Baseline and current application identity
-<!-- REQUIRED: 40-character base commit SHA; Application ID; versionCode; versionName. Read these from source/build configuration, not memory. Record signing lineage and artifact hash when available. -->
+Base commit:
+Application ID:
+versionCode:
+versionName:
+Signing identity:
+<!-- Read these exact values from the source/build configuration and release artifact when available; do not use memory or guesses. -->
 
 ## User feedback records
 <!-- REQUIRED: list every affected durable ID and matching GitHub issue, e.g. LOC-0002 — #2. Do not omit earlier linked bugs/features. -->
