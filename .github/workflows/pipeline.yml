@@ -48,7 +48,13 @@ jobs:
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
             ZIP_PATH="$INPUT_ZIP_PATH"
           else
-            ZIP_PATH="$(git diff-tree --no-commit-id --name-only -r "$GITHUB_SHA" -- 'incoming/*.zip' 'incoming/**/*.zip' | head -n 1)"
+            ZIP_PATHS="$(git diff-tree --no-commit-id --name-only -r "$GITHUB_SHA" -- 'incoming/*.zip' 'incoming/**/*.zip')"
+            ZIP_COUNT="$(printf '%s\n' "$ZIP_PATHS" | sed '/^$/d' | wc -l)"
+            if [[ "$ZIP_COUNT" -ne 1 ]]; then
+              echo "Expected exactly one ZIP in the push commit." >&2
+              exit 2
+            fi
+            ZIP_PATH="$ZIP_PATHS"
           fi
           case "$ZIP_PATH" in
             incoming/*.zip|incoming/**/*.zip) ;;
