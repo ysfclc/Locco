@@ -10,7 +10,8 @@ As of 2026-11-19. Update only with reproducible evidence.
 | 7 agent roles | Present | .agent/agents |
 | 10+ skills | Present | .agent/skills (13) |
 | Security doctrine | Drafted | docs/security |
-| ZIP validator adversarial tests | Locally verified | 7 Python tests passed in isolated local harness |
+| ZIP validator adversarial tests | Locally verified | 9 Python tests passed in isolated local harness |
+| Foundation archive | Created and CRC-checked | incoming/foundation.zip; 104 tracked source files |
 | Rust workspace compile/tests | Not verified | no Rust toolchain in current execution environment |
 | Cargo.lock | Committed | core/Cargo.lock; Rust workspace currently has no third-party crate dependencies |
 | Three Android Rust ABIs | Not verified | NDK/cargo-ndk build unavailable locally |
