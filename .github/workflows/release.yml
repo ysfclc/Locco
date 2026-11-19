@@ -18,6 +18,8 @@ jobs:
       name: android-release
     permissions:
       contents: read
+      id-token: write
+      attestations: write
     steps:
       - name: Checkout tagged source
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
@@ -102,7 +104,20 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/locco-release.apk
           sha256sum dist/locco-release.apk > dist/SHA256SUMS.txt
 
-      - name: Upload signed release
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: dist/locco-release.cdx.json
+          upload-artifact: false
+
+      - name: Attest signed release APK
+        uses: actions/attest-build-provenance@96278af6caaf10aea03fd8d33a09a777ca52d62f # v3.2.0
+        with:
+          subject-path: dist/locco-release.apk
+
+      - name: Upload signed release and SBOM
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: locco-release-apk
