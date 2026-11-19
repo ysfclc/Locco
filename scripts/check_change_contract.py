@@ -14,6 +14,7 @@ from pathlib import Path
 
 REQUIRED_HEADINGS = (
     "Change classification",
+    "Baseline and current application identity",
     "User feedback records",
     "Existing behaviour inventory",
     "Product boundary and app continuity",
@@ -71,6 +72,13 @@ def validate_pr_body(body: str) -> list[str]:
     for pattern in PLACEHOLDER_PATTERNS:
         if re.search(pattern, clean, flags=re.IGNORECASE):
             errors.append(f"Unfilled template placeholder detected: {pattern}")
+
+    baseline = sections.get("Baseline and current application identity", "")
+    if not re.search(r"\b[0-9a-f]{40}\b", baseline, re.IGNORECASE):
+        errors.append("Baseline must include the exact 40-character base commit SHA.")
+    for label in ("Application ID", "versionCode", "versionName"):
+        if not re.search(rf"(?im)^\s*{re.escape(label)}\s*:\s*\S+", baseline):
+            errors.append(f"Baseline must record {label} from the current Android build configuration.")
 
     feedback = sections.get("User feedback records", "")
     ids = re.findall(r"\bLOC-(\d{4})\b", feedback)
