@@ -20,6 +20,10 @@ Acquire → preserve → understand → connect → reason → decide → act �
 | 5 Capabilities | approvals, execution, verification | threat review and end-to-end proof |
 | 6 Expansion | more sources and iOS shell | contract parity |
 
+## Foundation archive
+
+The complete level-zero source snapshot is available at [`incoming/foundation.zip`](incoming/foundation.zip).
+
 ## Quickstart
 ```bash
 ./scripts/verify-foundation.sh
