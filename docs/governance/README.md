@@ -5,6 +5,7 @@ This directory contains operationally binding procedures. The root [GOVERNANCE.m
 | Document | Controls |
 |---|---|
 | [Feedback lifecycle](feedback-lifecycle.md) | Intake, durable issue IDs, preservation, triage, status transitions, closure |
+| [Feedback ID automation](../../.github/workflows/feedback-register.yml) | Automatically prefixes new GitHub issues with their permanent LOC ID |
 | [Change control](change-control.md) | Baseline, history review, impact analysis, implementation, regression tests, review and closeout |
 | [Application continuity](application-continuity.md) | Existing application identity, stored data, migrations, Android signing and upgrades |
 
