@@ -1,0 +1,3 @@
+# Supply-chain policy
+
+Pin every GitHub Action to full 40-character SHA with version comment. Commit Cargo.lock; use cargo-deny and cargo-audit. Enable Gradle dependency verification and explicit versions. Generate CycloneDX SBOM for Rust/Android and attach to artifacts. Attest APK provenance where permissions support it; attestation proves build origin, not source safety. Use least privilege per job. Record Rust/JDK/Gradle/SDK/NDK versions. Claim reproducibility only after demonstrated bit-for-bit builds.
