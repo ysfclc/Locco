@@ -40,7 +40,7 @@ FORBIDDEN_SUFFIXES = {
 }
 PROTECTED = {
     ".github", ".agent", "docs/security", "docs/decisions",
-    "docs/brainstorm/raw", "incoming", "PRINCIPLES.md", "SECURITY.md",
+    "docs/brainstorm/raw", "docs/operations/provenance", "incoming", "PRINCIPLES.md", "SECURITY.md",
     "CODEOWNERS", "CONTRIBUTING.md", "scripts/validate_phase_zip.py"
 }
 
