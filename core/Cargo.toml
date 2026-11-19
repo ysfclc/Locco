@@ -1,0 +1,11 @@
+[workspace]
+resolver = "2"
+members = ["kernel", "ffi"]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+rust-version = "1.80"
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
