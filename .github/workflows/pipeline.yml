@@ -3,8 +3,8 @@ name: Locco phase pipeline
 on:
   push:
     paths:
-      - "incoming/*.zip"
-      - "incoming/**/*.zip"
+      - "incoming/phase-*.zip"
+      - "incoming/**/phase-*.zip"
   workflow_dispatch:
     inputs:
       zip_path:
@@ -120,7 +120,7 @@ jobs:
           set -euo pipefail
           SHORT_HASH="${ARCHIVE_SHA:0:10}"
           PHASE="$(basename "$ZIP_PATH" .zip | tr -cs 'A-Za-z0-9._-' '-')"
-          BRANCH="phase/${PHASE}-${SHORT_HASH}"
+          BRANCH="phase/${PHASE}-${SHORT_HASH}-base-${GITHUB_SHA:0:8}"
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
             echo "Identical archive proposal branch already exists: $BRANCH"
           else
@@ -130,7 +130,8 @@ jobs:
             cp "$RUNNER_TEMP/locco-phase/manifest.json" "docs/operations/provenance/${SHORT_HASH}.json"
             git add -A
             if git diff --cached --quiet; then
-              echo "Archive produced no changes; no commit required."
+              echo "Archive produced no changes; no proposal required."
+              exit 0
             else
               git config user.name "github-actions[bot]"
               git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
