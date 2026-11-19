@@ -1,0 +1,32 @@
+# Rust
+/core/target/
+/target/
+
+# Android / Gradle
+.gradle/
+/android/.gradle/
+/android/**/build/
+/local.properties
+*.jks
+*.keystore
+
+# Local secrets and user data
+.env
+.env.*
+!.env.example
+secrets/
+private-data/
+model-cache/
+*.gguf
+*.litertlm
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Generated native libraries and APKs
+/android/app/src/main/jniLibs/**/*.so
+*.apk
+*.aab
