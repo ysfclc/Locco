@@ -1,0 +1,8 @@
+flowchart TB
+  AND["Android · Kotlin / Compose"] --> JNI["JNI adapter"] --> ABI["Versioned C ABI"] --> APP["Rust application services"]
+  IOS["iOS · Swift · gated"] -. future .-> ABI
+  APP --> DOM["Domain kernel"]
+  APP --> STORE["Local persistence"]
+  APP --> CTX["Context compiler"] --> MODEL["On-device model"]
+  APP --> POLICY["Capability policy"] --> EXEC["Native execution adapters"]
+  SRC["Source adapters"] --> APP
