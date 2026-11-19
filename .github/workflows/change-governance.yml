@@ -1,0 +1,57 @@
+name: Change governance
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: locco-change-governance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  change-contract:
+    name: change-contract
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    steps:
+      # Validate untrusted PR metadata with the checker from the trusted base,
+      # never with a checker taken from the proposed PR head.
+      - name: Checkout trusted base revision
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - name: Test the change-contract validator
+        run: python3 -m unittest discover -s scripts/tests -p 'test_change_contract.py' -v
+
+      - name: Validate mandatory PR evidence
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: python3 scripts/check_change_contract.py
+
+      - name: Verify linked feedback issues exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t ISSUE_NUMBERS < <(python3 scripts/check_change_contract.py --print-issues)
+          if [[ "${#ISSUE_NUMBERS[@]}" -eq 0 ]]; then
+            echo "No linked feedback issue was supplied." >&2
+            exit 1
+          fi
+          for number in "${ISSUE_NUMBERS[@]}"; do
+            actual="$(gh api "repos/${GH_REPO}/issues/${number}" --jq '.number')"
+            test "$actual" = "$number"
+            echo "Verified feedback issue #${number}"
+          done
