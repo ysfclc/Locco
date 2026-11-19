@@ -1,5 +1,0 @@
-# Data model contract
-
-Concepts (physical schema deferred): Source/Capture (origin and acquisition lifecycle); immutable Evidence (payload/excerpt + provenance); Observation (parsed fact); Entity/Relationship (stable identity and typed link); Claim (proposition with support/contradiction); Interpretation (replaceable derived output); Event (append-only); Capability (operation/input/risk/authority); Proposal/Approval (approval bound to exact payload hash and expiry); Execution/Outcome (attempt + postcondition evidence); Memory item (curated stable preference, superseded not silently overwritten).
-
-Every record has opaque stable ID. Derived records link evidence IDs, source offsets, hashes, parser/model version and timestamp. Conflicts coexist with provenance. Rust owns migrations. Search indexes and embeddings are rebuildable derived data.

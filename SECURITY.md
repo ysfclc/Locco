@@ -1,3 +1,0 @@
-# Security policy
-
-Report vulnerabilities privately: https://github.com/ysfclc/Locco/security/advisories/new . Treat imported data, sources, model output, ZIPs, dependencies and artifacts as untrusted. Never commit credentials, signing keys, cookies, user datasets or model weights. Never log secrets/private content. Follow docs/security/*.md. Security-sensitive changes require security review and independent QA.
