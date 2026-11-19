@@ -15,8 +15,9 @@
 | Agent/role continuity requirements | In review | `AGENTS.md`, `.agent/routing.md`, role documents |
 | Feedback/bug/feature issue forms | In review | `.github/ISSUE_TEMPLATE` |
 | Mandatory PR evidence template | In review | `.github/pull_request_template.md` |
-| Change-contract validator | Added; tests not yet observed | `scripts/check_change_contract.py` and unit tests; require actual Actions result |
+| Change-contract validator | Added; 11 unit tests pass in isolated source copy; GitHub run not observed | `scripts/check_change_contract.py`, `scripts/tests/test_change_contract.py`; require actual Actions result |
 | GitHub change-governance workflow | Added; not yet observed | `.github/workflows/change-governance.yml`; require an executed run |
+| Feedback ID automation | Added; not yet observed | `.github/workflows/feedback-register.yml`; new issues receive LOC prefix after workflow is active |
 | Required-check branch protection | Not configured/verified | Repository ruleset must require `change-contract` and owner/reviewer gates |
 | GitHub Issues backlog inventory | Partial | LOC-0002 is open; inspect complete issue history at every task start |
 | ZIP validator adversarial tests | Locally verified | 9 Python tests passed in isolated local harness |
