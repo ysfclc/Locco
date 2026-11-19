@@ -4,7 +4,7 @@
 
 ## 1. One canonical record
 
-The canonical record is a GitHub Issue in `ysfclc/Locco`. Its durable ID is `LOC-####`, where the digits are the zero-padded GitHub issue number. Never recycle an ID. The title should name the affected area and outcome, not merely "bug" or "feature".
+The canonical record is a GitHub Issue in `ysfclc/Locco`. Its durable ID is `LOC-` plus the GitHub issue number padded to a minimum width of four digits (for example, issue #2 is `LOC-0002`; issue #10000 is `LOC-10000`). The `feedback-register.yml` workflow automatically prefixes newly opened issue titles after it is merged and enabled. Until that workflow has run, the intake owner MUST apply the same prefix manually. Never recycle an ID. The title should name the affected area and outcome, not merely "bug" or "feature".
 
 A user can report something in chat without opening GitHub. The person or agent receiving the report MUST create the issue as part of intake, link it in the response, and preserve:
 - the original wording (verbatim where possible);
