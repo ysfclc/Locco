@@ -94,6 +94,26 @@ class ZipValidatorTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("compression ratio", result.stderr)
 
+    def test_duplicate_normalized_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            archive = self.make_zip(root, "duplicate.zip", [
+                ("root/a.md", "one", None),
+                ("root/a.md", "two", None),
+            ])
+            result = self.run_validator(archive, root / "out")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("duplicate normalized path", result.stderr)
+
+    def test_entry_count_limit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            entries = [(f"root/file-{i}.txt", "x", None) for i in range(5001)]
+            archive = self.make_zip(root, "many.zip", entries)
+            result = self.run_validator(archive, root / "out")
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("entry count", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
