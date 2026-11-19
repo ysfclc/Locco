@@ -17,6 +17,7 @@ Base commit: a8e6763e384c3fe1f1f508ea216210d7213652b8
 Application ID: com.locco.app
 versionCode: 1
 versionName: 0.1.0-foundation
+Signing identity: Android debug default; release key is externally gated and not yet provisioned
 
 ## User feedback records
 - LOC-0002 — #2 — continuity policy and required evidence.
@@ -63,6 +64,14 @@ class ChangeContractTests(unittest.TestCase):
     def test_android_identity_fields_are_required(self):
         body = VALID_BODY.replace("Application ID: com.locco.app", "Package: Locco")
         self.assertTrue(any("Application ID" in error for error in validate_pr_body(body)))
+
+    def test_application_id_cannot_be_unknown(self):
+        body = VALID_BODY.replace("Application ID: com.locco.app", "Application ID: unknown")
+        self.assertTrue(any("cannot be reported as unknown" in error for error in validate_pr_body(body)))
+
+    def test_version_code_must_be_numeric(self):
+        body = VALID_BODY.replace("versionCode: 1", "versionCode: next")
+        self.assertTrue(any("versionCode must be the numeric value" in error for error in validate_pr_body(body)))
 
     def test_feedback_id_must_match_issue_number(self):
         body = VALID_BODY.replace("LOC-0002 — #2", "LOC-0003 — #2")
