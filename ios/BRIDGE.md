@@ -1,0 +1,3 @@
+# iOS bridge contract
+
+Phase 0 is documentation only. Rust exposes a versioned C ABI with stable error codes and explicit pointer/length ownership. Swift must not duplicate domain rules. Candidate implementation: UniFFI-generated Swift bindings or a small C/Objective-C wrapper. Choose after a macOS spike using the actual Rust core. Future packaging uses XCFramework and xcodebuild on macOS runners. The gate is documented in docs/architecture/ios-path.md.
