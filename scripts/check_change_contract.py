@@ -81,7 +81,7 @@ def validate_pr_body(body: str) -> list[str]:
             errors.append(f"Baseline must record {label} from the current Android build configuration.")
 
     feedback = sections.get("User feedback records", "")
-    ids = re.findall(r"\bLOC-(\d{4})\b", feedback)
+    ids = re.findall(r"\bLOC-(\d{4,})\b", feedback)
     refs = {int(number) for number in re.findall(r"(?<!\w)#(\d+)\b", feedback)}
     if not ids:
         errors.append("User feedback records must link at least one LOC-#### record.")
