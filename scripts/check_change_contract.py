@@ -98,7 +98,7 @@ def validate_pr_body(body: str) -> list[str]:
             "A separate product requires the dedicated assertion and a linked user authorization."
         )
     if SEPARATE_PRODUCT_ASSERTION in product:
-        if not re.search(r"\bLOC-\d{4}\b", product) or not re.search(r"(?<!\w)#\d+\b", product):
+        if not re.search(r"\bLOC-\d{4,}\b", product) or not re.search(r"(?<!\w)#\d+\b", product):
             errors.append("Separate-product authorization must link its LOC issue and GitHub issue number.")
 
     regression = sections.get("Regression coverage", "")
