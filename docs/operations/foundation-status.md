@@ -12,7 +12,7 @@ As of 2026-11-19. Update only with reproducible evidence.
 | Security doctrine | Drafted | docs/security |
 | ZIP validator adversarial tests | Locally verified | 7 Python tests passed in isolated local harness |
 | Rust workspace compile/tests | Not verified | no Rust toolchain in current execution environment |
-| Cargo.lock | Not committed | must be generated and reviewed by a Rust-enabled runner |
+| Cargo.lock | Committed | core/Cargo.lock; Rust workspace currently has no third-party crate dependencies |
 | Three Android Rust ABIs | Not verified | NDK/cargo-ndk build unavailable locally |
 | Placeholder APK | Not verified | no Android SDK/Gradle locally; GitHub runner jobs have no assigned runner/steps |
 | actionlint | Not verified | GitHub workflow job records contain no runner and no executed steps |
