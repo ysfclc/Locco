@@ -1,0 +1,23 @@
+name: Bug report
+description: Report a reproducible Locco defect
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or evidence (redact personal data and secrets)
