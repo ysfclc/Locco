@@ -12,6 +12,12 @@ from check_change_contract import issue_numbers, validate_pr_body  # noqa: E402
 VALID_BODY = """## Change classification
 Bug fix — prevent data loss on interrupted import.
 
+## Baseline and current application identity
+Base commit: a8e6763e384c3fe1f1f508ea216210d7213652b8
+Application ID: com.locco.app
+versionCode: 1
+versionName: 0.1.0-foundation
+
 ## User feedback records
 - LOC-0002 — #2 — continuity policy and required evidence.
 
@@ -49,6 +55,14 @@ class ChangeContractTests(unittest.TestCase):
     def test_missing_required_section_fails(self):
         body = VALID_BODY.replace("## Rollback\nRevert this commit; no persistent schema changes or destructive operations are introduced.\n", "")
         self.assertTrue(any("Missing required section" in error for error in validate_pr_body(body)))
+
+    def test_baseline_sha_is_required(self):
+        body = VALID_BODY.replace("a8e6763e384c3fe1f1f508ea216210d7213652b8", "unknown")
+        self.assertTrue(any("40-character base commit SHA" in error for error in validate_pr_body(body)))
+
+    def test_android_identity_fields_are_required(self):
+        body = VALID_BODY.replace("Application ID: com.locco.app", "Package: Locco")
+        self.assertTrue(any("Application ID" in error for error in validate_pr_body(body)))
 
     def test_feedback_id_must_match_issue_number(self):
         body = VALID_BODY.replace("LOC-0002 — #2", "LOC-0003 — #2")
