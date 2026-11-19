@@ -1,6 +1,6 @@
 # Local development
 
-Required: Git, Rust stable/rustup, Android SDK + NDK, JDK 17+, Gradle version pinned by CI, cargo-ndk, Python 3 and actionlint. Rust targets: `aarch64-linux-android`, `armv7-linux-androideabi`, `x86_64-linux-android`. Output: `android/app/src/main/jniLibs/<abi>/liblocco_core.so`.
+Required: Git, Rust stable/rustup, Android SDK + NDK, JDK 17+, Gradle version pinned by CI, cargo-ndk 4.1.2, Python 3 and actionlint. Rust targets: `aarch64-linux-android`, `armv7-linux-androideabi`, `x86_64-linux-android`. Output: `android/app/src/main/jniLibs/<abi>/liblocco_core.so`.
 
 Run `./scripts/verify-foundation.sh`, `./scripts/build-rust-android.sh`, `./scripts/build-android-debug.sh`. Scripts fail clearly if tools/env are missing; no model weights or paid services are downloaded.
 
