@@ -1,0 +1,21 @@
+name: Architecture proposal
+description: Propose a change to Locco contracts or architecture
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and constraints
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and trade-offs
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: Failure mode and reversal cost
+    validations:
+      required: true
