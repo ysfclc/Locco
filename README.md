@@ -20,9 +20,13 @@ Acquire → preserve → understand → connect → reason → decide → act �
 | 5 Capabilities | approvals, execution, verification | threat review and end-to-end proof |
 | 6 Expansion | more sources and iOS shell | contract parity |
 
-## Foundation archive
+## Development workflow
 
-The complete level-zero source snapshot is available at [`incoming/foundation.zip`](incoming/foundation.zip).
+GitHub is the source of truth. Work directly in Locco using focused branches, commits, pull requests and CI. ZIPs are not required for normal development; the legacy archive intake is reserved for exceptional external contributions.
+
+## Foundation snapshot
+
+[`incoming/foundation.zip`](incoming/foundation.zip) is a reproducible snapshot of the original foundation, retained for reference. It is not a required development handoff.
 
 ## Quickstart
 ```bash
@@ -52,11 +56,11 @@ flowchart TB
 - `core/`: Rust workspace.
 - `android/`: native Android shell.
 - `ios/`: gated bridge plan.
-- `incoming/`: untrusted phase ZIP drop zone.
+- `incoming/`: optional external ZIP intake and foundation snapshot.
 - `.github/workflows/`: permanent validation and delivery.
 
 ## Authority
-PRINCIPLES.md, accepted ADRs, product scope and security doctrine govern future work. A green compile proves wiring, not product readiness.
+`PRINCIPLES.md`, accepted ADRs, product scope and security doctrine govern future work. A green compile proves wiring, not product readiness.
 
 ## Cost and access
 Personal use, zero-budget baseline. No paid API, hosted backend, subscription or cloud model is mandatory. Scraping remains subject to authorization, terms, privacy and rate limits; no bypass of authentication, CAPTCHAs, paywalls or anti-bot controls.
