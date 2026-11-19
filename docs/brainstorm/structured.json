@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "product": "Locco",
+  "identity": "Personal local-first mobile intelligence and action environment",
+  "constraints": ["zero budget", "Android primary", "Rust core", "on-device AI", "no HTML/web UI", "future iOS shell"],
+  "loop": ["acquire", "preserve", "understand", "connect", "reason", "decide", "act", "verify", "learn"],
+  "capabilities": {
+    "acquisition": ["public source adapters", "visible browser capture", "Android share/import", "files", "notifications", "manual capture"],
+    "intelligence": ["evidence lineage", "extraction", "entity resolution", "relationships", "dedupe", "search", "claims", "patterns"],
+    "reasoning": ["deterministic analysis", "local semantic inference", "compact context", "retrieval", "evaluation"],
+    "execution": ["capability registry", "workflow plans", "approvals", "native adapters", "postcondition verification"],
+    "workspace": ["capture", "search", "entity views", "evidence inspection", "review", "analysis", "action"]
+  },
+  "donor_repositories": {
+    "outbound_sourcer": "source adapter and discovery pipeline concepts; not product identity",
+    "ebo": "event/signal ledger, qualification and approval concepts; no infrastructure dependency",
+    "bos": "entity/capability/workflow/policy modeling; not a business OS shell",
+    "troy": "source-aware extraction, interpretation and identity resolution",
+    "me": "immutable evidence and derived observation concepts; no personal DB import",
+    "memo": "selected Android automation, approval and visible-browser patterns; not base product",
+    "busybee": "native observer/provider adapter research; no arbitrary app inspection assumption",
+    "vaultos": "local import, indexing, backup and data integrity"
+  },
+  "exclusions": ["Memo clone", "sales/trade-only scope", "mandatory cloud", "paid APIs", "web UI", "transcript memory", "unrestricted scraping", "automatic high-impact actions"],
+  "open_evidence": ["model runtime benchmark", "embedding value", "database encryption choice", "device performance budgets", "iOS bridge generator"]
+}
