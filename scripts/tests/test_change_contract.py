@@ -92,6 +92,10 @@ class ChangeContractTests(unittest.TestCase):
         body = body.replace("LOC-0002 — #2 contains the explicit authorization.", "No authorization link.")
         self.assertTrue(any("Separate-product authorization" in error for error in validate_pr_body(body)))
 
+    def test_feedback_ids_support_issue_numbers_above_9999(self):
+        body = VALID_BODY.replace("LOC-0002 — #2", "LOC-10000 — #10000")
+        self.assertFalse(any("LOC-10000" in error for error in validate_pr_body(body)))
+
     def test_issue_references_are_extracted(self):
         self.assertEqual(issue_numbers(VALID_BODY), [2])
 
