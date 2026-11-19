@@ -51,7 +51,18 @@ jobs:
             exit 1
           fi
           for number in "${ISSUE_NUMBERS[@]}"; do
-            actual="$(gh api "repos/${GH_REPO}/issues/${number}" --jq '.number')"
+            record="$(gh api "repos/${GH_REPO}/issues/${number}")"
+            actual="$(jq -r '.number' <<< "$record")"
             test "$actual" = "$number"
-            echo "Verified feedback issue #${number}"
+            if jq -e 'has("pull_request")' <<< "$record" >/dev/null; then
+              echo "#${number} is a pull request, not a feedback issue." >&2
+              exit 1
+            fi
+            title="$(jq -r '.title' <<< "$record")"
+            expected="$(printf 'LOC-%04d' "$number")"
+            case "$title" in
+              "$expected:"*) ;;
+              *) echo "Feedback issue #${number} must have title prefix $expected." >&2; exit 1 ;;
+            esac
+            echo "Verified feedback record $expected (#${number})"
           done
