@@ -76,9 +76,18 @@ def validate_pr_body(body: str) -> list[str]:
     baseline = sections.get("Baseline and current application identity", "")
     if not re.search(r"\b[0-9a-f]{40}\b", baseline, re.IGNORECASE):
         errors.append("Baseline must include the exact 40-character base commit SHA.")
-    for label in ("Application ID", "versionCode", "versionName"):
+    for label in ("Application ID", "versionCode", "versionName", "Signing identity"):
         if not re.search(rf"(?im)^\s*{re.escape(label)}\s*:\s*\S+", baseline):
             errors.append(f"Baseline must record {label} from the current Android build configuration.")
+    app_id = re.search(r"(?im)^\s*Application ID\s*:\s*(\S+)", baseline)
+    if app_id and app_id.group(1).lower() in {"unknown", "n/a", "none", "tbd"}:
+        errors.append("Application ID cannot be reported as unknown or not applicable for the existing Android app.")
+    version_code = re.search(r"(?im)^\s*versionCode\s*:\s*(\S+)", baseline)
+    if version_code and not version_code.group(1).isdigit():
+        errors.append("versionCode must be the numeric value read from the current Android build configuration.")
+    version_name = re.search(r"(?im)^\s*versionName\s*:\s*(\S+)", baseline)
+    if version_name and version_name.group(1).lower() in {"unknown", "n/a", "none", "tbd"}:
+        errors.append("versionName must be the current configured value, not an unknown placeholder.")
 
     feedback = sections.get("User feedback records", "")
     ids = re.findall(r"\bLOC-(\d{4,})\b", feedback)
