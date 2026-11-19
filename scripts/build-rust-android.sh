@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 : "${ANDROID_NDK_HOME:?`ANDROID_NDK_HOME` must point to the installed Android NDK}"
 command -v cargo >/dev/null
-command -v cargo-ndk >/dev/null || { echo "cargo-ndk is required: cargo install cargo-ndk --locked" >&2; exit 2; }
+command -v cargo-ndk >/dev/null || { echo "cargo-ndk is required: cargo install cargo-ndk --version 4.1.2 --locked" >&2; exit 2; }
 rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
 mkdir -p "$ROOT/android/app/src/main/jniLibs"
 cd "$ROOT/core"
