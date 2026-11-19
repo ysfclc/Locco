@@ -1,0 +1,32 @@
+name: Security and policy checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.2.2
+      - name: Install actionlint
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+      - name: Validate workflows
+        run: actionlint .github/workflows/*.yml
+      - name: Verify foundation structure
+        run: bash scripts/verify-foundation.sh
+      - name: Check for accidental secrets
+        run: |
+          if grep -RInE '(gh[pousr]_[A-Za-z0-9]{30,}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|AIza[0-9A-Za-z_-]{30,})' --exclude-dir=.git .; then
+            echo "Potential secret material detected." >&2
+            exit 1
+          fi
