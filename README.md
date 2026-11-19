@@ -65,7 +65,7 @@ flowchart TB
 - `core/`: Rust workspace.
 - `android/`: native Android shell.
 - `ios/`: gated bridge plan.
-- `.github/workflows/`: build, security, release and change-contract gates.
+- `.github/workflows/`: feedback ID assignment, change-contract enforcement, build, security and release gates.
 
 ## Development
 
