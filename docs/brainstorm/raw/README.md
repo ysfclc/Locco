@@ -1,5 +1,5 @@
 # Brainstorm archive
 
-The original user-authored MISSION BRIEF — KEYSTONE is the founding instruction for this repository. The complete source message remains in the originating ChatGPT conversation dated 2026-11-19.
+`KEYSTONE-MISSION-BRIEF.md` contains a reconstructed content transcription of the user-provided founding brief from the 2026-11-19 conversation. Markdown layout was normalized and the repeated repository-shape block was condensed; it is not a byte-for-byte transcript export. The original user message in the originating conversation remains authoritative.
 
-The conversation platform did not provide a transcript export file to this build process. This directory therefore does not falsely claim to contain a verbatim export. The structured.json is a distillation, not a replacement. When the original prompt is exported, add it as a new immutable file with its checksum and source timestamp. Future brainstorm inputs must be preserved verbatim before distillation.
+`structured.json` is a distilled machine-readable interpretation, not raw source. Future brainstorm inputs must be copied verbatim, with source date and provenance, before distillation. Never silently edit archived raw files.
