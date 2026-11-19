@@ -1,0 +1,59 @@
+name: Feature or improvement request
+description: Record a capability or improvement for the existing Locco product
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feature requests extend the existing Locco application. This form does not authorize a replacement app, repository, package ID or product reset.
+  - type: textarea
+    id: original_request
+    attributes:
+      label: Original user wording
+      description: Preserve the request verbatim where possible. Keep interpretation separate.
+      placeholder: Paste the original request without rewriting its constraints.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem and desired outcome
+      description: What is the user trying to achieve? What should become possible?
+    validations:
+      required: true
+  - type: textarea
+    id: current_behavior
+    attributes:
+      label: Current Locco behavior and existing capability
+      description: What already exists? Which current flow should this extend?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Observable acceptance criteria
+      description: Describe testable outcomes, not implementation guesses.
+    validations:
+      required: true
+  - type: textarea
+    id: continuity
+    attributes:
+      label: Existing behavior and data that must remain intact
+      description: List adjacent screens, flows, records, settings and integrations.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and failure cases
+      description: Include offline, permission denial, cancellation, accessibility, privacy, device and performance constraints.
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Suggested priority
+      options:
+        - Critical — data loss, security or core workflow blocked
+        - High — major workflow impaired
+        - Normal — valuable capability or improvement
+        - Low — polish or future idea
+    validations:
+      required: true
