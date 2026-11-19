@@ -1,0 +1,3 @@
+# Android signing policy
+
+Debug APK uses local/ephemeral debug key; it is not product identity and is never committed. Release signing is disabled until protected `android-release` Environment has required reviewers and signing secrets. Release requires reviewed version/tag, security and QA acceptance. Decode keystore to temporary path, sign, verify with apksigner and delete in guaranteed cleanup. Never fall back to debug signing for release.
