@@ -21,8 +21,8 @@ pub extern "C" fn locco_buffer_free(_ptr: *mut u8, _len: usize) {
 
 #[no_mangle]
 pub extern "system" fn Java_com_locco_app_NativeBridge_nativeAbiVersion(
-    _env: jni::JNIEnv,
-    _class: jni::objects::JClass,
+    _env: jni::JNIEnv<'_>,
+    _class: jni::objects::JClass<'_>,
 ) -> jni::sys::jint {
     catch_unwind(AssertUnwindSafe(|| locco_abi_version() as jni::sys::jint)).unwrap_or(-1)
 }
