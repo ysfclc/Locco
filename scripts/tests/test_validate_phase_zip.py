@@ -24,6 +24,7 @@ class ZipValidatorTests(unittest.TestCase):
         with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             for entry_name, data, mode in entries:
                 info = zipfile.ZipInfo(entry_name)
+                info.compress_type = zipfile.ZIP_DEFLATED
                 if mode is not None:
                     info.external_attr = mode << 16
                 zf.writestr(info, data)
