@@ -1,0 +1,37 @@
+name: Feedback register
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: locco-feedback-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  assign-id:
+    name: assign-stable-feedback-id
+    if: github.event.issue.pull_request == null
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Prefix issue title with its permanent LOC ID
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ID="$(printf 'LOC-%04d' "$ISSUE_NUMBER")"
+          case "$ISSUE_TITLE" in
+            "$ID:"*) echo "Feedback ID already present: $ID"; exit 0 ;;
+          esac
+          NEW_TITLE="$ID: $ISSUE_TITLE"
+          gh api --method PATCH "repos/${GH_REPO}/issues/${ISSUE_NUMBER}" -f title="$NEW_TITLE" >/dev/null
+          echo "Assigned permanent feedback ID $ID"
