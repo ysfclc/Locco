@@ -1,0 +1,15 @@
+[package]
+name = "locco-ffi"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+locco-kernel = { path = "../kernel" }
+jni = "0.21.1"
+
+[lints]
+workspace = true
