@@ -1,0 +1,3 @@
+# Release process
+
+Confirm phase acceptance and clean main; run Rust tests, three ABI builds, Android debug build, lint, audits and actionlint; generate/review SBOM; review permissions/threat changes; obtain QA/security sign-off; tag accepted commit; run protected release job with environment approval; verify signature, package metadata, ABI contents, SBOM and attestation; install/smoke-test physical device; record SHA-256 and notes. Roll back by withdrawing release and returning to prior signed artifact; never overwrite tags.
