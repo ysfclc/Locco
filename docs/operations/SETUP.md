@@ -11,7 +11,7 @@ Before any work, read:
 4. `docs/governance/feedback-lifecycle.md`, `change-control.md`, `application-continuity.md`
 5. The complete source `LOC-####` issue, related issues, PRs, ADRs, contracts and tests.
 
-A user report must be recorded in GitHub Issues before implementation. Every implementation PR links the issue and fills the continuity/evidence template. A new bug or feature must extend or repair the existing app, not create a replacement.
+A user report must be recorded in GitHub Issues before implementation. Once `.github/workflows/feedback-register.yml` is merged and enabled, new issue titles are automatically prefixed with their permanent `LOC-####` ID; until then, the intake owner applies the prefix manually. Every implementation PR links the issue and fills the continuity/evidence template. A new bug or feature must extend or repair the existing app, not create a replacement.
 
 ## Required GitHub repository controls
 
