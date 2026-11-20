@@ -77,7 +77,7 @@ Android owns work that must run through platform APIs (WebView, permissions, for
 - Event is append-only state-transition evidence.
 - Artifact is a generated/imported deliverable linked to the source evidence and component versions used.
 
-Conflicts coexist. A newer correction may supersede an assertion for retrieval while preserving history. Indexes and embeddings are rebuildable and are not canonical truth.
+Conflicts coexist. A newer correction may supersede an assertion for retrieval while preserving history. The canonical relational store is the source of truth; append-only events and execution journals provide audit/recovery evidence and do not silently turn the whole system into an event-sourced database. Evidence/blob storage is referenced by canonical records and follows one encryption, key-rotation and deletion policy. Indexes and embeddings are rebuildable and are not canonical truth.
 
 ## 7. Commands, events and FFI
 
