@@ -102,7 +102,7 @@ The system-plane and index reconciliation are documentation checks only. They do
 | LOC-0005 reproduction guard | Updated | Issue #5 distinguishes website sign-in, Auth Tab/Custom Tabs, OAuth/OIDC app connection, remote model/API credentials and third-party app integration. No credentials or session secrets may enter diagnostics. |
 | Browser/account architecture | Proposed, not implemented | `browser-dom-and-session.md`; WebView/Auth Tab/profile and DOM observer features remain runtime-gated and require target-device testing. |
 | Storage security and recovery | Proposed; technology spike open | `storage-security-and-recovery.md` defines data classes, envelope-key direction, key-loss behavior, backup exclusion of session secrets, restore, rotation and deletion tests. No encryption implementation is accepted. |
-| Architecture review | Draft PR open | PR #6, latest checked head `ad6d9fc28c89f132b1744ad192f6775e280f4623`. Canonical product scope and machine-readable brainstorm now explicitly include the full browser, model ecosystem, DOM intelligence, generic composition, UI iteration and account-login requirement. No independent architecture/security/QA acceptance yet. |
+| Architecture review | Draft PR open | PR #6, latest checked head `6816f91e51adf2083017a1c8df6af66ee7ababd7`. Canonical product scope, machine-readable brainstorm, delivery protocol, PR template and roadmap are aligned to the full browser, model ecosystem, DOM intelligence, generic composition and account-login requirement. No independent architecture/security/QA acceptance yet. |
 | Latest Security and policy CI | Pre-runner failure; source checks NOT RUN | Run `44710944012` on the checked head failed. Raw job record: `runner_id=0`, empty runner name, `steps=[]`; the job ended in about one second. No validator or source command ran. This is not evidence of a source-check failure or success; restore runner dispatch or use a controlled runner before accepting CI. |
 | Product UI/browser/model runtime | Not implemented in this pass | The work remains architecture and requirement clarification. No product UI, browser engine, DOM observer or model runtime is claimed. |
 | Phase 0 / Phase 1 gate | Open / Phase 1 not started | LOC-0003 and LOC-0004 still require independent acceptance. Preserve this gate. |
@@ -134,3 +134,20 @@ The founding/raw brainstorm remains preserved unchanged. The reviewed product sc
 | Product scope alignment | Updated in proposal branch | `docs/product/scope.md` and `docs/brainstorm/structured.json` now explicitly define the first-class native browser and its account/session/DOM responsibilities, rich model ecosystem, DOM Stitching, general-purpose capability compiler and non-copying UI iteration. The raw founding brief remains unchanged as history. |
 | Latest Security/policy CI on canonical-scope head | Pre-runner failure; source checks NOT RUN | Run `44711515524` for commit `ad6d9fc28c89f132b1744ad192f6775e280f4623` failed. Raw job `136204109242` had `runner_id=0`, empty runner name and `steps=[]`, ending in about two seconds. No source or validator command ran. |
 | Architecture PR | Open draft | PR #6 at `ad6d9fc28c89f132b1744ad192f6775e280f4623`; specification work only. Phase 0 and independent architecture/security/QA acceptance remain open. |
+
+
+## Issue-to-release workflow definition — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Delivery lifecycle policy | Specified | `docs/operations/delivery-lifecycle.md` defines LOC issue granularity, readiness, lifecycle states, exact-commit evidence, reviewer duties, continuity, and roadmap/traceability updates. |
+| Delivery intake template | Added | `.github/ISSUE_TEMPLATE/delivery.yml` captures user outcome, phase, LOC-R requirements, base SHA, acceptance, dependencies, compatibility, verification and risk. |
+| PR evidence contract | Updated | `.github/pull_request_template.md` requires exact commit, test result (PASS/FAIL/NOT RUN), artifact hash, device versions, review and rollback evidence. |
+| Current progress tracking | Manual issue source of truth | Each LOC issue must be updated at every meaningful milestone. The roadmap is a phase dependency map, not a percent-complete dashboard. |
+| Project board / status automation | Not configured or verified | No live GitHub Project board or issue-status synchronizer is claimed. Introduce only after Actions dispatch is restored and its idempotency/permissions are tested. |
+
+## Latest CI dispatch evidence after delivery protocol — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Security/policy Actions on delivery-protocol commit | Pre-runner failure; source checks NOT RUN | Run `44711967239` on commit `6816f91e51adf2083017a1c8df6af66ee7ababd7` failed. Raw job `136205622332`: `runner_id=0`, empty runner name, `steps=[]`; no repository command executed. |

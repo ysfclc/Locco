@@ -94,6 +94,7 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 - [ ] Convert planned test IDs into implemented tests with passing evidence.
 - [ ] Record high-reversal-cost ADRs and spike results.
 - [ ] Update roadmap against dependencies.
+- [x] Define issue-to-release work item, acceptance, verification vocabulary and status-update lifecycle in docs/operations/delivery-lifecycle.md; issue template, PR template and README roadmap now point to it. (No GitHub Project board or issue-status synchronization automation is configured or verified.)
 - [ ] Keep unknowns visible.
 
 ## Explicit architectural risks
