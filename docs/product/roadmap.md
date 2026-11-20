@@ -19,6 +19,8 @@ Every delivery has a LOC issue, exact goal, baseline commit, owner/reviewers, so
 - 0.7 Deep architecture audit: data, evidence, browser/auth/DOM, model ecosystem, capability compiler, execution, native UX and acceptance traceability.
 - 0.8 Phase 0 independent acceptance and device verification where available.
 
+- 0.7a Comparative native UX brief defines Workspace-led, Intent-led and Environment-led shells plus Browser/Model Hub surfaces; three prototypes and same-12-journey tests are required before selecting IA/design tokens (LOC-R028).
+
 Gate: governance/CI passes; Rust and APK are built from the same recorded source; three ABIs are inspected; identity is stable; device smoke is done or explicitly NOT RUN; architecture contracts and high-risk ADRs are accepted; LOC-0003/LOC-0004 acceptance evidence exists.
 
 No product subsystem is accepted merely because it is described.

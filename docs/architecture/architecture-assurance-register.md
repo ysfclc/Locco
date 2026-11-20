@@ -186,3 +186,6 @@ The committed backup XML and validator read back from PR #6 were assembled in an
 ## LOC-R027 network assurance specification
 
 - [x] Define a separate network egress/local-network boundary for background adapters, browser-page requests and local model inference in `network-and-egress-policy.md`; IPv4/IPv6, DNS rebinding, redirect and explicit local-scope test cases are specified (runtime adapter tests and engine adversarial suite remain open).
+
+
+- [x] Specify three concrete navigation alternatives and Browser/Model Hub screen structures in `locco-ux-prototype-brief.md` (LOC-R028); native prototypes and user testing remain open.

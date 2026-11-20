@@ -98,6 +98,10 @@ Screenshots prove visual appearance only; they do not prove behavior, accessibil
 - Browser account login and session continuity pass LOC-0005.
 
 
+## 10. Comparative native UX brief
+
+See [locco-ux-prototype-brief.md](locco-ux-prototype-brief.md) for three concrete navigation alternatives and the detailed Browser/Model Hub surface contracts. No winner is selected until user-task testing.
+
 ## 10. Source-audited inspiration and original Locco interaction design
 
 See [reference-inspiration-audit.md](reference-inspiration-audit.md) for the full source-level comparison and explicit limitations. The summary is binding:

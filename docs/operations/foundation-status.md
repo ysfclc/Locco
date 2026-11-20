@@ -330,3 +330,14 @@ Each job reports `runner_id=0`, empty `runner_name`, and `steps=[]`; each starte
 | Latest Actions on `0fbf26ed41d7acde284e3cc1333dcd3a708a553f` | NOT RUN — no runner allocated | Security `44718295375` / job `136227203877`; Rust `44718295378` / job `136227204229`; Android `44718295363` / job `136227204322`. Every job returned `runner_id=0`, empty runner name and `steps=[]` (completed within 1–2 seconds). No workflow command ran. |
 | Backup-policy regression suite | PASS — isolated 6-case run | Exact validator content read back from PR plus mirrored current manifest/rules passed positive and negative scenarios. Android resource compiler and OEM transfer/device verification remain NOT RUN. |
 | Architecture / foundation | OPEN | PR #6 remains a draft; LOC-0003/0004/0005 open; no independent architecture/security/QA acceptance or Phase 0 approval. |
+
+
+## Native UX prototype specification — 2026-11-20
+
+| Gate | State | Evidence |
+|---|---|---|
+| Comparative navigation concepts | SPECIFIED | `locco-ux-prototype-brief.md` defines Workspace-led, Intent-led and Environment-led adaptive shells. |
+| Browser and Model Hub UX | SPECIFIED | Browser-first surface, contextual DOM Inspect/Stitch, model discovery/detail/comparison/transfers/install/runtime/resource states. |
+| Shared shell/accessibility | SPECIFIED | Global capture/search, activity/approval states, responsive behavior, state preservation, Back semantics, TalkBack/font scale/reduced motion. |
+| Native prototypes/user evaluation | NOT STARTED | All three prototypes must be compared on the same 12 journeys before final IA/visual-token selection (LOC-R028). |
+| Requirements traceability | 28 proposed IDs | LOC-R001–LOC-R028 are in the matrix before its usage legend. |

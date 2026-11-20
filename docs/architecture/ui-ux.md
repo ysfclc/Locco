@@ -44,3 +44,8 @@ The high-level UX invariants in this file are elaborated by:
 - requirement-traceability.md — planned acceptance evidence for UX and every other product requirement.
 
 Use ui-ux.md for normative UX invariants; native-experience.md for design research and iteration. Neither selects final primary navigation until task-based prototype evaluation is complete.
+
+
+## Comparative prototype brief
+
+See [locco-ux-prototype-brief.md](locco-ux-prototype-brief.md) for Workspace-led, Intent-led and Environment-led alternatives plus the Browser and Model Hub experience contracts.
