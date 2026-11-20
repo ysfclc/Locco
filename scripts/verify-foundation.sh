@@ -8,6 +8,10 @@ done
 echo "Checking required agent and skill counts..."
 test "$(find "$ROOT/.agent/agents" -maxdepth 1 -name '*.md' | wc -l)" -ge 7
 test "$(find "$ROOT/.agent/skills" -maxdepth 1 -name '*.md' | wc -l)" -ge 10
+echo "Checking shell script syntax..."
+for script in "$ROOT"/scripts/*.sh; do
+  bash -n "$script"
+done
 echo "Checking JSON..."
 python3 -m json.tool "$ROOT/docs/brainstorm/structured.json" >/dev/null
 echo "Checking full-SHA action pins..."
