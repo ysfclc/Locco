@@ -27,6 +27,8 @@ This matrix is the bridge between product intent, architecture ownership and pro
 | LOC-R018 | Security protects credentials, page content, local data, supply chain and external actions | threat-model, secrets-policy, signing-policy, browser/model specs; Rust + platform | security.prompt-injection-fixtures; security.secret-redaction; security.origin-boundary; security.import-fuzz; security.dependency-sbom; security.approval-replay | PROPOSED |
 | LOC-R019 | Future iOS path shares domain contracts but does not expand Phase 0 | ios-path, ADR-0001; future native shell | ios.ffi-contract-parity; ios.domain-golden-suite; explicit product authorization before implementation | GATED / NOT STARTED |
 | LOC-R020 | Rust/native calls are versioned, memory-safe, bounded and durable across UI/process lifecycle | ffi-contract, ffi-command-event-protocol, ADR-0014; Rust FFI + Kotlin adapter | ffi.c-header-compile; ffi.buffer-ownership; ffi.invalid-input; ffi.panic-containment; ffi.concurrent-call; ffi.golden-schema-parity; ffi.event-replay; ffi.effect-fencing | PROPOSED; ping-only scaffold |
+| LOC-R021 | Model artifact provenance separates byte integrity from publisher authenticity and runtime-code trust | model-ecosystem, threat-model; catalogue/artifact/runtime trust registries | model.integrity-not-authenticity; model.signature-invalid-revoked; model.trust-root-not-self-supplied; model.provenance-source-change; model.no-plugin-code; model.parser-bounds | PROPOSED; contract clarification |
+| LOC-R022 | DOM nodes are snapshot-local; locators are re-resolved against a fresh page and collection completeness is evidence-backed | browser-dom-and-session; observer, Stitching validator and browser action adapter | dom.epoch-invalidation; dom.locator-drift; dom.duplicate-target-stop; dom.virtualized-completeness; dom.mutation-backpressure; stitch.provenance-coverage; stitch.untrusted-transform-rejection | PROPOSED; contract clarification |
 
 ## How to use this matrix
 
@@ -43,6 +45,3 @@ Use these states:
 
 When a test fails, preserve the regression, failure evidence, affected requirement ID and next action. Do not downgrade or delete the requirement to make the dashboard green.
 
-
-| LOC-R021 | Model artifact provenance separates byte integrity from publisher authenticity and runtime-code trust | model-ecosystem, threat-model; catalogue/artifact/runtime trust registries | model.integrity-not-authenticity; model.signature-invalid-revoked; model.trust-root-not-self-supplied; model.provenance-source-change; model.no-plugin-code; model.parser-bounds | PROPOSED; contract clarification |
-| LOC-R022 | DOM nodes are snapshot-local; locators are re-resolved against a fresh page and collection completeness is evidence-backed | browser-dom-and-session; observer, Stitching validator and browser action adapter | dom.epoch-invalidation; dom.locator-drift; dom.duplicate-target-stop; dom.virtualized-completeness; dom.mutation-backpressure; stitch.provenance-coverage; stitch.untrusted-transform-rejection | PROPOSED; contract clarification |
