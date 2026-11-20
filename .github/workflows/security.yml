@@ -51,7 +51,7 @@ jobs:
       - name: Audit Rust dependencies
         run: cargo audit --file core/Cargo.lock
 
-      - name: Run hostile ZIP validator tests
+      - name: Run Python policy regression tests
         run: python3 -m unittest discover -s scripts/tests -v
 
       - name: Install actionlint

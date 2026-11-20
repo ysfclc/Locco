@@ -286,3 +286,14 @@ The build scripts' presence and static checks do not constitute a successful bui
 | Static policy validator | ADDED; test execution pending | `scripts/validate_android_backup_policy.py` fails closed if a resource, domain exclusion or transfer section is missing or an include rule appears. |
 | OEM/device-transfer behavior | NOT DEVICE-VERIFIED | Must be verified on the reference phone and declared OEM support matrix; `allowBackup=false` alone is not sufficient on all OEMs. |
 | Explicit workspace export | NOT IMPLEMENTED | Future encrypted, user-initiated export excludes browser sessions, credentials and private profile data. |
+
+
+## Android backup policy validator execution — 2026-11-20
+
+| Check | Result | Evidence / limit |
+|---|---|---|
+| Read-back validator | PASS | Committed `validate_android_backup_policy.py` was executed from a clean temporary project with the current manifest and both backup rule files. |
+| Regression suite | PASS — 6 tests | Valid policy, valid fixture, allowBackup=true rejection, missing device-transfer exclusion rejection, missing legacy exclusion rejection and accidental <include> rejection. |
+| Python compilation | PASS | Validator and test module compile with `py_compile`. |
+| Android resource/manifest compilation | NOT RUN | No Android SDK/build-tools/Gradle in this environment; GitHub Android workflow had no runner. |
+| OEM cloud backup/device transfer | NOT DEVICE-VERIFIED | Must be tested on reference Redmi and other declared OEM support targets. |
