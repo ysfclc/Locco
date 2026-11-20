@@ -200,3 +200,19 @@ The founding/raw brainstorm remains preserved unchanged. The reviewed product sc
 | Build script static syntax | PASS (Bash parser only) | `bash -n` passed on read-back script contents. Rust/NDK/Gradle/APK builds are still NOT RUN. |
 | Independent review / Phase 0 | OPEN | No independent architecture/security/QA acceptance; no device verification; LOC-0003/0004/0005 remain open. |
 
+
+
+## Shared Android build and artifact verification path — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Local/CI build-path unification | Implemented in scripts; execution unverified | scripts/build-android-debug.sh is now the common local and CI entrypoint |
+| Rust preflight | Implemented in script; execution unverified | Repository-pinned 1.86.0 is checked after entering core; fmt/test/Clippy included |
+| Three-ABI native build inspection | Implemented in script; execution unverified | ELF class/machine and exported C ABI symbols checked per ABI |
+| APK inspection | Implemented in script; execution unverified | Package/version/SDK, required ABI libraries and signature checked; SHA-256 printed |
+| Script invocation permissions | Corrected in Git mode | Build and verifier scripts are executable |
+| Actions workflow execution | Blocked/unverified | Latest three workflows failed in ~3 seconds with no job steps or log URLs; no runner/test result is available |
+| Gradle wrapper | Still absent | CI and local use explicit Gradle 8.9; wrapper is a remaining reproducibility improvement |
+| Device install/runtime smoke | Not run | Requires a target Android device and built APK |
+
+The build scripts' presence and static checks do not constitute a successful build. Preserve the exact workflow-run result and artifact digest once a runner executes.
