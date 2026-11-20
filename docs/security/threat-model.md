@@ -46,3 +46,13 @@ A matching digest verifies byte integrity against a particular manifest; it does
 ## Browser session transfer and backup threat
 
 Android 12+ `allowBackup=false` is not a universal guarantee against device-to-device app-data transfer on every OEM build. Locco therefore requires explicit legacy and modern cloud/device-transfer exclusion rules. Private profile state and browser credentials are never in portable workspace exports. Same-device upgrade continuity and cross-device reauthentication are separate acceptance tests. See [Android Developers backup guidance](https://developer.android.com/identity/data/autobackup) and LOC-R026.
+
+## Network and local-service access threats
+
+- **Server-side request forgery / local-service probing from a background adapter:** validate every resolved IPv4/IPv6 address, pin the checked resolution, revalidate redirects/retries, reject special/private destinations by default and require a user-scoped local-network grant for a specific host/port/purpose.
+- **DNS rebinding and redirect pivot:** resolve/validate at connection time and every redirect; origin changes strip sensitive headers. Test actual socket destination, not only URL text.
+- **Public page reaching private network:** CORS does not prove no request was sent. Test main-frame, frames, forms, images, fetch/XHR, WebSocket, service worker and popup/redirect paths against loopback, link-local, private IPv4/IPv6 and router endpoints. Do not claim WebView callbacks cover all paths without engine evidence.
+- **Ambient browser credentials reused by acquisition:** background HTTP/API adapters never inherit WebView cookies, password stores, OAuth tokens or Authorization headers by default.
+- **Implicit remote inference/telemetry:** local model inference has no egress by default; remote providers require a separate explicit consent and disclosure contract.
+
+See [network and egress policy](../architecture/network-and-egress-policy.md).

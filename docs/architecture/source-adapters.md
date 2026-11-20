@@ -45,3 +45,5 @@ Each adapter declares:
 - Data retention, delete/revoke behavior and offline fallback.
 
 Persist authorized evidence before parsing/enrichment. A source failure must not erase already captured evidence. Adapter replacement must not change evidence identity or domain rules. Credentials, cookies and passkey materials remain in their dedicated platform/session/token stores and are not copied into evidence records.
+
+Network security boundary: see [network and egress policy](network-and-egress-policy.md). Background source adapters must not have ambient cookies or unrestricted private-network access.

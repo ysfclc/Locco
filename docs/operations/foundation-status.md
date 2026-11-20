@@ -307,3 +307,13 @@ All three workflows on commit `c2b10dbcc9a2848b93179bff1ec65685f7f35785` failed 
 - Rust core `44717650358`, job `136225012545`
 
 Each job reports `runner_id=0`, empty `runner_name`, and `steps=[]`; each started and completed within roughly two seconds. Therefore all source/build checks remain **NOT RUN**, not FAIL at command level and not PASS. The isolated backup validator/regression results recorded above are separate local evidence and do not replace the Actions checks.
+
+
+## Network egress assurance — 2026-11-20
+
+| Gate | State | Evidence |
+|---|---|---|
+| Background adapter destination policy | SPECIFIED / NOT IMPLEMENTED | network-and-egress-policy.md defines URL/scheme validation, IPv4/IPv6 special-range rejection, validated resolution pinning, redirect revalidation, response bounds and no ambient browser credentials. |
+| Explicit local-network source access | SPECIFIED / NOT IMPLEMENTED | Host/port/purpose/expiry/device/network-bound grants with revocation; no default LAN scanning. |
+| Browser page-to-private-network behavior | ENGINE-SPECIFIC / NOT TESTED | Requires actual request-emission tests across frames, forms, images, fetch/XHR, WebSocket, service workers and redirects. No blanket WebView hook guarantee. |
+| Local model egress | SPECIFIED | Offline by default; remote providers require explicit configuration/consent and separate credential/data contracts. |

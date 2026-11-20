@@ -25,3 +25,5 @@
 - iOS is not a Phase 0 or current Android implementation target.
 
 New domains may compose existing capabilities. New foundational subsystems, permissions or external dependencies require product/architecture review and a recorded ADR.
+
+- **Network acquisition policy:** background sources have no ambient browser cookies or unrestricted LAN authority; destinations and every redirect are checked across IPv4/IPv6; DNS rebinding is addressed with checked-resolution connection pinning; local hosts require an explicit scoped grant. Browser page request paths are separately engine-tested because CORS and WebView interception callbacks do not prove a request was not emitted. See network-and-egress-policy.md and LOC-R027.

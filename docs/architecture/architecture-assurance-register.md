@@ -178,3 +178,6 @@ The daily-browser contract requires a real persistent normal profile and a simul
 ## R026 backup policy validation evidence
 
 The committed backup XML and validator read back from PR #6 were assembled in an isolated temporary project and exercised with six regression scenarios. All six passed, including the valid policy and fail-closed cases. This validates the Python policy check and XML structure in isolation; it does not replace Android resource compilation, BackupManager/Auto Backup behavior, OEM device-transfer tests or a signed APK test.
+
+
+- [x] Specify network egress and local-network access boundaries for background acquisition, user browsing, page-originated requests and local model inference (network-and-egress-policy.md; HTTP/browser engine adversarial tests remain open; LOC-R027).
