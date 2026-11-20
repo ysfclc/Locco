@@ -226,3 +226,22 @@ The build scripts' presence and static checks do not constitute a successful bui
 | ELF export validation | Tightened in proposal | The Rust build now requires each C ABI symbol to be GLOBAL/DEFAULT and defined (not merely present as an undefined dynamic import). Execution remains unverified without an Android NDK runner. |
 | Android workflow path filters | Updated | Both push and pull_request now include `rust-toolchain.toml`, build scripts and APK verifier changes. |
 | Latest workflow execution | NOT RUN | Runs `44714368594` (Rust), `44714368545` (Android) and `44714368566` (Security) on `30cf15b38127c53c27eb146d58ad73444c57d34b` each failed before runner assignment; raw jobs have `runner_id=0` and `steps=[]`. |
+
+
+## Current browser/model/UX and build-verification audit — 2026-11-20
+
+| Gate | State | Evidence / remaining work |
+|---|---|---|
+| Top-level product vision | Updated | Explicitly includes a human-usable native browser, DOM Stitching, rich Model Hub, generic use-case-neutral Capability Compiler, user authority and no donor-app copying. |
+| Browser / DOM product requirements | Specified, not implemented | Full tabs/navigation/history/bookmarks/downloads/session profiles, isolated bounded DOM observations, snapshot-local node IDs, live locator re-resolution, provenance, coverage semantics and hostile-page boundaries. |
+| Model Hub requirements | Specified, not implemented | Multi-modal catalogue, immutable artifacts, separate source/publisher trust, replaceable runtime adapters, device compatibility, benchmark evidence and resource governance. No specific model/runtime is assumed compatible before test evidence. |
+| Navigation iteration | Research plan specified; prototypes NOT STARTED | Three competing navigation hypotheses and twelve user journeys; build and test at least three native prototypes before selecting primary navigation or copying any visual pattern. |
+| Memo-2 account-login issue | Open; unclassified | LOC-0005 covers embedded website login, Auth Tab/Custom Tabs, OAuth/OIDC connections, model/API credentials and third-party app sign-in. Exact account/provider/APK/build and failure stage still required for reproduction. No cause inferred. |
+| Rust exported-symbol validation | Tightened in proposal | Each ABI must export defined GLOBAL/DEFAULT symbols for `locco_abi_version`, `locco_core_ping`, `locco_buffer_free`; undefined imports do not satisfy the check. Positive and negative awk fixtures passed. |
+| APK payload verification | Tightened in proposal | Extracts each of the three FFI .so files from APK and byte-compares it with the exact native build output before accepting the APK. Package/version/SDK/signature checks remain in the same verifier. |
+| Build script shell syntax | PASS | `bash -n` passed for build-android-debug.sh, build-rust-android.sh and verify-android-apk.sh. This is syntax/fixture validation only; no native build performed. |
+| Android workflow filters | Corrected | Both push and pull_request path filters include core, Android, rust-toolchain.toml, build scripts, APK verifier and workflow definition. |
+| Latest CI on head `2b38baa4c1c0a2d425071a9d2d858e4a50d08808` | NOT RUN — GitHub runner not allocated | Rust run `44714587728` (job `136214602444`), Android run `44714587722` (job `136214601927`), Security run `44714587717` (job `136214602199`). Every job reports `runner_id=0`, empty runner name and `steps=[]`; all ended within ~2 seconds. No checkout, source command, test or build ran. |
+| Actual Rust/Android/APK build | NOT RUN | Current execution environment lacks Rustup/Cargo, cargo-ndk, Gradle, Android SDK and NDK. |
+| Phase 0 / Phase 1 | Phase 0 OPEN; Phase 1 NOT STARTED | No independent architecture/security/QA acceptance, branch-protection confirmation, runner execution or physical-device smoke test. Preserve LOC-0003 gate. |
+
