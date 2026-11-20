@@ -178,3 +178,43 @@ Do not convert physical RAM or model parameter count into a guessed safe model s
 The initial residency policy is at most one heavyweight generative model at a time. Embedding, reranker, vision and speech co-residency is not assumed: benchmark each permitted combination and define explicit admission headroom. If memory/thermal safety cannot be demonstrated, queue, unload or fall back to deterministic/lexical behavior; never rely on an OOM crash as a scheduler.
 
 Each result records the model/artifact digest, runtime version, backend, device/OS, power/thermal state, test corpus/version, repetitions and raw summary. Device-fit evidence expires when any material combination input changes.
+
+
+## Artifact authenticity, publisher trust and parser isolation
+
+**Integrity and authenticity are different claims.** A SHA-256 match proves that downloaded bytes match the digest in the selected manifest. It does not prove who published the manifest, who controls the repository, or whether the publisher/model is trustworthy.
+
+Every artifact record therefore carries separate, non-collapsible trust facts:
+
+- **Source identity:** canonical provider, repository/model ID, owner namespace, immutable revision/commit, exact file path and retrieval origin.
+- **Manifest integrity:** every required file has an exact byte count and cryptographic digest; shards and auxiliary files are all accounted for.
+- **Transport evidence:** TLS endpoint and retrieval timestamp are recorded. TLS protects transport to the endpoint; it does not establish publisher identity.
+- **Publisher authenticity:** signature or provenance attestation is checked only when the publisher provides a supported verifiable statement. Record signer identity, trust root, signature/attestation format, verification time, key status and result. Do not invent signatures where none exist.
+- **Registry attestation:** a trusted catalogue may attest to a revision, but its authority and signing key are separately governed. A catalogue's own digest field does not automatically authenticate the publisher.
+- **Local validation:** format/parser checks, exact digest verification, runtime load test and task-quality test are independent evidence stages.
+
+Use explicit provenance/trust values such as:
+- publisher_signed — supported publisher signature verified against a configured trust root.
+- registry_attested — trusted registry signed/attested this exact immutable manifest.
+- source_pinned_integrity_only — immutable source revision and digests verified, but publisher authenticity not established.
+- user_imported_unverified — locally supplied artifact not yet validated against a trusted manifest.
+- unknown_or_invalid — missing, conflicting, revoked or failed provenance evidence.
+
+These are trust-evidence labels, not a single numeric trust score. Show which claims are missing. A lack of signatures does not mean a model is malicious, but it does mean Locco cannot claim publisher authenticity. Activation policy can distinguish built-in curated artifacts from user imports without treating either as universally safe.
+
+Never take a verification key from the same untrusted artifact/repository and use it as its own trust root. Trust roots are shipped with Locco or explicitly configured by the user through a reviewed trust-management surface; key rotation, revocation and rollback protection must be defined. Pin metadata and artifacts to immutable revisions. Mutable branch/tag names are discovery pointers only.
+
+No model repository may supply executable plugins, native libraries, runtime adapters, scripts or dynamic code that Locco loads. Runtime adapters are reviewed application components shipped through the Locco release supply chain. Model data remains untrusted input to bounded parsers and model runtimes. Treat tokenizer, processor, config, vocabulary and template files as potentially hostile; parser complexity and resource use are bounded. Do not deserialize arbitrary language-native object/pickle formats. If a required artifact format cannot be safely parsed under the selected runtime boundary, reject it or require an explicitly reviewed compatibility path.
+
+Keep user imports in quarantine until the manifest, path, file type, digest (where a trusted expected digest exists), runtime compatibility and safety checks have completed. A locally computed digest without an expected trusted digest is an identity/fixity record, not proof of authenticity.
+
+### Required authenticity evidence
+
+- Same bytes from two different sources produce the same content identity but retain distinct provenance.
+- Same filename/size with different digest is always a different artifact.
+- A manifest modified together with file bytes is not considered publisher-authenticated merely because its new digest matches.
+- Missing/invalid/revoked signature or attestation never silently falls back to publisher_signed.
+- Key rotation and revoked signing key fixtures fail closed.
+- Untrusted catalogues cannot register runtime code or widen supported capabilities.
+- Unsafe/unsupported tokenizer/config/weight formats are rejected without corrupting existing installed models.
+- Model detail UI distinguishes publisher metadata, source claims, signature evidence, Locco validation and this device's measurements.

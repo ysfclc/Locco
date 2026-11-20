@@ -42,3 +42,7 @@ Use these states:
 - REGRESSED — previously accepted behavior no longer passes.
 
 When a test fails, preserve the regression, failure evidence, affected requirement ID and next action. Do not downgrade or delete the requirement to make the dashboard green.
+
+
+| LOC-R021 | Model artifact provenance separates byte integrity from publisher authenticity and runtime-code trust | model-ecosystem, threat-model; catalogue/artifact/runtime trust registries | model.integrity-not-authenticity; model.signature-invalid-revoked; model.trust-root-not-self-supplied; model.provenance-source-change; model.no-plugin-code; model.parser-bounds | PROPOSED; contract clarification |
+| LOC-R022 | DOM nodes are snapshot-local; locators are re-resolved against a fresh page and collection completeness is evidence-backed | browser-dom-and-session; observer, Stitching validator and browser action adapter | dom.epoch-invalidation; dom.locator-drift; dom.duplicate-target-stop; dom.virtualized-completeness; dom.mutation-backpressure; stitch.provenance-coverage; stitch.untrusted-transform-rejection | PROPOSED; contract clarification |

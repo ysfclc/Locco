@@ -28,3 +28,8 @@ Trust boundaries: websites/frames, browser engine and DOM observer, identity pro
 | Unauthorized side effect | Capability manifest, exact target/payload/authority approval, idempotency and postcondition proof | External source drift |
 
 Imported data/code is never executed automatically. AI cannot widen authority. Approval is immutable and expires. Private content and secrets are excluded from telemetry. No bypass scraping, hidden surveillance or covert account use.
+
+
+## Model authenticity refinement
+
+A matching digest verifies byte integrity against a particular manifest; it does not authenticate the publisher or prove model safety. Keep source pinning, digest verification, signature/attestation verification, parser validation, runtime load, device fit and task quality as separate evidence. Never permit a model catalogue to install native/runtime code. See docs/architecture/model-ecosystem.md, section 14.

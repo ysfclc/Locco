@@ -151,3 +151,12 @@ The founding/raw brainstorm remains preserved unchanged. The reviewed product sc
 | Gate | Status | Evidence/blocker |
 |---|---|---|
 | Security/policy Actions on delivery-protocol commit | Pre-runner failure; source checks NOT RUN | Run `44711967239` on commit `6816f91e51adf2083017a1c8df6af66ee7ababd7` failed. Raw job `136205622332`: `runner_id=0`, empty runner name, `steps=[]`; no repository command executed. |
+
+
+## Model provenance and DOM freshness audit — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Model artifact authenticity | Contract specified, not implemented | model-ecosystem.md separates source pinning, digest integrity, publisher signatures/attestations, parser validation, runtime compatibility and device quality; no model artifact verifier exists |
+| DOM observation identity and freshness | Contract specified, not implemented | browser-dom-and-session.md defines snapshot-local node IDs, document/mutation epochs, live locator re-resolution, bounded mutation and evidence-backed collection coverage; no observer exists |
+| DOM Stitching acceptance | Requirements expanded | LOC-R022 adds epoch invalidation, stale/ambiguous locator stop, virtualized completeness and evidence provenance test criteria |

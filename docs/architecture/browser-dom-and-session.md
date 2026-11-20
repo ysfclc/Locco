@@ -200,3 +200,73 @@ Device acceptance:
 - Do not accept DOM automation until sign-in, authenticated read-only browsing, profile cleanup and credential redaction pass.
 
 LOC-0005 is the feedback record and detailed acceptance issue.
+
+
+## DOM identity, freshness and completeness contract
+
+A DOM node identifier is **snapshot-local**, not a durable identity. A locator is a recipe that must be resolved against the live page immediately before use. These two concepts must never be conflated.
+
+Each observation records:
+- observation ID and schema version.
+- profile ID, tab ID, navigation epoch, document epoch and monotonically increasing per-document mutation revision.
+- canonical origin and sanitized URL (remove credentials and secret-bearing fragments/query values).
+- frame route with frame identity, origin and access classification.
+- root scope (document/open shadow root/other supported root).
+- capture timestamp, observer version, bounded viewport/scroll/readiness and completeness/truncation state.
+
+Each node has:
+- snapshot-local node ID.
+- Parent and ordered child IDs for this observation only.
+- Role/kind, accessible name, allowlisted attributes, safe text excerpt and sensitivity classification.
+- Visible/enabled/selected/checked/editable/focused state.
+- Frame/root scope and bounds.
+- One or more locator candidates with strategy, scope, expected semantic fingerprint and stability evidence.
+- Explicit value state: not_read, redacted, user_selected, or safe_observed. Sensitive form values default to redacted; the observer never reads credential/payment/OTP/recovery input values.
+
+Locator candidates are typed strategies, not arbitrary model-generated JavaScript. They may include accessible role/name, stable allowlisted attributes, constrained CSS within a known root, and frame/root traversal where supported. Avoid selectors based solely on volatile classes, array position or generated IDs. Do not expose arbitrary XPath/JS execution as a capability.
+
+### Freshness and resolution
+
+Before any interaction:
+1. Verify the same profile, tab, origin, document epoch and permitted frame/root still exist.
+2. If the document epoch changed, discard all node IDs and re-observe.
+3. If mutation revision changed, re-resolve the locator against the current live tree.
+4. Require exactly one matching element with the expected role/name/semantic fingerprint and permitted state.
+5. Re-check visibility, enabled state, sensitivity, origin, frame and expected preconditions.
+6. If zero or multiple candidates match, or material semantics changed, stop and request a fresh observation or user choice.
+
+A snapshot node ID is never reused across document epochs. A locator candidate may survive a mutation only after fresh uniqueness and semantic checks. DOM Stitching cannot override this rule. Every action binds the observation ID, document epoch, frame/root scope, locator recipe/fingerprint and current target origin; commit approvals additionally bind exact normalized values and postcondition.
+
+### Mutation observation and incremental capture
+
+Mutation observers are on-demand, origin-scoped and resource-bounded. They are not installed permanently on every visited site. Use coalesced mutation batches, rate limits, node/depth/text/byte/time ceilings and backpressure. A change stream is an optimization; when the observer loses sequence continuity, the page navigates, the renderer restarts or the diff cannot be applied deterministically, take a fresh bounded snapshot.
+
+Never infer a complete dataset from the currently rendered DOM. Virtualized lists may contain only visible rows. Record coverage as visible_slice, observed_collection, pagination_incomplete, user_scrolled_range, known_total_matches or unknown; the value is supported by evidence, not guessed. Pagination/scroll exploration is a separate typed action, and every captured range has its own provenance/observation. A complete result requires a site-provided/observed total or an explicit bounded traversal result with all expected pages/records accounted for.
+
+### Stitching output contract
+
+A stitched semantic model contains:
+- Stable schema ID and schema version.
+- Scope/origin policy and supported page families.
+- Field definitions and types, required/optional status, normalization as declarative allowlisted transforms, and evidence links.
+- Collection/entity/relation definitions with source observation/node references.
+- Sample set, coverage and excluded/inaccessible regions.
+- Locator recipes and expected semantic fingerprints—not stale node IDs.
+- Validation report: field coverage, parse/type errors, duplicate/ambiguity rate, cross-page consistency, confidence calibration, drift status and known limitations.
+- Provenance: source observations, user corrections, model/runtime version, validator version and timestamp.
+
+Models may propose mappings and relationships only. Transform execution uses a small deterministic declarative language with bounded operations; no generated scripts, arbitrary regex backtracking, eval, network calls or native capabilities. A schema starts TRIAL; it can be promoted only after deterministic fixture/live-sample validation and explicit user acceptance where required. Any material origin/page-family drift moves it back to STALE or REVALIDATION_REQUIRED.
+
+### Required adversarial and property tests
+
+- Snapshot-local node IDs cannot resolve in another profile/tab/document epoch.
+- SPA navigation, full navigation and renderer restart invalidate previous document node IDs.
+- Attribute/label/role mutation, duplicate elements and hidden/disabled targets cause safe re-resolution or stop.
+- Cross-origin frames cannot impersonate the top frame in messages; frame origin and scope are native-validated.
+- Open and closed shadow-root behavior is accurately represented; unavailable roots never become fabricated children.
+- Virtualized list tests prove no false total/completeness claim.
+- Mutation overload, lost diff, node budget, depth, byte budget and time budget force explicit truncation/resnapshot.
+- Password, OTP, passkey, card, recovery and sensitive values are redacted before serialization/model context/logging.
+- Model-generated selector/transform payloads cannot execute code or exceed the declarative operation budget.
+- Cross-page Stitching preserves per-field observation provenance and rejects conflicting/unmapped samples.
+- Drift tests demote a previously valid schema before any action is authorized.

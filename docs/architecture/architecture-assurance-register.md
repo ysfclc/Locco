@@ -136,3 +136,7 @@ Update this register in the same PR as material architecture changes.
 - [ ] Convert planned requirement/test IDs in requirement-traceability.md into actual test suites as implementations are built.
 - [ ] Obtain independent architecture, security and QA reviews.
 
+
+
+- [x] Specify model artifact provenance/authenticity as separate from digest integrity; signature/attestation trust roots and no-executable-plugin boundary are documented (validation and parser tests remain open).
+- [x] Specify snapshot-local DOM identity, fresh locator resolution, mutation/backpressure and coverage/completeness semantics (observer implementation and adversarial tests remain open).
