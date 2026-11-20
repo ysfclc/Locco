@@ -131,3 +131,10 @@ If neither meets a user journey, state the limitation and offer a supported hand
 ## 7. Spike output
 
 The spike produces device/version inventory, redacted test evidence, package/resource measurements, feature matrix, limitations, security review and recommendation. A selected-engine ADR supersedes ADR-0013 only after tests and independent review.
+
+
+### Target-device baseline
+
+Run S0-S4 first on the reference Redmi Note 12 Pro 5G (Dimensity 1080, 8 GB RAM, 256 GB storage). At the start of each run, record exact Android build/security patch, Android System WebView package and version, Chrome version, free storage, memory headroom and thermal state. The provider versions are runtime facts and must not be inferred from the handset model.
+
+The login comparison must use the exact user-reported account/site and the same sign-in surface in both reference apps where supported. If the installed Memo-2 APK/build cannot be tied to the audited source revision, record that provenance gap rather than treating main-branch source as the installed artifact.

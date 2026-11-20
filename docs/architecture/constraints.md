@@ -22,3 +22,9 @@
 **Failure mode:** data loss, poisoned evidence, prompt injection, unauthorized action or signing compromise. **Reversal cost:** High for evidence identity/storage; Medium for capability adapters.
 
 These three constraints outrank framework fashion and feature pressure.
+
+## 4. Reference-device baseline
+
+The first physical-device baseline is the user's Redmi Note 12 Pro 5G (MediaTek Dimensity 1080, 8 GB RAM, 256 GB storage). Record OS build, available storage, Android System WebView/Chrome versions, thermal state and RAM headroom for every benchmark. A nominal 8 GB RAM label is not an app memory budget: Android, GPU, renderer processes and other apps consume the same device resources.
+
+Use measured headroom and Android memory/thermal signals for model admission and browser tab policy. Do not reserve a fixed percentage or promise simultaneous model residency without benchmark evidence. The device is the first acceptance target, not the only supported Android profile.

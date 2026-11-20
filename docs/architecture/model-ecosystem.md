@@ -159,3 +159,22 @@ Do not turn the Model Hub into a leaderboard of unverified model claims. Disting
 - Preserve unknown imports in a quarantine/library state, but do not execute or load them until the artifact/runtime policy is satisfied.
 - Remove installed files only after checking active model assignments, pending tasks and dependency references.
 - Keep browser frontier accounts, optional APIs and local weights as distinct authentication/privacy paths.
+
+
+## 14. Reference-device measurement protocol
+
+The first required device-fit baseline is the Redmi Note 12 Pro 5G with Dimensity 1080, 8 GB RAM and 256 GB storage. Record the exact OS build, available storage, WebView/Chrome versions and initial thermal/memory state. This device is a minimum real-world target, not an exclusive support guarantee.
+
+Do not convert physical RAM or model parameter count into a guessed safe model size. For every candidate model + artifact + runtime + backend combination, measure:
+- download/install footprint, temporary staging peak and post-install storage;
+- process PSS/peak native memory and system available-memory delta;
+- cold load, warm load, first-token latency, steady-state throughput and p50/p95 latency;
+- task-specific golden-set quality and schema/evidence validity;
+- CPU/GPU/NPU utilization, thermal response and throttling over sustained runs;
+- battery cost and foreground/background behavior;
+- unload, cancellation, model-switch recovery and low-memory failure behavior;
+- contention with browser renderer, Compose UI, storage/index work and OS services.
+
+The initial residency policy is at most one heavyweight generative model at a time. Embedding, reranker, vision and speech co-residency is not assumed: benchmark each permitted combination and define explicit admission headroom. If memory/thermal safety cannot be demonstrated, queue, unload or fall back to deterministic/lexical behavior; never rely on an OOM crash as a scheduler.
+
+Each result records the model/artifact digest, runtime version, backend, device/OS, power/thermal state, test corpus/version, repetitions and raw summary. Device-fit evidence expires when any material combination input changes.
