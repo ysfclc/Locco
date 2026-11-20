@@ -41,3 +41,8 @@ A matching digest verifies byte integrity against a particular manifest; it does
 - Password/passkey values are controlled by the OS and selected credential provider. Do not collect or store them in Locco, page snapshots, Stitching outputs, logs, model context, backups or execution artifacts. Autofill and site session success are tested separately.
 - Site camera/microphone/location/notification permissions require both site-origin policy and the relevant Android runtime permission. Denial/revocation must clear pending grants and stop use.
 - Downloads remain inert files; opening/installation is a separate explicit user action and file-type verification. Never silently install or execute downloaded content.
+
+
+## Browser session transfer and backup threat
+
+Android 12+ `allowBackup=false` is not a universal guarantee against device-to-device app-data transfer on every OEM build. Locco therefore requires explicit legacy and modern cloud/device-transfer exclusion rules. Private profile state and browser credentials are never in portable workspace exports. Same-device upgrade continuity and cross-device reauthentication are separate acceptance tests. See [Android Developers backup guidance](https://developer.android.com/identity/data/autobackup) and LOC-R026.

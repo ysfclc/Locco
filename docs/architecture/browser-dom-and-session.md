@@ -342,3 +342,8 @@ The minimum full-browser profile set is:
 The two required contexts must be simultaneously usable without cross-contamination. A single global WebView data directory, cookie-copy shim or history filtering is not private-profile isolation. Test cookies, localStorage, IndexedDB, service workers, cache, permissions, download metadata, history, app restore and deletion after process death.
 
 Per-site data deletion is reported successful only for data classes the selected engine actually removes and verifies. If it can only clear an entire profile, label the scope accurately and offer whole-profile clearing instead of claiming a per-site wipe.
+
+
+### 4.6 OS backup and browser-session transfer boundary
+
+The persistent normal profile survives a same-device in-place app update through the engine's app-private data lifecycle; this does not imply portability. Android cloud backup and device-to-device transfer are explicitly excluded by Locco's legacy and modern backup rules. A newly installed/restored device requires reauthentication; session cookies are never part of a Locco workspace export. Private profile data is never transferred or backed up. See LOC-R026 and storage-security-and-recovery.md.

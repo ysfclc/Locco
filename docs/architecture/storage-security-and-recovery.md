@@ -52,6 +52,8 @@ Biometric/device-credential gating is a UX and threat-model choice. It must not 
 
 ## 5. Backup and export policy
 
+Android Auto Backup and device-to-device transfer are distinct from a user-initiated Locco workspace export. The current manifest sets `allowBackup=false`, but Android documents that on some Android 12+ OEM devices this can still permit device-to-device transfer unless a `dataExtractionRules` `device-transfer` section is present. Therefore Locco must explicitly exclude all app-data domains from both modern cloud backup and device transfer, and provide legacy `fullBackupContent` exclusions for Android 11 and lower. The current product policy is **no implicit Android cloud backup or device-to-device app-data transfer**. A future user-initiated encrypted workspace export is separate, opt-in and schema-versioned; it never includes browser cookies, active sessions, OAuth tokens, passkeys, private profile state or secrets.
+
 A backup manifest identifies format/schema versions, workspace generation, included records/blobs, sizes, digests, encryption parameters and creation time. Export is user-initiated, staged atomically and verified before it is presented as complete.
 
 Default backup includes canonical records, referenced user evidence/blobs, user-authored capabilities, permitted settings and recovery metadata. It excludes by default:

@@ -35,3 +35,14 @@ Background location, media, mic/voice, notification, foreground execution and fi
 - Site data controls operate on the correct engine/profile, close bound renderer instances before deleting a profile, and verify cookies, WebStorage and cache deletion without logging their values.
 
 References: [Autofill Framework](https://developer.android.com/identity/autofill), [Credential Manager passkey architecture](https://developer.android.com/identity/passkeys/architecture), [WebChromeClient file chooser](https://developer.android.com/reference/android/webkit/WebChromeClient#onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient.FileChooserParams)), [WebView file inclusion risks](https://developer.android.com/privacy-and-security/risks/webview-unsafe-file-inclusion), [WebView permission handling in Compose](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/wrap-webview-in-compose), [SSL error handling](https://developer.android.com/reference/android/webkit/WebViewClient#onReceivedSslError(android.webkit.WebView,android.webkit.SslErrorHandler,android.net.http.SslError)).
+
+
+## Android backup and transfer controls
+
+- Keep `android:allowBackup="false"`.
+- Define both `android:fullBackupContent` for Android 11 and lower and `android:dataExtractionRules` for Android 12+. Exclude every app-data domain in legacy backup, modern cloud backup and modern device-transfer sections. Do not omit a transfer mode and inherit default include-all behavior.
+- The current policy disables implicit OS backup/transfer. A future user-initiated portable workspace backup is explicit, encrypted and schema-versioned, and excludes browser profile credentials and private browsing state.
+- Same-device app upgrades must preserve the persistent browser profile in app-private storage; this is not the same as backup/device migration. After installation on another device, the user authenticates again rather than importing cookies.
+- Validate manifest resource references and each exclusion in CI. Exercise actual cloud-backup and device-to-device behavior on supported OEM devices; static XML validation is necessary but not sufficient.
+
+Android references: [Auto Backup and data-extraction rules](https://developer.android.com/identity/data/autobackup), [Android 12 backup/restore behavior](https://developer.android.com/about/versions/12/behavior-changes-12).

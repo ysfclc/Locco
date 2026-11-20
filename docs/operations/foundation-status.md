@@ -274,3 +274,15 @@ The build scripts' presence and static checks do not constitute a successful bui
 | Normal/private profile contract | SPECIFIED / NOT DEVICE-VERIFIED | Full browser requires simultaneous persistent normal and isolated ephemeral contexts. On process death, private context is discarded rather than restored; whole-profile deletion must verify actual engine data removal. |
 | WebView eligibility | NOT DECIDED | A WebView provider lacking MULTI_PROFILE cannot pass the full browser profile gate for that device. Evaluate GeckoView or another reviewed engine; no cookie-copy shim. |
 | Site-data deletion claims | ENGINE-DEPENDENT / UNVERIFIED | The UI may report only the data classes/scope the selected engine can actually clear and verify. |
+
+
+## Android backup and device-transfer policy — 2026-11-20
+
+| Gate | State | Evidence |
+|---|---|---|
+| Manifest backup defaults | IMPLEMENTED IN PROPOSAL | `allowBackup=false` plus explicit legacy and Android 12+ backup-rule references. |
+| Legacy cloud backup | EXCLUDED BY POLICY | `backup_rules.xml` excludes all nine app-data domains. |
+| Android 12+ cloud backup and D2D transfer | EXCLUDED BY POLICY | `data_extraction_rules.xml` includes both sections and excludes all nine app-data domains in each. |
+| Static policy validator | ADDED; test execution pending | `scripts/validate_android_backup_policy.py` fails closed if a resource, domain exclusion or transfer section is missing or an include rule appears. |
+| OEM/device-transfer behavior | NOT DEVICE-VERIFIED | Must be verified on the reference phone and declared OEM support matrix; `allowBackup=false` alone is not sufficient on all OEMs. |
+| Explicit workspace export | NOT IMPLEMENTED | Future encrypted, user-initiated export excludes browser sessions, credentials and private profile data. |

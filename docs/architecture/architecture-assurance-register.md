@@ -167,3 +167,8 @@ The proposed daily-use browser contract is recorded in browser-dom-and-session.m
 ## Profile completeness gate — 2026-11-20
 
 The daily-browser contract requires a real persistent normal profile and a simultaneously usable isolated private/ephemeral profile. WebView without runtime MULTI_PROFILE support fails the full-browser profile gate on that device; no cookie copying or fake privacy mode. Private data is destroyed on final private-tab close or process death and is not restored from persistent history/backup. This is specified but not implemented or device-verified.
+
+
+## Android backup and transfer policy
+
+- [x] Specify explicit legacy full-backup and modern cloud/device-transfer exclusions for every app-data domain; current manifest/XML policy is guarded by `scripts/validate_android_backup_policy.py` (OEM/device-transfer tests and future custom export remain open).
