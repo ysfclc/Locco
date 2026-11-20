@@ -20,8 +20,13 @@
 10. Ask QA to repeat the original steps against the exact result artifact without relying on verbal explanation.
 11. Update the issue with baseline failure, root cause, fix commit, tests/results, artifact identity/hash and any remaining uncertainty.
 
-## Prohibitions
-Never remove, skip, loosen or rewrite a failing test to hide the defect. Never mark a report resolved because code compiles or another test passes. Never replace the app/module/screen with a placeholder to avoid the failing path.
+## Required evidence
+- Original reproduction steps and expected versus observed result.
+- Baseline commit/build and the failing test or independent reproduction.
+- Root-cause evidence and exact changed files/owning module.
+- Regression test name/output, broader suite results and adjacent-flow checks.
+- Candidate artifact source SHA/hash and device/runtime details where applicable.
+- Unrun checks, residual uncertainty and linked LOC issue disposition.
 
 ## Fail conditions
 Do not accept a fix when the original failure is not reproduced or independently explained, the new test does not protect the defect, an adjacent flow regresses, the artifact is stale, or data/identity continuity is unproven. Record the exact blocker and keep the LOC issue open.
