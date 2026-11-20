@@ -31,3 +31,5 @@ Rust is authoritative for task state and policy. Android WorkManager/foreground 
 ## Acceptance evidence
 
 See durable-execution-and-recovery.md. Acceptance requires crash-point fault injection, effect lease/fencing, duplicate delivery, no-blind-retry, approval binding, foreground browser and restore tests.
+
+A non-idempotent adapter call is permitted only after Rust durably records START_INTENT for the claimed effect/fencing token. Crash before this marker can be safely requeued under the adapter contract; crash after it is UNCERTAIN until independently verified.

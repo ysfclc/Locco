@@ -37,3 +37,5 @@ Keep large binary content outside FFI envelopes and pass scoped blob references.
 ## Acceptance evidence
 
 See ffi-command-event-protocol.md. This proposal becomes accepted only after C header/Android JNI tests, memory ownership tests, concurrency tests, event replay, duplicate-submit and crash-recovery contract tests pass.
+
+The platform-effect protocol also requires a durable START_INTENT acknowledgement before any non-idempotent external call. The native adapter must not perform the operation before Rust confirms that fence.

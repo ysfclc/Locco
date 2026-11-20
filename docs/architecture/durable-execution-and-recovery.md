@@ -61,15 +61,16 @@ Use:
 
 Never retry a final submit/pay/publish/send/delete-style operation merely because a callback timed out. First inspect a receipt, target state or independent evidence. If no proof is available, stop and ask the user.
 
-## 6. Leases and fencing
+## 6. Leases, start-intent fence and fencing
 
-A platform worker claims an effect with a time-bounded lease and monotonically increasing attempt/fencing token. Every completion references the exact token. A stale worker cannot overwrite a later attempt.
+A platform worker claims an effect with a time-bounded lease and monotonically increasing attempt/fencing token. Every phase update and completion references the exact token. A stale worker cannot overwrite a later attempt.
 
-Lease expiry does not establish that execution did not start. The coordinator classifies the effect according to its last durable phase:
-- Not started: safely return to ready only when adapter evidence proves no side effect began.
-- Started but no result: UNCERTAIN.
+Before any non-idempotent external call, the adapter must durably record START_INTENT through Rust and receive acknowledgement. It must not invoke the external operation before that write succeeds. This is a write-ahead safety fence:
+- Claimed but no START_INTENT: safe to release/requeue only under the adapter guarantee that no external side effect occurs before the marker.
+- START_INTENT recorded but no result: UNCERTAIN. The request may or may not have reached the external system.
 - Result recorded: continue deterministic postcondition evaluation.
-The adapter must report lifecycle phases durably where possible.
+
+A crash after START_INTENT but before the actual request may conservatively appear uncertain. That is preferable to silently replaying a possibly committed action. Lease expiry itself is never proof that the side effect did not occur.
 
 ## 7. Cancellation, pause and takeover
 
@@ -111,7 +112,7 @@ At engine startup:
 1. Open and integrity-check canonical persistence.
 2. Load non-terminal runs and immutable package/attempt records.
 3. Reconcile outbox leases and adapter receipts.
-4. Mark started-without-result side effects UNCERTAIN.
+4. Reconcile claimed effects without START_INTENT separately from effects with START_INTENT; mark the latter without a result UNCERTAIN.
 5. Revalidate permissions, profiles, model availability, resource budget and approval expiry.
 6. Return safe not-started work to READY; never replay uncertain commits.
 7. Publish recovery events and surface user decisions needed to continue.
@@ -127,9 +128,9 @@ Repair creates a new execution-package/node revision linked to prior work. It ma
 ## 13. Required tests
 
 - Atomic node-transition + outbox-creation fault injection.
-- Crash before claim, after claim, after start, after external commit and before result persistence.
+- Crash before claim, after claim but before START_INTENT, after START_INTENT but before the request, after external commit and before result persistence; prove no blind retry.
 - Duplicate command submit and duplicate effect delivery.
-- Lease expiry/fencing-token stale completion.
+- Lease expiry, START_INTENT-before-call ordering and fencing-token stale update/completion.
 - Idempotency keys and provider receipt behavior.
 - UNCERTAIN blocks auto retry.
 - Approval payload/origin/epoch/expiry tampering.

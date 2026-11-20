@@ -36,6 +36,7 @@ Proposed function families (exact C typedef names are finalized with the header 
 | Events read | Read a bounded durable event batch after a sequence cursor |
 | Events acknowledge | Acknowledge a consumer cursor only after that consumer durably applied the batch |
 | Effect claim | Claim a pending platform effect under a lease and return its typed request |
+| Effect mark-starting | Durably record the dispatch-intent fence before an adapter invokes a non-idempotent external side effect |
 | Effect complete | Complete, fail or mark uncertain a claimed effect using the matching fencing token |
 | Command cancel | Request cancellation by durable operation/run ID |
 | Buffer free | Release a returned Rust-owned byte buffer using its exact pointer/length pair |
@@ -52,7 +53,7 @@ Command request:
 - deadline and resource budget where applicable.
 - command type and typed payload.
 
-A duplicate command with the same idempotency scope/key and same canonical request resolves to the original result; reuse with a different request is rejected as a conflict.
+A duplicate command with the same idempotency scope/key and the same validated semantic fields resolves to the original result; reuse with different fields is rejected as a conflict. Do not hash raw JSON bytes as a canonical request until a canonical serializer is explicitly selected.
 
 Response:
 - protocol version and request ID.
@@ -81,10 +82,11 @@ Android owns execution of operations that require Android APIs, browser instance
 
 1. Rust transactionally writes the execution transition and an effect-outbox record.
 2. The Android adapter claims the effect with a lease, stable effect ID, attempt number and unguessable fencing token.
-3. The adapter validates current platform state, permissions, profile/tab/document epoch and foreground requirements before starting.
-4. It reports started and then a typed completion, failure or uncertain result. A completion must include the matching effect ID and fencing token.
-5. A stale worker cannot complete an effect after a newer lease/attempt has taken ownership.
-6. Expired leases are not proof that the side effect did not occur. Non-idempotent effects move to UNCERTAIN and require receipt/postcondition lookup or user review before retry.
+3. The adapter validates current platform state, permissions, profile/tab/document epoch and foreground requirements.
+4. Before invoking a non-idempotent side effect, the adapter calls Effect mark-starting with the exact effect ID and fencing token. Rust durably records START_INTENT and returns permission to proceed. The adapter must not make the external call before this acknowledgement.
+5. The adapter performs the effect and reports a typed completion, failure or uncertain result. Completion includes the matching effect ID and fencing token.
+6. A stale worker cannot mark-starting or complete an effect after a newer lease/attempt has taken ownership.
+7. A crash before START_INTENT can be safely requeued only because the adapter contract forbids side effects before that marker. A crash after START_INTENT is UNCERTAIN unless an independent receipt/postcondition proves the outcome. This conservative rule can classify a not-yet-sent request as uncertain, but avoids duplicate commits.
 
 Effect request payloads are typed and bounded. No command allows arbitrary Kotlin reflection, arbitrary intent launch, arbitrary shell execution, arbitrary JavaScript evaluation or unrestricted file access.
 
@@ -117,7 +119,7 @@ Required tests before implementing product commands:
 - Multi-thread command/query/event interleaving and no-deadlock tests.
 - Duplicate command idempotency and command replay after process death.
 - Event cursor replay, duplicate application and durable acknowledgement tests.
-- Effect lease expiry, fencing-token rejection and uncertain-side-effect tests.
+- Effect lease expiry, start-intent-before-call ordering, fencing-token rejection and uncertain-side-effect tests.
 - Rust/Kotlin golden serialization compatibility; future Swift parity uses the same fixtures.
 - No secret/private data appears in error or diagnostic fixtures.
 
