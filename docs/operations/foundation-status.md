@@ -102,7 +102,7 @@ The system-plane and index reconciliation are documentation checks only. They do
 | LOC-0005 reproduction guard | Updated | Issue #5 distinguishes website sign-in, Auth Tab/Custom Tabs, OAuth/OIDC app connection, remote model/API credentials and third-party app integration. No credentials or session secrets may enter diagnostics. |
 | Browser/account architecture | Proposed, not implemented | `browser-dom-and-session.md`; WebView/Auth Tab/profile and DOM observer features remain runtime-gated and require target-device testing. |
 | Storage security and recovery | Proposed; technology spike open | `storage-security-and-recovery.md` defines data classes, envelope-key direction, key-loss behavior, backup exclusion of session secrets, restore, rotation and deletion tests. No encryption implementation is accepted. |
-| Architecture review | Draft PR open | PR #6, latest checked head `6a744383e2f3a4a5b347c804d7b648576c1a855a`. No independent architecture/security/QA acceptance yet. |
+| Architecture review | Draft PR open | PR #6, latest checked head `ad6d9fc28c89f132b1744ad192f6775e280f4623`. Canonical product scope and machine-readable brainstorm now explicitly include the full browser, model ecosystem, DOM intelligence, generic composition, UI iteration and account-login requirement. No independent architecture/security/QA acceptance yet. |
 | Latest Security and policy CI | Pre-runner failure; source checks NOT RUN | Run `44710944012` on the checked head failed. Raw job record: `runner_id=0`, empty runner name, `steps=[]`; the job ended in about one second. No validator or source command ran. This is not evidence of a source-check failure or success; restore runner dispatch or use a controlled runner before accepting CI. |
 | Product UI/browser/model runtime | Not implemented in this pass | The work remains architecture and requirement clarification. No product UI, browser engine, DOM observer or model runtime is claimed. |
 | Phase 0 / Phase 1 gate | Open / Phase 1 not started | LOC-0003 and LOC-0004 still require independent acceptance. Preserve this gate. |
@@ -125,3 +125,12 @@ The founding/raw brainstorm remains preserved unchanged. The reviewed product sc
 | Gate | Status | Evidence/blocker |
 |---|---|---|
 | Security/policy Actions on architecture head | Pre-runner failure; checks NOT RUN | Run `44711219969` for commit `dd67e67ce995d2bd335f1d88578bcc4c8f0c8806` failed. Raw job `136203133179` has `runner_id=0`, empty runner name and `steps=[]`; it completed about two seconds after creation. No repository command, policy validator or security scan executed. Do not treat this as a source-level test failure or a pass. |
+
+
+## Canonical scope and CI synchronization — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Product scope alignment | Updated in proposal branch | `docs/product/scope.md` and `docs/brainstorm/structured.json` now explicitly define the first-class native browser and its account/session/DOM responsibilities, rich model ecosystem, DOM Stitching, general-purpose capability compiler and non-copying UI iteration. The raw founding brief remains unchanged as history. |
+| Latest Security/policy CI on canonical-scope head | Pre-runner failure; source checks NOT RUN | Run `44711515524` for commit `ad6d9fc28c89f132b1744ad192f6775e280f4623` failed. Raw job `136204109242` had `runner_id=0`, empty runner name and `steps=[]`, ending in about two seconds. No source or validator command ran. |
+| Architecture PR | Open draft | PR #6 at `ad6d9fc28c89f132b1744ad192f6775e280f4623`; specification work only. Phase 0 and independent architecture/security/QA acceptance remain open. |
