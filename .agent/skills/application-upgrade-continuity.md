@@ -33,5 +33,12 @@ Mark missing information unknown. Never fill gaps from a prior assistant summary
 7. Test clean install separately. It does not count as upgrade evidence.
 8. Attach commands, source/APK hashes, device/API level, before/after integrity report and gaps to every linked LOC issue.
 
+## Required evidence
+- Baseline and candidate source SHAs, APK hashes, package/version and signer fingerprints.
+- Device model, Android/API level and relevant runtime versions.
+- Before/after record counts, stable IDs, relationships, file checksums and preference comparison.
+- Migration logs, interruption/recovery results, export/restore proof and exact test commands.
+- Explicit list of checks not run, why they were unavailable and remaining data-loss risks.
+
 ## Fail conditions
-Any unexplained missing/duplicated data, changed stable ID, broken relation, signer/package mismatch, incomplete migration, destructive reset or untested recovery path blocks acceptance. Never tell the user to uninstall or clear data as the normal fix.
+Any unexplained missing/duplicated data, changed stable ID, broken relation, package/signer mismatch, incomplete migration, destructive reset or untested recovery path blocks acceptance. Never tell the user to uninstall or clear data as the normal fix.
