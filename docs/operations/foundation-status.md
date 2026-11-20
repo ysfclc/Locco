@@ -106,3 +106,22 @@ The system-plane and index reconciliation are documentation checks only. They do
 | Latest Security and policy CI | Pre-runner failure; source checks NOT RUN | Run `44710944012` on the checked head failed. Raw job record: `runner_id=0`, empty runner name, `steps=[]`; the job ended in about one second. No validator or source command ran. This is not evidence of a source-check failure or success; restore runner dispatch or use a controlled runner before accepting CI. |
 | Product UI/browser/model runtime | Not implemented in this pass | The work remains architecture and requirement clarification. No product UI, browser engine, DOM observer or model runtime is claimed. |
 | Phase 0 / Phase 1 gate | Open / Phase 1 not started | LOC-0003 and LOC-0004 still require independent acceptance. Preserve this gate. |
+
+## Canonical product scope clarification — 2026-11-20
+
+The founding/raw brainstorm remains preserved unchanged. The reviewed product scope and machine-readable structured brief now clarify the approved direction:
+- Locco includes a first-class native browser, not only browser capture.
+- The browser is usable independently of AI and provides a structured, safe DOM observation/Inspect surface for later DOM Stitching.
+- The Model Hub is a rich, extensible model ecosystem across modalities/tasks where runtime and device fit are proven; it is not one static list or one runtime.
+- Website authentication/session state, OAuth account connections and model/API credentials are distinct surfaces. The user's Memo-2 login issue remains unresolved until the exact surface and failing flow are classified and reproduced.
+- Memo UI is inspiration only; Locco's own IA/design must be iterated and tested.
+- General-purpose task composition uses reusable typed capabilities; no per-use-case planner branches.
+- “No HTML/web UI” prohibits a Locco web application, not the native browser rendering remote websites.
+
+
+
+## Latest CI dispatch evidence — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Security/policy Actions on architecture head | Pre-runner failure; checks NOT RUN | Run `44711219969` for commit `dd67e67ce995d2bd335f1d88578bcc4c8f0c8806` failed. Raw job `136203133179` has `runner_id=0`, empty runner name and `steps=[]`; it completed about two seconds after creation. No repository command, policy validator or security scan executed. Do not treat this as a source-level test failure or a pass. |

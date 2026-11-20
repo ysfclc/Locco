@@ -2,14 +2,79 @@
   "schema_version": "1.0",
   "product": "Locco",
   "identity": "Personal local-first mobile intelligence and action environment",
-  "constraints": ["zero budget", "Android primary", "Rust core", "on-device AI", "no HTML/web UI", "future iOS shell"],
-  "loop": ["acquire", "preserve", "understand", "connect", "reason", "decide", "act", "verify", "learn"],
+  "constraints": [
+    "zero budget baseline",
+    "Android primary",
+    "Rust domain core",
+    "local-first and on-device AI as default",
+    "native UI; no HTML-based Locco app or web dashboard",
+    "native browser may render remote websites",
+    "optional external providers require user configuration and consent",
+    "future iOS shell sharing Rust contracts"
+  ],
+  "loop": [
+    "acquire",
+    "preserve",
+    "understand",
+    "connect",
+    "reason",
+    "decide",
+    "act",
+    "verify",
+    "learn"
+  ],
   "capabilities": {
-    "acquisition": ["public source adapters", "visible browser capture", "Android share/import", "files", "notifications", "manual capture"],
-    "intelligence": ["evidence lineage", "extraction", "entity resolution", "relationships", "dedupe", "search", "claims", "patterns"],
-    "reasoning": ["deterministic analysis", "local semantic inference", "compact context", "retrieval", "evaluation"],
-    "execution": ["capability registry", "workflow plans", "approvals", "native adapters", "postcondition verification"],
-    "workspace": ["capture", "search", "entity views", "evidence inspection", "review", "analysis", "action"]
+    "acquisition": [
+      "user-authorized public source adapters",
+      "first-class native browser with address/navigation/tabs/history/bookmarks/downloads",
+      "persistent and private browser profiles with account/session continuity",
+      "structured DOM observation and Inspect/Select",
+      "Android share/import",
+      "files and documents",
+      "authorized notifications and documented APIs",
+      "manual capture"
+    ],
+    "intelligence": [
+      "immutable evidence lineage and provenance",
+      "structured DOM observations with page/frame provenance",
+      "DOM Stitching across nodes, repeated records and pages",
+      "semantic schema/field/locator proposals with deterministic validation",
+      "extraction and normalization",
+      "entity resolution and relationships",
+      "deduplication and conflict-aware claims",
+      "lexical and semantic retrieval",
+      "patterns and evaluation"
+    ],
+    "reasoning": [
+      "deterministic analysis",
+      "replaceable local models across supported tasks and modalities",
+      "optional user-configured remote inference adapters",
+      "compact context compilation and redaction",
+      "retrieval and evidence admission",
+      "generic TaskSpec and RequirementGraph construction",
+      "model/runtime selection under privacy and device budgets",
+      "deterministic and human fallback",
+      "evidence-backed evaluation"
+    ],
+    "execution": [
+      "versioned typed capability registry",
+      "generic capability compiler and execution graph",
+      "reusable procedures, tools, data bindings, constraints and evaluators",
+      "permission and consent checks",
+      "exact approvals and user takeover",
+      "durable execution, cancellation and recovery",
+      "native/platform adapters",
+      "idempotency and postcondition verification"
+    ],
+    "workspace": [
+      "fast intent, voice, share and file capture",
+      "searchable records, entities and evidence inspection",
+      "native browser and contextual DOM inspection",
+      "Model Hub and runtime/device diagnostics",
+      "activity, approvals and execution review",
+      "capability library and task composition",
+      "artifact creation, revision and export"
+    ]
   },
   "donor_repositories": {
     "outbound_sourcer": "source adapter and discovery pipeline concepts; not product identity",
@@ -21,6 +86,28 @@
     "busybee": "native observer/provider adapter research; no arbitrary app inspection assumption",
     "vaultos": "local import, indexing, backup and data integrity"
   },
-  "exclusions": ["Memo clone", "sales/trade-only scope", "mandatory cloud", "paid APIs", "web UI", "transcript memory", "unrestricted scraping", "automatic high-impact actions"],
-  "open_evidence": ["model runtime benchmark", "embedding value", "database encryption choice", "device performance budgets", "iOS bridge generator"]
+  "exclusions": [
+    "Memo clone",
+    "sales/trade-only scope",
+    "mandatory cloud",
+    "paid APIs",
+    "web UI",
+    "transcript memory",
+    "unrestricted scraping",
+    "automatic high-impact actions"
+  ],
+  "open_evidence": [
+    "model runtime benchmark",
+    "embedding value",
+    "database encryption choice",
+    "device performance budgets",
+    "iOS bridge generator"
+  ],
+  "product_surfaces": {
+    "native_browser": "A complete human-usable browser that is also a safe structured DOM observation surface; not capture-only.",
+    "model_hub": "A rich data-driven catalogue and lifecycle manager; model families, immutable artifacts, runtime adapters and device-readiness are separate records.",
+    "native_ux": "Use Memo-1/Memo-2 as audited inspiration only. Build and test Locco-specific alternatives; do not copy-paste screens, navigation, themes or components.",
+    "authentication": "Memo-2 sign-in failure is an unresolved user-reported regression. Classify and reproduce the exact sign-in surface before assigning a cause. Keep website sessions, OAuth account connections and model/API credentials distinct.",
+    "task_composition": "No hardcoded per-use-case workflows in the core planner. Compose unfamiliar tasks from reusable, versioned, typed components with deterministic policy and verification."
+  }
 }
