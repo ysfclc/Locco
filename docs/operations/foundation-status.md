@@ -75,3 +75,8 @@ The system-plane and index reconciliation are documentation checks only. They do
 ## Latest Actions observation — 2026-11-20 09:15 UTC
 
 Security and policy workflow run 44709172176 for head 3f3f99c76b765730e95f3d2da826ff34669797ed concluded FAILURE. Its job record shows runner_id=0, empty runner_name, and steps=[]; the run completed in approximately two seconds. No shell or validator step executed in that job. This points to a runner allocation/dispatch failure before workflow execution, not a reported failure in the architecture documents or tests. GitHub did not expose a more specific cause through the available check/job/log endpoints. Do not label the architecture changes or validators as passed or failed on the basis of this run.
+
+
+### Retry confirmation — Actions run 44709172176, attempt 2
+
+A controlled retry was requested and accepted by GitHub. Attempt 2 again completed as FAILURE with job runner_id=0, empty runner_name and steps=[]. No command ran. This confirms the available evidence points to a pre-runner dispatch/allocation failure. CI remains UNVERIFIED; no workflow command or architecture validator can be marked pass/fail from this run.
