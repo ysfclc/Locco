@@ -24,10 +24,6 @@ Acquire → preserve → understand → connect → reason → decide → act �
 
 The roadmap is a dependency map, not a progress percentage. Individual deliveries and their evidence are tracked through permanent `LOC-####` issues. See [the delivery lifecycle](docs/operations/delivery-lifecycle.md).
 
-## Foundation archive
-
-The complete level-zero source snapshot is available at [`incoming/foundation.zip`](incoming/foundation.zip).
-
 ## Quickstart
 
 ```bash
@@ -62,8 +58,12 @@ flowchart TB
 - `core/`: Rust workspace.
 - `android/`: native Android shell and platform adapters.
 - `ios/`: gated bridge plan.
-- `incoming/`: untrusted phase ZIP drop zone.
+- `incoming/`: reserved for explicitly authorized external inputs; not part of normal development.
 - `.github/workflows/`: validation and delivery workflows.
+
+## Development workflow
+
+Direct GitHub branches, commits, pull requests and Actions are the canonical internal workflow under ADR-0016. ZIP uploads are not required for phase delivery. See [the phase delivery protocol](docs/operations/phase-protocol.md).
 
 ## Authority
 
