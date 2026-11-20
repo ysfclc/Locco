@@ -245,3 +245,14 @@ The build scripts' presence and static checks do not constitute a successful bui
 | Actual Rust/Android/APK build | NOT RUN | Current execution environment lacks Rustup/Cargo, cargo-ndk, Gradle, Android SDK and NDK. |
 | Phase 0 / Phase 1 | Phase 0 OPEN; Phase 1 NOT STARTED | No independent architecture/security/QA acceptance, branch-protection confirmation, runner execution or physical-device smoke test. Preserve LOC-0003 gate. |
 
+
+
+## Everyday browser completeness and credential interop — 2026-11-20
+
+| Gate | State | Evidence |
+|---|---|---|
+| Browser daily-use baseline | SPECIFIED / NOT IMPLEMENTED | Browser contract §12 now includes omnibox/search, navigation, popups, tabs/session, history/bookmarks, safe downloads/uploads, external app links, origin permissions, privacy/site-data clearing, find/zoom/desktop mode/PDF and recovery. |
+| Credential interoperability | SPECIFIED / NOT DEVICE-VERIFIED | Use OS-selected Autofill/Credential Manager pathways where supported; do not create a Locco password vault or expose values to DOM/AI/logs. WebView passkey limits and Auth Tab session boundaries are explicit. |
+| Browser requirements traceability | 24 proposed rows | LOC-R023 covers daily browser behavior; LOC-R024 covers credential/autofill/passkey boundaries. Both rows are inside the matrix before its legend. |
+| Engine feature parity | NOT TESTED | WebView and GeckoView must run the same popup/file upload/download/external-intent/permission/page-control/credential/provider/session suite on the reference phone before selection. |
+| Login regression | OPEN / UNCLASSIFIED | LOC-0005; exact Memo-2 installed build, affected provider, entry surface and failure stage still unknown. |

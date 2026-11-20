@@ -53,10 +53,12 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 
 ### C. Browser/DOM
 - [x] Specify the proposed full native browser, account/session and DOM observation architecture in browser-dom-and-session.md (engine/runtime implementation and device acceptance remain open).
+- [x] Specify everyday browser completeness (address/search, safe popups, tabs, upload/download, external links, site permissions/data controls, page controls, recovery) and OS credential/autofill boundaries in browser-dom-and-session.md section 12 (all runtime behavior remains unimplemented and engine-dependent).
 - [ ] Reproduce LOC-0005 login/session problem.
 - [ ] Compare AndroidX WebView multi-profile with GeckoView session contexts on the target phone.
 - [ ] Verify AndroidX WebKit MULTI_PROFILE and JS_INJECTION_IN_FRAME_AND_WORLD support on target WebView.
 - [x] Specify Auth Tab/Custom Tabs/Credential Manager as distinct authentication paths and document cookie/session boundaries; target-device compatibility and LOC-0005 reproduction remain open.
+- [x] Specify Android Autofill/Credential Manager interoperability without Locco-owned password storage, plus WebView first-party passkey limits and no-secret DOM/log boundary (provider/engine/device acceptance remains open).
 - [ ] Reproduce embedded identity-provider restrictions using supported handoff.
 - [ ] Accept ADR-0013 only after same-device engine/auth spike results.
 - [x] Specify bounded DOM observations, script ownership and origin boundaries in browser-dom-and-session.md (observer implementation and adversarial fixtures remain open).
@@ -154,3 +156,8 @@ Update this register in the same PR as material architecture changes.
 | Script syntax | Bash `-n` passed against the exact read-back script contents | TESTED (syntax only) |
 | Physical build | Available environment has no rustup, cargo, cargo-ndk, gradle, Android SDK/sdkmanager or NDK | NOT RUN; no build/ABI/APK claim |
 
+
+
+## Browser completeness additions — 2026-11-20
+
+The proposed daily-use browser contract is recorded in browser-dom-and-session.md §12 and evaluated in browser-engine-evaluation.md §8. The additional matrix requirements are LOC-R023 (everyday browser controls and safe file/permission/window behavior) and LOC-R024 (OS credential/autofill interoperability without owning or exposing secrets). These checkmarks mean the requirements are specified only; engine comparison, UI implementation, provider/device tests and acceptance remain open.
