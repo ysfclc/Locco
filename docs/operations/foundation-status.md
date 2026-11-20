@@ -174,3 +174,15 @@ The founding/raw brainstorm remains preserved unchanged. The reviewed product sc
 | Latest PR-head CI | NOT RUN | On head `8ec80bf342b527b4884047d73253abcd73d41f50`, Rust run `44712471834`, Android run `44712471828`, Security run `44712471868` all failed before runner allocation. Their jobs each report `runner_id=0` and `steps=[]`; no command ran. |
 | Account-login requirement | Open and unclassified | LOC-0005 title/body now explicitly covers multiple sign-in surfaces; exact Memo-2 APK/build, provider and failing path remain unknown. No root cause assigned. |
 | Architecture PR | Open draft | PR #6 latest checked head `8ec80bf342b527b4884047d73253abcd73d41f50`; no independent acceptance or Phase 0 approval. |
+
+
+## Latest architecture-head CI and account issue status — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Rust checks | NOT RUN — runner allocation failure | Run `44712728542` on `2f79f9033987023ca2bc4cb73a534191b0c20e8e`; job `136208229566` has `runner_id=0`, no runner name and no steps. No rustfmt/test/Clippy command executed. |
+| Android debug APK | NOT RUN — runner allocation failure | Run `44712728655` on the same head; job `136208230275` has `runner_id=0` and no steps. No NDK, ABI or APK build/inspection executed. |
+| Security and policy | NOT RUN — runner allocation failure | Run `44712728547` on the same head; job `136208230062` has `runner_id=0` and no steps. No actionlint, dependency or secret scan executed. |
+| Locally available checks | Bash syntax only | `bash -n` passed on the exact read-back versions of `build-rust-android.sh` and `build-android-debug.sh`. This is not a Rust/Gradle/Android build. |
+| Local build environment | BLOCKED / unavailable | This execution environment has Java but no rustup, cargo, cargo-ndk, Gradle, Android SDK/sdkmanager or NDK. |
+| Account-login issue | Broadened and open | LOC-0005 title/body now explicitly require classifying embedded website login, Auth Tab/Custom Tabs, OAuth/OIDC, model/API account credentials and third-party app sign-in before diagnosis. |
