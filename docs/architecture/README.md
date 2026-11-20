@@ -12,6 +12,11 @@ The target architecture is under active review. Do not treat every proposal as a
 | architecture-assurance-register.md | Evidence-based gap register and architecture acceptance checklist |
 | browser-engine-evaluation.md | WebView vs GeckoView evidence spike; Auth Tab is a separate authentication handoff |
 | diagrams/system.mmd | Target system relationship diagram |
+| diagrams/browser-auth.mmd | Browser profile, sign-in handoff and session boundaries |
+| diagrams/dom-stitching.mmd | Isolated DOM observation, Stitching and action validation |
+| diagrams/model-ecosystem.mmd | Catalogue-to-runtime/device-fit lifecycle |
+| diagrams/capability-compiler.mmd | Generic objective-to-execution compilation |
+| diagrams/execution-recovery.mmd | Durable async execution, interruption and uncertainty states |
 
 Source requirements: LOC-0004 (architecture audit) and LOC-0005 (account login/session continuity). Existing vision, constraints, ADRs and the original mission brief remain authoritative until a reviewed ADR explicitly changes them.
 

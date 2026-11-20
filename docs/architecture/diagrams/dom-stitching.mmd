@@ -1,0 +1,16 @@
+flowchart TD
+  PAGE["Rendered website"] --> OBSERVER["Static, reviewed DOM observer"]
+  OBSERVER --> SAFE{"Isolated world + origin rule supported?"}
+  SAFE -->|"Yes"| MESSAGE["Read-only scoped message"]
+  SAFE -->|"No"| FALLBACK["DOM automation unavailable or untrusted read-only fallback"]
+  MESSAGE --> BOUNDS["Validate origin, frame, schema, size, epoch and budget"]
+  FALLBACK --> REVIEW["Manual inspect / selection"]
+  BOUNDS --> SNAPSHOT["Versioned PageObservation"]
+  SNAPSHOT --> AI["Local AI proposes field / collection / relationship mappings"]
+  AI --> VALIDATE["Deterministic validation"]
+  VALIDATE -->|"Unique, typed, evidence-backed"| SCHEMA["Versioned semantic schema / stitched map"]
+  VALIDATE -->|"Ambiguous, stale, unsupported"| REVIEW
+  SCHEMA --> REUSE["Reuse for extraction or generic task compilation"]
+  REUSE --> REOBSERVE["Fresh observations before each action"]
+  REOBSERVE --> POLICY["Capability policy and approval envelope"]
+  POLICY --> ACT["Controlled operation and postcondition verification"]

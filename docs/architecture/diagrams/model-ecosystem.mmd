@@ -1,0 +1,16 @@
+flowchart TD
+  SOURCE["Catalogue sources"] --> NORMALIZE["Normalize metadata + provenance"]
+  NORMALIZE --> DETAIL["Inspect model card, license and artifact manifest"]
+  DETAIL --> DEVICE["Check format, architecture, task and device constraints"]
+  DEVICE --> ACQUIRE["Download / import"]
+  ACQUIRE --> VERIFY["Verify revision, files, sizes and SHA-256"]
+  VERIFY --> RUNTIME["Candidate runtime adapter"]
+  RUNTIME --> LOAD["Load-test and task compatibility tests"]
+  LOAD --> FIT["Measure RAM, thermal, latency, backend and quality"]
+  FIT --> ACTIVE{"Pass device and quality gates?"}
+  ACTIVE -->|"Yes"| ROUTER["Register verified model capability"]
+  ACTIVE -->|"No"| INCOMPATIBLE["Keep inactive with explicit reason"]
+  ROUTER --> TASK["Capability router"]
+  TASK --> CONTEXT["Bounded task context"]
+  CONTEXT --> INFER["Inference / embedding / reranking / modality execution"]
+  INFER --> EVAL["Validate output and evaluate"]

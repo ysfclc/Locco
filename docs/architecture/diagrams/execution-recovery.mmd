@@ -1,0 +1,23 @@
+stateDiagram-v2
+  [*] --> QUEUED
+  QUEUED --> READY
+  READY --> RUNNING
+  RUNNING --> WAITING_USER
+  WAITING_USER --> RUNNING: approved / resumed
+  RUNNING --> BLOCKED
+  BLOCKED --> READY: dependency resolved
+  RUNNING --> INTERRUPTED: process or device stopped
+  INTERRUPTED --> UNCERTAIN: side effect may have occurred
+  INTERRUPTED --> READY: safe read-only work only
+  UNCERTAIN --> VERIFYING
+  VERIFYING --> COMPLETED: postcondition or receipt proved
+  VERIFYING --> NEEDS_REVIEW: outcome cannot be proved
+  NEEDS_REVIEW --> RUNNING: explicit verified recovery decision
+  RUNNING --> COMPLETED
+  RUNNING --> FAILED
+  RUNNING --> CANCELLED
+  WAITING_USER --> CANCELLED
+  BLOCKED --> CANCELLED
+  COMPLETED --> [*]
+  FAILED --> [*]
+  CANCELLED --> [*]

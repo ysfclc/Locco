@@ -1,0 +1,19 @@
+flowchart TD
+  USER["User opens Locco Browser"] --> PROFILE["Select persistent or private profile"]
+  PROFILE --> ENGINE{"Selected engine available?"}
+  ENGINE -->|"WebView profile API supported"| WV["WebView + AndroidX Profile"]
+  ENGINE -->|"Otherwise"| ALT["Selected, tested engine fallback"]
+  WV --> PAGE["Website page / account sign-in"]
+  ALT --> PAGE
+  PAGE --> EMBED{"Provider permits embedded sign-in?"}
+  EMBED -->|"Yes"| SESSION["Authenticated browser profile session"]
+  EMBED -->|"No / OAuth IdP"| AUTH["Auth Tab / Custom Tabs / native credential flow"]
+  AUTH --> PROTOCOL["PKCE + state + OIDC nonce validation"]
+  PROTOCOL --> RESULT["Native account authorization result"]
+  RESULT --> NATIVE["Scoped Locco capability token, if user authorized"]
+  RESULT -. "No cookie transfer to WebView" .-> LIMIT["Do not claim the website DOM is signed in"]
+  SESSION --> DOM["DOM observer bound to current browser profile and origin"]
+  DOM --> OBS["Bounded PageObservation"]
+  OBS --> RUN["Capability compiler / controlled execution"]
+  SESSION --> PERSIST["Profile storage / restart lifecycle"]
+  NATIVE --> NATIVEP["Encrypted token storage / revocation"]
