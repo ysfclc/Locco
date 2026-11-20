@@ -23,9 +23,26 @@ grep -Fq "sdkVersion:'26'" <<<"$BADGING" || { echo "Expected minSdk 26." >&2; ex
 grep -Fq "targetSdkVersion:'35'" <<<"$BADGING" || { echo "Expected targetSdk 35." >&2; exit 3; }
 ENTRIES="$(unzip -Z1 "$APK")"
 for abi in arm64-v8a armeabi-v7a x86_64; do
-  grep -Fxq "lib/$abi/liblocco_ffi.so" <<<"$ENTRIES" || { echo "Missing liblocco_ffi.so for $abi in APK." >&2; exit 4; }
+  entry="lib/$abi/liblocco_ffi.so"
+  source_library="$ROOT/android/app/src/main/jniLibs/$abi/liblocco_ffi.so"
+  grep -Fxq "$entry" <<<"$ENTRIES" || { echo "Missing $entry in APK." >&2; exit 4; }
+  test -s "$source_library" || { echo "Built source library is missing: $source_library" >&2; exit 4; }
+  # Confirm Gradle packaged the exact verified binary, not an older/cached copy.
+  if ! cmp -s "$source_library" <(unzip -p "$APK" "$entry"); then
+    echo "APK contains a different native library than the current build output: $entry" >&2
+    exit 4
+  fi
+  echo "APK native library matches current build: $abi"
 done
-if grep -Eq '^lib/[^/]+/liblocco_core\.so$' <<<"$ENTRIES"; then
+if grep -Eq '^lib/[^/]+/liblocco_core\.soSIGNATURE="$("$APKSIGNER" verify --verbose --print-certs "$APK" 2>&1)" || {
+  echo "APK signature verification failed:" >&2; printf '%s\n' "$SIGNATURE" >&2; exit 5
+}
+grep -Fq "Verifies" <<<"$SIGNATURE" || { echo "apksigner did not confirm the signature." >&2; exit 5; }
+echo "APK package, version, SDK levels, three required native ABIs and signature verified."
+printf '%s\n' "$SIGNATURE"
+if command -v sha256sum >/dev/null; then sha256sum "$APK"; else shasum -a 256 "$APK"; fi
+echo "Verified APK: $APK"
+ <<<"$ENTRIES"; then
   echo "Obsolete liblocco_core.so found in APK." >&2
   exit 4
 fi

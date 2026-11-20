@@ -3,7 +3,7 @@ name: Android debug APK
 on:
   push:
     branches: [main]
-    paths: ["core/**", "android/**", "scripts/build-*.sh", "scripts/verify-android-apk.sh", ".github/workflows/android.yml"]
+    paths: ["core/**", "android/**", "rust-toolchain.toml", "scripts/build-*.sh", "scripts/verify-android-apk.sh", ".github/workflows/android.yml"]
   pull_request:
     paths: ["core/**", "android/**", "scripts/build-*.sh", "scripts/verify-android-apk.sh", ".github/workflows/android.yml"]
 
