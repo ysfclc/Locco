@@ -53,3 +53,20 @@ PR #6 is a design proposal only. No product feature, browser engine or model run
 | Rich model ecosystem | Proposed | docs/architecture/model-ecosystem.md; no Locco catalogue/runtime implementation |
 | Account login regression | Open; root cause unknown | LOC-0005; same-device affected-site and auth-flow reproduction not yet supplied/performed |
 | Browser engine selection | No selection | ADR-0013; WebView vs GeckoView target-device spike required |
+
+
+## Architecture reconciliation and current CI evidence — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| System-plane taxonomy | Reconciled in proposal | overview.md and target-system-blueprint.md now use the same five planes: Experience, Platform/adapters, Intelligence, Control and Data |
+| Canonical data authority | Reconciled in proposal | Relational store is canonical; append-only journals preserve transition/side-effect evidence; blobs are referenced; indexes/embeddings are rebuildable |
+| Architecture document index | Verified | README.md links both reference-inspiration-audit.md and requirement-traceability.md |
+| Reference source reproducibility | Pinned | Memo-1 source commit c307f94f5d296622e9e3b2fa92b02fe9c58361f2; Memo-2 source commit 00a8a9e1244c5dba7af107b1ee0e808738d5d022 |
+| Policy CI on latest audited head | Failure; no diagnosis | Run 44708789593 on commit 8f10a1082910ca2fcddc05556a81bc0036bc0a71 completed failure in ~3 seconds; job returned no step summaries, and the log endpoint returned BlobNotFound |
+| Policy CI retry | Failure; no diagnosis | Run 44708513956 attempt 2 also completed failure with no step summaries/logs; this retry targeted prior head bf7f3435b52fde419da0155a4f8f148ba7402165 |
+| Branch protection | Unverified | GitHub integration cannot read the repository branch-protection endpoint (403); do not infer that protections are absent or configured |
+| Product UI/browser/model behavior | Not implemented in this pass | Documentation only; no UI prototype, browser engine, DOM observer or model runtime was built or tested |
+| Architecture acceptance | Open | LOC-0004 review and independent architecture/security/QA reviews remain outstanding |
+
+The system-plane and index reconciliation are documentation checks only. They do not make the architecture accepted or the foundation complete.
