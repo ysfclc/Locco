@@ -65,7 +65,11 @@ verify_elf() {
   fi
   symbols="$("$READELF" --dyn-syms --wide "$library")"
   for symbol in locco_abi_version locco_core_ping locco_buffer_free; do
-    grep -Eq "[[:space:]]$symbol$" <<<"$symbols" || { echo "Missing exported symbol $symbol in $abi." >&2; return 1; }
+    # Require a defined global/default-visible dynamic symbol, not merely an UND import.
+    awk -v name="$symbol" '$8 == name && $5 == "GLOBAL" && $6 == "DEFAULT" && $7 != "UND" { found = 1 } END { exit !found }' <<<"$symbols" || {
+      echo "Missing defined global C ABI export $symbol in $abi." >&2
+      return 1
+    }
   done
   if command -v sha256sum >/dev/null; then sha256sum "$library"; else shasum -a 256 "$library"; fi
   echo "Verified ELF: $abi ($actual_machine, $actual_class)"

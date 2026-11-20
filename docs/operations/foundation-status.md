@@ -216,3 +216,13 @@ The founding/raw brainstorm remains preserved unchanged. The reviewed product sc
 | Device install/runtime smoke | Not run | Requires a target Android device and built APK |
 
 The build scripts' presence and static checks do not constitute a successful build. Preserve the exact workflow-run result and artifact digest once a runner executes.
+
+## Shared Android build and artifact-verifier regression correction — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| APK verifier source read-back | Corrected | A malformed intermediate verifier version was detected during read-back and replaced in full. The current script includes its complete obsolete-library conditional, signing check, hash output and exact packaged-vs-built native binary comparison. |
+| Bash syntax | PASS | `bash -n` passed for the current `build-android-debug.sh`, `build-rust-android.sh` and `verify-android-apk.sh` read-back content. |
+| ELF export validation | Tightened in proposal | The Rust build now requires each C ABI symbol to be GLOBAL/DEFAULT and defined (not merely present as an undefined dynamic import). Execution remains unverified without an Android NDK runner. |
+| Android workflow path filters | Updated | Both push and pull_request now include `rust-toolchain.toml`, build scripts and APK verifier changes. |
+| Latest workflow execution | NOT RUN | Runs `44714368594` (Rust), `44714368545` (Android) and `44714368566` (Security) on `30cf15b38127c53c27eb146d58ad73444c57d34b` each failed before runner assignment; raw jobs have `runner_id=0` and `steps=[]`. |

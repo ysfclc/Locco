@@ -8,6 +8,6 @@ Locco is not defined by one vertical or a library of hardcoded business workflow
 
 It is local-first and native on Android, with Rust owning domain truth and replaceable platform/runtime adapters. No hosted service, paid model or cloud provider is mandatory. A future iOS shell is gated and must share the same domain contracts. Memo-1 and Memo-2 are inspiration and audit references, not templates to copy.
 
-It is not defined by one vertical. Research, personal knowledge, operations, automation, development, sourcing and location intelligence are possible expressions of the same engine.
+Research, personal knowledge, operations, automation, development, sourcing and location intelligence are possible expressions of the same engine.
 
 **Acquire → preserve → understand → connect → reason → decide → act → verify → learn.** The user remains the authority.
