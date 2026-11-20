@@ -1,0 +1,75 @@
+name: Product delivery
+description: Track one verifiable Locco delivery slice
+title: "LOC-####: "
+body:
+  - type: markdown
+    attributes:
+      value: "Every delivery must follow [the issue-to-release lifecycle](../../docs/operations/delivery-lifecycle.md). Preserve the original user request and link its permanent feedback issue."
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User outcome
+      description: What concrete user or foundation outcome will exist when this is complete?
+    validations:
+      required: true
+  - type: input
+    id: phase
+    attributes:
+      label: Roadmap phase and step
+      placeholder: "Phase 0 / 0.2"
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Linked requirement and source feedback IDs
+      description: List LOC-Rxxx requirements and any parent LOC feedback issue.
+    validations:
+      required: true
+  - type: input
+    id: baseline
+    attributes:
+      label: Baseline commit SHA
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance scenarios
+      description: Include normal, edge, denied, offline, interruption, recovery and adjacent-regression cases where applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies, ADRs and non-goals
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Data, FFI, session, model and upgrade impact
+      description: State migrations, app identity, browser profiles, artifact formats and rollback implications.
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification plan
+      description: Name exact unit/contract/integration/UI/security/emulator/device/release tests and required evidence.
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Security, privacy and failure risks
+      description: Include permission scope, network egress, untrusted inputs and recovery/kill behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: owner_reviewers
+    attributes:
+      label: Owner and reviewer roles
+      description: Name the accountable role and required architect/domain, security and independent QA reviewers.
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback and next action
+    validations:
+      required: true
