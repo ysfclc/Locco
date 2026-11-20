@@ -34,3 +34,13 @@ Dedicated design-system module and feature modules are options only after there 
 Shared components expose semantics and support keyboard/focus, 48dp targets, font scaling, contrast and TalkBack. Test compact and expanded layouts, landscape, IME, offline and permission denial. Every visible control must map to a real capability and named acceptance test. Screenshots are visual evidence only, not behavior/accessibility proof.
 
 AI unavailable → deterministic search/filter/evidence remains usable. Permission denied → explain and offer permitted manual/import alternatives. Browser sign-in and profile lifecycle must pass LOC-0005 before browser subsystem acceptance.
+
+
+## Supporting UX decision records
+
+The high-level UX invariants in this file are elaborated by:
+- native-experience.md — Locco interaction domains, task journeys and competing navigation hypotheses.
+- reference-inspiration-audit.md — verified Memo-1/Memo-2 source findings and the explicit do-not-copy rules.
+- requirement-traceability.md — planned acceptance evidence for UX and every other product requirement.
+
+Use ui-ux.md for normative UX invariants; native-experience.md for design research and iteration. Neither selects final primary navigation until task-based prototype evaluation is complete.

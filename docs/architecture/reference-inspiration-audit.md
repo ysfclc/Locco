@@ -139,3 +139,22 @@ Only select an IA after the same tasks have been run against each candidate. The
 - Never infer model compatibility from file extension, filename, file size or catalogue metadata alone.
 - Never present planned reference features as implemented.
 - Preserve every user correction and regression as a traceable Locco requirement.
+
+
+## Audited source revisions
+
+The comparison above was made against these default-branch source revisions on 2026-11-20:
+- Memo-1: commit c307f94f5d296622e9e3b2fa92b02fe9c58361f2.
+- Memo-2: commit 00a8a9e1244c5dba7af107b1ee0e808738d5d022.
+
+Key files for reproduction:
+- Memo-1 BrowserSession.kt: https://github.com/ysfclc/memo/blob/c307f94f5d296622e9e3b2fa92b02fe9c58361f2/app/src/main/java/app/memo/android/browser/BrowserSession.kt
+- Memo-1 design tokens: https://github.com/ysfclc/memo/blob/c307f94f5d296622e9e3b2fa92b02fe9c58361f2/app/src/main/java/app/memo/android/ui/MemoTheme.kt
+- Memo-1 design-system notes: https://github.com/ysfclc/memo/blob/c307f94f5d296622e9e3b2fa92b02fe9c58361f2/docs/product/MEMO_DESIGN_SYSTEM.md
+- Memo-2 Compose root: https://github.com/ysfclc/memo-2/blob/00a8a9e1244c5dba7af107b1ee0e808738d5d022/app/src/main/kotlin/app/memo/ui/MemoRoot.kt
+- Memo-2 model screen: https://github.com/ysfclc/memo-2/blob/00a8a9e1244c5dba7af107b1ee0e808738d5d022/app/src/main/kotlin/app/memo/ui/ModelsScreen.kt
+- Memo-2 model catalogue: https://github.com/ysfclc/memo-2/blob/00a8a9e1244c5dba7af107b1ee0e808738d5d022/core/src/main/kotlin/app/memo/core/catalog/ModelCatalog.kt
+- Memo-2 model store: https://github.com/ysfclc/memo-2/blob/00a8a9e1244c5dba7af107b1ee0e808738d5d022/app/src/main/kotlin/app/memo/models/ModelStore.kt
+- Memo-2 design plan: https://github.com/ysfclc/memo-2/blob/00a8a9e1244c5dba7af107b1ee0e808738d5d022/docs/M2_DESIGN.md
+
+A future audit must record a new revision and explain whether any finding changed.
