@@ -34,7 +34,7 @@ pub extern "system" fn Java_com_locco_app_NativeBridge_nativePing(
     _env: *mut c_void,
     _class: *mut c_void,
 ) -> i32 {
-    catch_unwind(AssertUnwindSafe(|| locco_core_ping())).unwrap_or(-1)
+    catch_unwind(AssertUnwindSafe(locco_core_ping)).unwrap_or(-1)
 }
 
 #[cfg(test)]
