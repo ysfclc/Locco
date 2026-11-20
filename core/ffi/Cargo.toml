@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
-locco-kernel = { path = "../kernel" }
+locco-kernel = { path = "../kernel", version = "0.1.0" }
 
 [lib]
 crate-type = ["cdylib", "staticlib"]
