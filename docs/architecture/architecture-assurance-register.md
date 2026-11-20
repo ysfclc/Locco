@@ -140,3 +140,17 @@ Update this register in the same PR as material architecture changes.
 
 - [x] Specify model artifact provenance/authenticity as separate from digest integrity; signature/attestation trust roots and no-executable-plugin boundary are documented (validation and parser tests remain open).
 - [x] Specify snapshot-local DOM identity, fresh locator resolution, mutation/backpressure and coverage/completeness semantics (observer implementation and adversarial tests remain open).
+
+
+## Reproducible build alignment pass — 2026-11-20
+
+| Change | Evidence | Acceptance state |
+|---|---|---|
+| Rust version pin | `rust-toolchain.toml` now pins 1.86.0, matching the explicit version in Rust, Android, Security and Release workflows | IMPLEMENTED IN PROPOSAL; CI not executed |
+| Native build freshness | `build-rust-android.sh` removes only the three derived `liblocco_ffi.so` outputs before compiling, runs fmt/test/Clippy and checks each ABI output | IMPLEMENTED IN PROPOSAL; no NDK/build execution |
+| APK build reuse guard | `build-android-debug.sh` always invokes the Rust build for the current source and then checks all three libraries before Gradle | IMPLEMENTED IN PROPOSAL; no APK execution |
+| Gradle contract | Local script requires Gradle 8.9 to match CI; repository has no Gradle wrapper | DOCUMENTED; toolchain unavailable locally |
+| Native library identity | Local-development docs now name `liblocco_ffi.so`, consistent with Cargo package `locco-ffi` and JNI loader | DOCUMENTED |
+| Script syntax | Bash `-n` passed against the exact read-back script contents | TESTED (syntax only) |
+| Physical build | Available environment has no rustup, cargo, cargo-ndk, gradle, Android SDK/sdkmanager or NDK | NOT RUN; no build/ABI/APK claim |
+

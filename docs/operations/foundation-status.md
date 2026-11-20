@@ -102,7 +102,7 @@ The system-plane and index reconciliation are documentation checks only. They do
 | LOC-0005 reproduction guard | Updated | Issue #5 distinguishes website sign-in, Auth Tab/Custom Tabs, OAuth/OIDC app connection, remote model/API credentials and third-party app integration. No credentials or session secrets may enter diagnostics. |
 | Browser/account architecture | Proposed, not implemented | `browser-dom-and-session.md`; WebView/Auth Tab/profile and DOM observer features remain runtime-gated and require target-device testing. |
 | Storage security and recovery | Proposed; technology spike open | `storage-security-and-recovery.md` defines data classes, envelope-key direction, key-loss behavior, backup exclusion of session secrets, restore, rotation and deletion tests. No encryption implementation is accepted. |
-| Architecture review | Draft PR open | PR #6, latest checked head `6816f91e51adf2083017a1c8df6af66ee7ababd7`. Canonical product scope, machine-readable brainstorm, delivery protocol, PR template and roadmap are aligned to the full browser, model ecosystem, DOM intelligence, generic composition and account-login requirement. No independent architecture/security/QA acceptance yet. |
+| Architecture review | Draft PR open | PR #6, latest checked head `8ec80bf342b527b4884047d73253abcd73d41f50`. Canonical product scope, machine-readable brainstorm, delivery protocol, PR template and roadmap are aligned to the full browser, model ecosystem, DOM intelligence, generic composition and account-login requirement. No independent architecture/security/QA acceptance yet. |
 | Latest Security and policy CI | Pre-runner failure; source checks NOT RUN | Run `44710944012` on the checked head failed. Raw job record: `runner_id=0`, empty runner name, `steps=[]`; the job ended in about one second. No validator or source command ran. This is not evidence of a source-check failure or success; restore runner dispatch or use a controlled runner before accepting CI. |
 | Product UI/browser/model runtime | Not implemented in this pass | The work remains architecture and requirement clarification. No product UI, browser engine, DOM observer or model runtime is claimed. |
 | Phase 0 / Phase 1 gate | Open / Phase 1 not started | LOC-0003 and LOC-0004 still require independent acceptance. Preserve this gate. |
@@ -160,3 +160,17 @@ The founding/raw brainstorm remains preserved unchanged. The reviewed product sc
 | Model artifact authenticity | Contract specified, not implemented | model-ecosystem.md separates source pinning, digest integrity, publisher signatures/attestations, parser validation, runtime compatibility and device quality; no model artifact verifier exists |
 | DOM observation identity and freshness | Contract specified, not implemented | browser-dom-and-session.md defines snapshot-local node IDs, document/mutation epochs, live locator re-resolution, bounded mutation and evidence-backed collection coverage; no observer exists |
 | DOM Stitching acceptance | Requirements expanded | LOC-R022 adds epoch invalidation, stale/ambiguous locator stop, virtualized completeness and evidence provenance test criteria |
+
+
+## DOM/model assurance and build alignment — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| DOM node identity and freshness | Contract specified, not implemented | LOC-R022, browser-dom-and-session.md. Node IDs are snapshot-local; locators are re-resolved against the current document; stale/ambiguous targets stop; collection completeness is evidence-backed. |
+| Model artifact provenance/authenticity | Contract specified, not implemented | LOC-R021, model-ecosystem.md. Digest integrity, source pinning, publisher signature/attestation, parser safety, runtime load and task quality are separate claims. Model sources cannot supply executable runtime plugins. |
+| Rust toolchain alignment | Updated in proposal | rust-toolchain.toml now pins 1.86.0, matching all inspected CI workflows. |
+| Local Android build script | Updated; syntax only tested | Rebuilds all three ABIs, removes stale derived FFI libs before build, runs fmt/test/Clippy, checks outputs; APK script always performs fresh native build. `bash -n` passed. |
+| Actual Rust/Android build | NOT RUN | Execution environment has no Rustup/Cargo/cargo-ndk, Gradle, Android SDK or NDK. GitHub workflows below also never reached a runner. |
+| Latest PR-head CI | NOT RUN | On head `8ec80bf342b527b4884047d73253abcd73d41f50`, Rust run `44712471834`, Android run `44712471828`, Security run `44712471868` all failed before runner allocation. Their jobs each report `runner_id=0` and `steps=[]`; no command ran. |
+| Account-login requirement | Open and unclassified | LOC-0005 title/body now explicitly covers multiple sign-in surfaces; exact Memo-2 APK/build, provider and failing path remain unknown. No root cause assigned. |
+| Architecture PR | Open draft | PR #6 latest checked head `8ec80bf342b527b4884047d73253abcd73d41f50`; no independent acceptance or Phase 0 approval. |
