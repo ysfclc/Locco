@@ -20,6 +20,14 @@
 9. **Independent acceptance:** QA reviews source diff, linked requirements and artifact evidence; specialist owners sign off their contracts. Implementer cannot self-approve independent QA/security.
 10. **Release record:** record source/merge SHA, workflow run, package/version/signer, APK/SBOM hashes, checks, device/API, upgrade source/target, gaps, release notes and rollback/forward-recovery.
 
+## Required evidence
+- Exact source/merge SHA, workflow IDs and job conclusions for every required gate.
+- Test summaries and named skipped/not-run checks.
+- APK SHA-256, package/version, signer fingerprint and supported ABI inspection.
+- SBOM and provenance/attestation subject digests.
+- Upgrade baseline/candidate versions, device/API, before/after integrity evidence and recovery results.
+- Required environment/reviewer approvals, unresolved risks and final release decision.
+
 ## Decision states
 - PASS: required gate ran and evidence supports the requirement.
 - FAIL: gate ran and found a defect.
