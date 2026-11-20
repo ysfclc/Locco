@@ -158,3 +158,64 @@ Key files for reproduction:
 - Memo-2 design plan: https://github.com/ysfclc/memo-2/blob/00a8a9e1244c5dba7af107b1ee0e808738d5d022/docs/M2_DESIGN.md
 
 A future audit must record a new revision and explain whether any finding changed.
+
+
+## 5. Second-pass interaction analysis — preserve what works, improve the product
+
+This section records the user's explicit direction: Memo-2's UI is a useful reference, but Locco must iterate beyond it. Inspiration is not permission to copy.
+
+### What is worth learning from Memo-2's actual UI
+
+The inspected `MemoRoot.kt` gives the user immediate visibility into six distinct work areas: Live, Talk, Work, Studio, Models and Settings. The dedicated Model destination is especially valuable: model management is treated as a real product capability rather than a hidden developer setting. The screen language is direct, familiar and easy to scan; model state and acquisition actions are close to the item they affect.
+
+Keep those product lessons:
+- Make the product's breadth discoverable without requiring the user to learn internal architecture terminology.
+- Give substantial capabilities a home with a clear entry point and visible state.
+- Keep the primary operation close to the object it changes.
+- Prefer clear labels and status over unexplained icons or decorative status metrics.
+
+### Where Locco should improve rather than reproduce
+
+The inspected Memo-2 root uses a fixed six-item bottom navigation and switches composable destinations from a single selected-tab state. Its current Models screen renders a static catalogue list from three pinned entries; the search icon starts a device scan rather than searching/filtering the catalogue. It provides import and download affordances but not a rich catalogue, side-by-side comparison, runtime inventory, compatibility evidence or benchmark history. These are observations about the inspected source revision, not claims about every APK ever built.
+
+Locco must not copy the six-item bottom bar or its screen/component structure. Instead:
+- Test a smaller task-ranked primary navigation and adaptive wider-screen presentation.
+- Keep Browser and Model Hub discoverable, but do not force every subsystem into a permanent tab.
+- Use contextual surfaces where a control is most useful, backed by one canonical state and owner.
+- Make the Model Hub a real catalogue and lifecycle manager: Discover, Compare, Transfers, Installed, Runtimes, Benchmarks and Sources are candidate areas within the hub, not a prescribed bottom-navigation list.
+- Make the Browser look and behave like a browser before adding AI affordances; keep Inspect/Stitch contextual and dismissible.
+- Design information density for real model metadata, browser tabs, evidence and task state; avoid a card for every row.
+- Design explicit empty, loading, offline, blocked, denied, partial, stale, failed, uncertain and verified states.
+- Use animation/haptics only to communicate meaningful state changes, and respect reduced-motion settings.
+
+### What Memo-1 contributes — and what its source does not prove
+
+Memo-1 provides a concrete visible WebView session and a more developed semantic design-token discipline. Its source also couples parts of its BrowserWorkflow UI to a bounded provider list and host/route behavior. That is not a generic browser or task compiler.
+
+The user reports that Memo-1 does not have the account-login problem seen in Memo-2. Preserve that report as an observed user experience. The inspected Memo-1 source, however, sends certain Google sign-in flows to an external browser and explicitly does not transfer that browser's cookies into its embedded WebView. Therefore the source does not prove seamless authenticated-session continuity. Locco must test the exact same sign-in journey rather than infer success from source structure or a handoff message.
+
+### Account-login failure: classify the surface before diagnosing
+
+The user described being unable to log into accounts in Memo-2 but did not identify the exact providers, build, screen or authentication mechanism. The inspected Memo-2 default-branch source has no dedicated BrowserSession/WebView browser or explicit account-session subsystem. This means source inspection alone cannot locate the reported failure. The installed APK may differ from the inspected branch, or the affected flow may be an account connection, remote model/provider credential, in-app integration or another authentication surface.
+
+Before assigning a cause, classify the exact flow as one of:
+1. Website sign-in inside an embedded browser.
+2. Website sign-in through an external browser, Custom Tab or Auth Tab.
+3. OAuth/OIDC connection of an account to the app.
+4. Remote model/API provider configuration or credential validation.
+5. Sign-in to a third-party Android app or integration.
+
+Record the installed APK version/build or commit where available, device and Android version, Android System WebView/provider version, provider/site, profile/session state, sign-in method, redirect/popup behavior and the exact failure stage. Do not collect passwords, OTPs, recovery codes, cookies, tokens or passkey material. Reproduce in Memo-2 and compare Memo-1 only where the same flow is supported. A successful external callback does not prove the embedded browser is authenticated; opening a login page does not prove login succeeded.
+
+### Locco's iteration rule
+
+Use the three navigation hypotheses and task journeys in `native-experience.md` as experiments. For each candidate, preserve a record of:
+- The task and user goal.
+- The starting context and expected path.
+- Wrong turns, time-to-destination and discoverability.
+- One-hand reach and compact/expanded behavior.
+- State preservation through Back, tab switching and process recreation.
+- Accessibility, focus, font scaling and reduced-motion behavior.
+- The actual interaction and failure outcome, not screenshots alone.
+
+Select the IA and design tokens only after the alternatives have been compared. Build Locco's own visual system and controls from those results. Do not copy Memo package names, color tokens, typography, labels, bottom-navigation order, screen composition, provider routes or planner logic.
