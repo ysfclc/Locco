@@ -36,3 +36,6 @@ For each triggered skill, the owner records:
 - unresolved risks and next owner.
 
 A skill does not replace code review, tests or user approval. Passing a skill checklist does not independently prove product correctness.
+
+## Automated quality gate
+The repository validator at scripts/validate_agent_library.py checks role/skill structure, trigger declarations, procedure/evidence/failure sections, index completeness, role routing and local Markdown links. Its tests live in scripts/tests/test_agent_library.py. The GitHub change-governance workflow runs the trusted validator against the PR candidate tree after the validator has been merged to the base branch.

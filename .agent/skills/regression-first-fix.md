@@ -23,5 +23,8 @@
 ## Prohibitions
 Never remove, skip, loosen or rewrite a failing test to hide the defect. Never mark a report resolved because code compiles or another test passes. Never replace the app/module/screen with a placeholder to avoid the failing path.
 
+## Fail conditions
+Do not accept a fix when the original failure is not reproduced or independently explained, the new test does not protect the defect, an adjacent flow regresses, the artifact is stale, or data/identity continuity is unproven. Record the exact blocker and keep the LOC issue open.
+
 ## Completion
 VERIFIED means the original failure is no longer observed and regression evidence proves the expectation. RELEASED means the verified correction is in an identified released artifact. Otherwise keep the issue open.
