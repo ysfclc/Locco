@@ -1,28 +1,27 @@
 # Skill: Regression-first defect correction
 
-**Required for every bug, crash, data-loss, reliability and regression report.**
+**Trigger:** Every bug, crash, data-loss, reliability, performance-regression or previously working flow report.
 
 ## Preconditions
-- The full `LOC-####` source issue is open and linked.
-- Current implementation, prior related issues/PRs, tests and baseline commit have been inspected.
-- Expected and actual behavior are recorded.
+- Open LOC issue retains the original report and current expected/actual behavior.
+- Current implementation, previous related issues/PRs, tests and baseline commit are inspected.
+- Affected build/device/runtime context is recorded where available.
 
 ## Procedure
-1. Reproduce on the reported build/device where possible. Capture precise conditions and logs with private content/secrets removed.
-2. Identify the earliest failing boundary and root cause. Do not treat a visual symptom as proof of the faulty layer.
-3. Add a test that demonstrates the defect before the correction, or document why a deterministic automated reproducer is technically impossible.
-4. Implement the smallest root-cause fix. Preserve all unrelated behavior and previously accepted requirements.
-5. Run the new regression test, relevant module tests, broader repository suite and negative/error-path tests.
-6. Inspect and exercise adjacent flows that share the changed state, API, storage, lifecycle or navigation.
-7. On Android, verify the affected OS/runtime conditions and in-place upgrade when installation or data is affected.
-8. Attach exact commands, tool versions, results, commit SHA and device/artifact evidence to the issue and PR.
-9. QA independently checks the original reproduction steps against the resulting build.
+1. Reproduce on the reported build/device where possible. Preserve relevant logs/screens without secrets or unnecessary private content.
+2. Search related prior fixes and failed attempts. Check whether the current symptom is a recurrence of an older issue.
+3. Trace the user-visible failure to the earliest broken state/contract boundary. Do not assume the screen showing the symptom owns the defect.
+4. Form a falsifiable root-cause hypothesis and identify evidence that would disprove it.
+5. Add a regression test that fails on the baseline and passes after correction. If impossible, explain the technical reason and define an independent manual reproduction.
+6. Implement the smallest root-cause fix in the existing owning module. Preserve unrelated behavior and all accepted requirements.
+7. Run the reproducer, focused tests, affected module tests, broader suite and relevant negative/error paths.
+8. Inspect neighboring flows sharing state, API, persistence, navigation, cancellation, offline behavior, permissions or lifecycle.
+9. For Android install/data defects, verify the affected OS/runtime and in-place upgrade with representative data.
+10. Ask QA to repeat the original steps against the exact result artifact without relying on verbal explanation.
+11. Update the issue with baseline failure, root cause, fix commit, tests/results, artifact identity/hash and any remaining uncertainty.
 
 ## Prohibitions
-- Do not remove, skip, loosen or rewrite a failing test to hide the defect.
-- Do not mark a report resolved because the code compiles or a different test passes.
-- Do not replace the app, module or screen with a clean placeholder to avoid the failing path.
-- Do not close the issue while acceptance or release evidence is missing.
+Never remove, skip, loosen or rewrite a failing test to hide the defect. Never mark a report resolved because code compiles or another test passes. Never replace the app/module/screen with a placeholder to avoid the failing path.
 
 ## Completion
-The issue reaches `VERIFIED` only when the original failure is no longer observed and regression coverage proves the behavior. It reaches `RELEASED` only when the verified result is present in an identified released artifact.
+VERIFIED means the original failure is no longer observed and regression evidence proves the expectation. RELEASED means the verified correction is in an identified released artifact. Otherwise keep the issue open.

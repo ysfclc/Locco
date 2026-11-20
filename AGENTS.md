@@ -1,16 +1,18 @@
 # Agent operating contract
 
-**Mandatory authority:** [GOVERNANCE.md](GOVERNANCE.md). No agent may treat this file as optional guidance. The constitution binds all tasks, phases, fixes, feature requests, PRs, releases and handoffs.
+**Mandatory authority:** GOVERNANCE.md. No agent may treat it as optional guidance. The constitution binds all tasks, phases, fixes, feature requests, PRs, releases and handoffs.
 
 ## Required reading — every task, before editing
 
-1. [GOVERNANCE.md](GOVERNANCE.md) — product continuity, authority, no-reset rule and acceptance gates.
-2. [Governance index](docs/governance/README.md), especially [feedback lifecycle](docs/governance/feedback-lifecycle.md), [change control](docs/governance/change-control.md) and [application continuity](docs/governance/application-continuity.md).
-3. [PRINCIPLES.md](PRINCIPLES.md), [CONTRIBUTING.md](CONTRIBUTING.md), [product vision](docs/product/vision.md), [product scope](docs/product/scope.md), affected ADRs and architecture/security contracts.
-4. [Agent routing](.agent/routing.md), the assigned role and every relevant skill.
-5. The full linked GitHub feedback issue(s), comments, related open/closed issues, previous PRs/commits and existing implementation/tests.
+1. GOVERNANCE.md — product continuity, authority, no-reset rule and acceptance gates.
+2. docs/governance/README.md, especially feedback-lifecycle.md, change-control.md and application-continuity.md.
+3. PRINCIPLES.md, CONTRIBUTING.md, product vision/scope and affected ADRs and architecture/security contracts.
+4. .agent/routing.md, the selected role prompt in .agent/agents/ and each triggered skill in .agent/skills/.
+5. Full linked GitHub feedback issue(s), comments, related open/closed issues, previous PRs/commits and existing implementation/tests.
 
-A summary, memory, task prompt or recent chat excerpt does not replace the source record. If an input describes a Locco bug, regression, feature, UX problem, constraint or requested change, create or link its canonical GitHub issue (`LOC-####`) before implementation. Preserve the user's original wording.
+A summary, memory, task prompt or recent chat excerpt does not replace the source record. If an input describes a Locco bug, regression, feature, UX problem, constraint or requested change, create or link its canonical GitHub issue (LOC-####) before implementation. Preserve the user's original wording.
+
+**Prompt activation is not automatic:** root AGENTS.md is the repository-wide entry contract, but files under .agent/ are a prompt/skill library. The orchestrator must deliberately load the selected role and triggered skills. Do not claim an agent or independent review was activated merely because its Markdown file exists. See .agent/agents/README.md and .agent/skills/README.md.
 
 ## Non-negotiable operating rules
 
@@ -24,7 +26,11 @@ A summary, memory, task prompt or recent chat excerpt does not replace the sourc
 - **Evidence only:** record actual command output, test/build results, artifact hashes, device/upgrade evidence and unknowns. No claims based on workflows that did not execute.
 - **Handoff:** include feedback IDs, baseline/head/merge SHA, changed paths, tests/results, APK hash when available, unresolved items and rollback.
 
-## Agent roster and ownership
+## Agent ownership and task control
+
+Every task has one accountable owner, selected through .agent/routing.md. Required reviewers are distinct from the implementer. Role prompts define permitted decisions, procedure, deliverables and stop conditions. Load only relevant skills, but every triggered skill is mandatory. If independent agents/reviewers or a required tool are unavailable, state the limitation rather than simulate a second opinion.
+
+## Agent roster
 
 | Agent | Owns | Mandatory continuity responsibility |
 |---|---|---|
