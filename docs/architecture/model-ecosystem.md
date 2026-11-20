@@ -120,3 +120,42 @@ Tests cover source pagination/cache, malformed metadata, floating revisions, mis
 ## 12. Open decisions
 
 Resolve by spike/ADR: minimum runtime set, catalogue providers/trust model, runtime implementation language/boundary, cache/storage limits, benchmark thresholds and whether specialist modalities fit the actual device's memory/thermal envelope.
+
+
+## 13. Reference-driven improvements and registry separation
+
+Memo-2's current source catalogue contains three fixed Qwen LiteRT-LM entries. Its acquisition implementation offers useful pinned-revision, SHA-256 and resumable-download patterns, but it is not the rich catalogue described by its future build plan. Locco's seed catalogue must be data-driven and expandable; a curated seed is an initial source, not a hardcoded limit.
+
+Keep four registries distinct:
+
+1. **Local model catalogue:** model families, releases, tasks, modalities, metadata and provenance.
+2. **Artifact registry:** exact downloadable/imported weight files, shards, tokenizer, config, processor and other required non-executable assets with immutable revisions, sizes and digests.
+3. **Runtime registry:** installed engine adapters and their tested support for formats, architectures, tasks, backends, streaming, cancellation, concurrency and hardware requirements.
+4. **Remote inference/provider registry:** optional API endpoints and browser-backed services. These are not local model artifacts; they have separate authentication, privacy, cost, terms, rate and session requirements. A website account is not an API key, and a browser service must not be represented as a runtime that Locco can call without a visible user-controlled session.
+
+A model family may have multiple releases and quantizations, one artifact can require multiple files, and more than one runtime may claim partial compatibility. Keep those identities separate and link them explicitly. A model being discoverable does not make it installable, and being loadable does not make it good enough for a task.
+
+### Model Hub interaction model to validate
+
+The following are candidate subareas, not a final screen arrangement:
+- Discover: search, task/modality filters, sources, curated collections and recommendations with reasons.
+- Compare: side-by-side architecture, quality evidence, license, file size, context, runtime support and measured device fit.
+- Downloads: durable queue, per-file/shard progress, pause/resume/cancel and recoverable failures.
+- Installed: verified artifacts, load-test state, active assignments and safe removal.
+- Runtimes: installed engines, supported formats/tasks/backends, diagnostics and version information.
+- Benchmarks: device/environment-specific latency, memory, thermal, power and golden-set quality evidence.
+- Imports and sources: local discovery, user-selected import, catalogue-source management and offline metadata cache.
+
+Do not turn the Model Hub into a leaderboard of unverified model claims. Distinguish publisher metadata, community claims, Locco test results and measurements from the user's device. Unknown remains visible as unknown.
+
+### Required robustness beyond the reference implementation
+
+- Compare artifact digests, not file size, when establishing identity. A filename/size match is only a candidate.
+- Surface import, download, verification, load and cancellation errors as typed, recoverable states. Never swallow a failure after deleting temporary data.
+- Use immutable revisions and complete file manifests. Validate Range/ETag behavior on resume; never append bytes from a changed remote object.
+- Stage verified artifacts atomically; preserve the previous working version until the replacement is load-tested.
+- Separate “installed”, “verified”, “runtime-loadable”, “device-fit”, “quality-usable” and “active”.
+- Never automatically activate a newly downloaded model solely because it is the first installed entry.
+- Preserve unknown imports in a quarantine/library state, but do not execute or load them until the artifact/runtime policy is satisfied.
+- Remove installed files only after checking active model assignments, pending tasks and dependency references.
+- Keep browser frontier accounts, optional APIs and local weights as distinct authentication/privacy paths.

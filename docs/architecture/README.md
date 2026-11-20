@@ -9,6 +9,8 @@ The target architecture is under active review. Do not treat every proposal as a
 | browser-dom-and-session.md | Native browser, account authentication, profile/session lifecycle and DOM Stitching |
 | model-ecosystem.md | Catalogue, artifact manifests, runtimes, device compatibility and model lifecycle |
 | native-experience.md | Original native UX architecture, navigation research and iterative design process |
+| reference-inspiration-audit.md | Source-audited Memo-1/Memo-2 lessons, limits and Locco iteration protocol |
+| requirement-traceability.md | Product requirements mapped to owners and planned acceptance evidence |
 | architecture-assurance-register.md | Evidence-based gap register and architecture acceptance checklist |
 | browser-engine-evaluation.md | WebView vs GeckoView evidence spike; Auth Tab is a separate authentication handoff |
 | diagrams/system.mmd | Target system relationship diagram |

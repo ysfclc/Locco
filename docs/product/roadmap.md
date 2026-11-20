@@ -122,3 +122,13 @@ Gate: release-level device and upgrade verification, security acceptance, eviden
 - Every feature tests adjacent existing behavior.
 - Update roadmap, requirement map, issue, PR, test evidence and release evidence in the same delivery.
 - Never describe a plan, screenshot, build workflow or source file as proof that a capability works.
+
+
+### Architecture assurance additions
+
+The Phase 0 audit also includes:
+- Source-level inspection of Memo-1 and Memo-2, separating implemented behavior from future plans.
+- A product requirement traceability matrix linking each requirement to architecture ownership and planned acceptance evidence.
+- Comparative native navigation prototypes and a task-based selection process; no donor application's tab layout is adopted by default.
+- A rich Model Hub specification that distinguishes local model artifacts, runtimes, measured device compatibility and optional remote/provider endpoints.
+- Login/session regression investigation as a prerequisite for browser acceptance, not a polish item.

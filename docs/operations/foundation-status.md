@@ -41,3 +41,15 @@ Do not mark Phase 0 complete until every required gate has reproducible evidence
 | Independent architecture/security/QA review | Not performed | Separate review is required; do not simulate it |
 
 PR #6 is a design proposal only. No product feature, browser engine or model runtime is implemented or accepted by this update.
+
+
+## Reference and traceability audit — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Memo-1/Memo-2 source comparison | Source audit completed | docs/architecture/reference-inspiration-audit.md; implementation and planned behavior are distinguished |
+| Locco UX inspiration/iteration | Proposed; not prototyped | docs/architecture/native-experience.md; three navigation hypotheses and task-based evaluation are defined |
+| Product requirement traceability | Initial mapping created | docs/architecture/requirement-traceability.md; test IDs are planned, no feature tests are claimed |
+| Rich model ecosystem | Proposed | docs/architecture/model-ecosystem.md; no Locco catalogue/runtime implementation |
+| Account login regression | Open; root cause unknown | LOC-0005; same-device affected-site and auth-flow reproduction not yet supplied/performed |
+| Browser engine selection | No selection | ADR-0013; WebView vs GeckoView target-device spike required |

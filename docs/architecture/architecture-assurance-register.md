@@ -79,8 +79,8 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 - [ ] Test unrelated task shapes without planner code branches.
 
 ### F. Native UX
-- [ ] Inspect Memo-1 and Memo-2 source and separate working behavior from plans.
-- [ ] Produce Locco-specific navigation alternatives.
+- [x] Inspect Memo-1 and Memo-2 source and separate working behavior from plans; see reference-inspiration-audit.md.
+- [ ] Produce and test Locco-specific navigation alternatives; initial hypotheses are recorded.
 - [ ] Define original tokens, components, motion and accessibility.
 - [ ] Define Browser and Model Hub UX.
 - [ ] Verify each control and state.
@@ -88,7 +88,8 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 ### G. Security/quality
 - [ ] Map trust boundaries and attack surfaces.
 - [ ] Define contract, property, fuzz, emulator, device and upgrade tests.
-- [ ] Trace requirements to named tests.
+- [x] Create initial requirement-to-architecture/test mapping in requirement-traceability.md.
+- [ ] Convert planned test IDs into implemented tests with passing evidence.
 - [ ] Record high-reversal-cost ADRs and spike results.
 - [ ] Update roadmap against dependencies.
 - [ ] Keep unknowns visible.
@@ -120,3 +121,15 @@ LOC-0004 closes only when:
 - Roadmap has dependency-aware deliveries and evidence gates.
 
 Update this register in the same PR as material architecture changes.
+
+
+## Reference audit tasks (LOC-0004)
+
+- [x] Inspect Memo-1 and Memo-2 current source and separate working behavior from future plans.
+- [x] Record useful UI/model/browser patterns and limitations in reference-inspiration-audit.md.
+- [x] Preserve the user's account-login comparison and no-root-cause-without-reproduction rule in LOC-0005.
+- [ ] Prototype and test Locco navigation alternatives; no IA selected yet.
+- [ ] Run LOC-0005 authentication/profile/DOM/device spike; target device evidence is still absent.
+- [ ] Convert planned requirement/test IDs in requirement-traceability.md into actual test suites as implementations are built.
+- [ ] Obtain independent architecture, security and QA reviews.
+

@@ -96,3 +96,39 @@ Screenshots prove visual appearance only; they do not prove behavior, accessibil
 - Every control has a real action and failure state.
 - Accessibility and responsive reviews pass.
 - Browser account login and session continuity pass LOC-0005.
+
+
+## 10. Source-audited inspiration and original Locco interaction design
+
+See [reference-inspiration-audit.md](reference-inspiration-audit.md) for the full source-level comparison and explicit limitations. The summary is binding:
+
+- Memo-2's current six areas are a useful breadth reference, not a navigation specification. Its current app source has no first-class browser implementation and its current model catalogue is three pinned Qwen entries.
+- Memo-1 has stronger concrete browser-session and semantic-token examples, but its browser is not a full profile/authentication solution. Its external-browser sign-in does not transfer cookies into its embedded session.
+- Reuse design disciplines—semantic tokens, consistent components, honest state, visible takeover—not donor colors, labels, screen hierarchy, provider lists or application structure.
+
+### Locco interaction concepts
+
+Keep the following product capabilities discoverable without committing prematurely to tab placement:
+
+- **Intent surface:** fast text/voice/share/file capture, conversation continuity, clarification and plan inspection.
+- **Workspace:** searchable entities, evidence, claims, relations, tasks and artifacts.
+- **Browser environment:** a proper browser with its own tab/session controls and a contextual Locco inspection layer.
+- **Activity and control:** durable work timeline, approvals, pause, cancel, takeover, uncertainty and verified outcomes.
+- **Model Hub:** discover, compare, acquire, inspect and manage model artifacts and runtime/device compatibility.
+- **Capability library:** inspect available operations, procedures, trust, permissions and versions.
+- **System controls:** privacy, account/profile lifecycle, permissions, storage, backup and diagnostics.
+
+These are domains, not fixed screens or tabs. A capability may appear contextually in more than one place, but it must have one authoritative underlying state and one clear owner.
+
+### Required design iterations
+
+1. Map the high-frequency and high-risk task journeys from LOC-R001–LOC-R019.
+2. Create at least three low-fidelity native navigation prototypes using the hypotheses in the reference audit.
+3. Test the same task set on each; record wrong turns, time-to-destination, state loss, one-hand reach and discoverability.
+4. Choose the smallest navigation that makes Workspace, Browser, Activity and Model Hub discoverable without overcrowding compact phones.
+5. Define Locco-specific semantic tokens and shared Compose components only after the information architecture is tested.
+6. Prototype Browser and Model Hub as real interactive native surfaces. Every control must have a state, operation, error path and test.
+7. Review light/dark, compact/expanded windows, large font scale, TalkBack, keyboard/IME, reduced motion and process recreation.
+8. Iterate from observed user friction. Do not mark UX accepted from a screenshot or from visual resemblance to Memo.
+
+Do not start final UI implementation until the architecture and task map are accepted. Do not defer the first usable workspace until a late “UI phase”; each product slice needs an honest, working native surface.
