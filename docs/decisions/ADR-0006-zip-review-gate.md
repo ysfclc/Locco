@@ -1,15 +1,13 @@
 # ADR-0006: ZIP ingestion creates reviewed branches
 
-Status: Accepted · 2026-11-19 · Reversal cost: Low
+**Status:** Superseded for internal delivery by ADR-0016 · 2026-11-20
 
-Context: ZIP may contain hostile paths, secrets or executable code. Running it in CI before review is unsafe.
+## Historical decision
 
-Decision: validate/extract in isolation, strip VCS metadata, reject links/special files, enforce limits and create review branch/PR. Never auto-merge or execute archive scripts.
+The original decision treated ZIP archives as proposed patches rather than authority. It required isolated validation/extraction, path and file-type restrictions, secret screening, VCS metadata removal and reviewed branches/PRs. Auto-merge, archive-script execution and creating a new repository per archive were prohibited.
 
-Alternatives: auto-publish/build (unsafe); manual extraction (unrepeatable); new repo per ZIP (fragments product).
+## Current applicability
 
-Rationale: archive is a proposed patch, not authority.
+ZIP intake is no longer the normal internal Locco development or phase-delivery workflow. Direct GitHub branches, commits, PRs and Actions are canonical under ADR-0016.
 
-Failure: review overhead. Provide useful dry-run and clear rejection reasons.
-
-Reversal: relax only for signed trusted sources after threat review.
+The historical archive-safety controls remain relevant only if the user explicitly authorizes a genuinely external archive contribution. Such a contribution must be converted into a normal reviewed PR and cannot bypass the existing issue, review, CI, security or release gates.
