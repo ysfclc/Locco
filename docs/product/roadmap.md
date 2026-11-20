@@ -49,6 +49,7 @@ Gate: deterministic schema/migration/round-trip/integrity/offline tests, data-pr
 - 2.4 Bounded, versioned DOM observation with origin/frame provenance, isolated-world injection where supported and sensitive-field redaction.
 - 2.5 Inspect/Select UI, semantic locators, page mutation and observation diffs.
 - 2.6 Share/import, file/document, manual, public-page and permitted API acquisition.
+- 2.6a Background network policy: URL/scheme validation, IPv4/IPv6 destination filtering, DNS-rebinding/redirect defense, no ambient browser cookies, and explicit bounded/revocable local-network source grants.
 - 2.7 Capture pipelines, dedupe, cancellation, partial-result preservation and resume.
 - 2.8 Browser authentication, session isolation and authenticated read-only device acceptance.
 
