@@ -56,11 +56,34 @@ jobs:
             fi
             ZIP_PATH="$ZIP_PATHS"
           fi
-          case "$ZIP_PATH" in
-            incoming/*.zip|incoming/**/*.zip) ;;
-            *) echo "Expected exactly one ZIP path below incoming/." >&2; exit 2 ;;
-          esac
-          test -f "$ZIP_PATH"
+          python3 - "$ZIP_PATH" <<'PY'
+          import sys
+          from pathlib import PurePosixPath
+
+          raw = sys.argv[1]
+          path = PurePosixPath(raw)
+          if (
+              "\\" in raw
+              or raw != path.as_posix()
+              or path.is_absolute()
+              or len(path.parts) < 2
+              or path.parts[0] != "incoming"
+              or path.suffix != ".zip"
+              or any(part in {".", ".."} for part in path.parts)
+          ):
+              print("Expected a canonical ZIP path below incoming/.", file=sys.stderr)
+              raise SystemExit(2)
+          PY
+          if [[ -L "$ZIP_PATH" || ! -f "$ZIP_PATH" ]]; then
+            echo "Selected archive must be a regular, non-symlink file." >&2
+            exit 2
+          fi
+          INCOMING_REAL="$(realpath -e incoming)"
+          ZIP_REAL="$(realpath -e "$ZIP_PATH")"
+          if [[ "$ZIP_REAL" != "$INCOMING_REAL/"* ]]; then
+            echo "Selected archive resolves outside incoming/." >&2
+            exit 2
+          fi
           echo "zip_path=$ZIP_PATH" >> "$GITHUB_OUTPUT"
 
       - name: Record dry-run mode
