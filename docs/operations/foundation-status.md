@@ -355,3 +355,32 @@ Each job reports `runner_id=0`, empty `runner_name`, and `steps=[]`; each starte
 | Build scripts | PASS — shell syntax only | Bash parser checks passed earlier on the exact read-back versions; no compilation or APK build was possible. |
 | Native UX comparative brief | SPECIFIED | LOC-R028, `locco-ux-prototype-brief.md`; no prototypes/user sessions yet. |
 | Phase 0 | OPEN | No actual Rust/Android build, physical-device test, independent acceptance or verified branch protection. Phase 1 remains gated. |
+
+
+## First fully executed CI set — 2026-11-20
+
+All three GitHub Actions workflows completed successfully on PR head `14383639f11d6d5e95cca178dd32186ab61b70ad`. These are actual runner executions (not the earlier zero-runner records).
+
+| Gate | Result | Evidence |
+|---|---|---|
+| Rust core checks | PASS | Run `44818002028`, job `136571249667`. `cargo fmt --check`, workspace tests and Clippy all passed. Current scaffold contains 2 unit tests (1 per crate) and 0 doc tests; this is not feature-level coverage. |
+| Android debug APK | PASS | Run `44818002036`, job `136571250396`. Fresh Rust libraries built and ELF-verified for arm64-v8a, armeabi-v7a and x86_64; Gradle build succeeded; APK's package/version/SDK, native-library byte identity and APK signature were verified. |
+| Security and policy | PASS | Run `44818002054`, job `136571250768`. cargo-deny (advisories/bans/licenses/sources), cargo-audit, 15 Python tests, actionlint, Android backup policy, foundation structure and secret scan all passed. |
+
+### CI defects corrected
+
+- `core/ffi/Cargo.toml`: local `locco-kernel` path dependency now declares `version = "0.1.0"`, satisfying `cargo-deny` while retaining `wildcards = "deny"`.
+- `.github/workflows/android.yml`: group the three NDK environment writes into one redirect to satisfy ShellCheck.
+- `.github/workflows/pipeline.yml`: replace overlapping Bash glob alternatives with canonical `incoming/*.zip` path validation, reject traversal/backslashes/non-canonical paths and ensure the resolved file remains inside `incoming/`.
+
+### Android artifact
+
+- Artifact: `locco-debug-apk`, ID `14671675329`, run `44818002036`.
+- Artifact archive SHA-256: `7d5364af8000bec93a7bc5e41faebef0581da1b16b91fd101431e22b28d17d09`.
+- APK SHA-256: `e76ccc01d7a7829e411723d2e634783d2805aebf01f682e96b2db8e44814caa4`.
+- Signer certificate SHA-256: `563bb813f95db8f9b0831e8a72d7433cf1698d7078c4dfc1fb07af9254be92a9`.
+- This is an Android **debug-signed** APK, not a production release-signed artifact. No physical-device installation/launch test is claimed.
+
+### Phase 0 remains open
+
+The CI pass proves only the checks above. It does not provide a device smoke test, accepted architecture/ADRs, LOC-0005 account-login reproduction, comparative native UX prototypes, independent architecture/security/QA review or branch-protection verification. Browser, DOM, Model Hub, persistence, compiler and execution systems remain unimplemented. Keep PR #6 draft and Phase 1 blocked until the remaining LOC-0003/LOC-0004/LOC-0005 acceptance evidence is complete.
