@@ -17,3 +17,6 @@ ADRs are append-only. Supersede decisions with a new ADR; never erase rejected a
 | 0011 | CI trust boundary and release gates | Accepted |
 
 | 0013 | Browser engine and session isolation evaluation | Proposed; WebView vs GeckoView/auth handoff spike required |
+
+| 0014 | Versioned Rust/native command and event protocol | Proposed |
+| 0015 | Durable execution with transactional platform-effect outbox | Proposed |

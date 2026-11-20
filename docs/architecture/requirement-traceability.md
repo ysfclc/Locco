@@ -26,6 +26,7 @@ This matrix is the bridge between product intent, architecture ownership and pro
 | LOC-R017 | Local storage, migration, encryption, backup, restore and deletion are safe | ADR-0008, target-system-blueprint; Rust persistence + platform key provider | store.encryption-threat-review; store.migration-rollback; store.backup-restore-roundtrip; store.key-loss-recovery; store.secure-delete-policy | PROPOSED; ADR/spikes incomplete |
 | LOC-R018 | Security protects credentials, page content, local data, supply chain and external actions | threat-model, secrets-policy, signing-policy, browser/model specs; Rust + platform | security.prompt-injection-fixtures; security.secret-redaction; security.origin-boundary; security.import-fuzz; security.dependency-sbom; security.approval-replay | PROPOSED |
 | LOC-R019 | Future iOS path shares domain contracts but does not expand Phase 0 | ios-path, ADR-0001; future native shell | ios.ffi-contract-parity; ios.domain-golden-suite; explicit product authorization before implementation | GATED / NOT STARTED |
+| LOC-R020 | Rust/native calls are versioned, memory-safe, bounded and durable across UI/process lifecycle | ffi-contract, ffi-command-event-protocol, ADR-0014; Rust FFI + Kotlin adapter | ffi.c-header-compile; ffi.buffer-ownership; ffi.invalid-input; ffi.panic-containment; ffi.concurrent-call; ffi.golden-schema-parity; ffi.event-replay; ffi.effect-fencing | PROPOSED; ping-only scaffold |
 
 ## How to use this matrix
 

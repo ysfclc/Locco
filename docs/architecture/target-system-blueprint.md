@@ -95,11 +95,11 @@ The FFI must be a versioned protocol, not a collection of ad hoc JNI functions. 
 - no Rust references, allocator objects or exceptions crossing FFI;
 - no secrets in errors.
 
-The exact sync/async transport, wire format and buffer ownership are open ADR/spike decisions. The current ABI/JNI ping only proves linking.
+The proposed command/event transport is specified in ffi-command-event-protocol.md and ADR-0014; durable execution and transactional outbox semantics are specified in durable-execution-and-recovery.md and ADR-0015. These remain proposals until the C/JNI contract tests pass. The current ABI/JNI ping only proves linking.
 
 ## 8. Durable execution
 
-Any operation that outlives a UI frame is a durable execution with run ID, typed state, resource/time budget, checkpoint, cancellation and event journal.
+Any operation that outlives a UI frame is a durable execution with run ID, typed state, resource/time budget, checkpoint, cancellation and event journal. State transition plus dispatch intent is committed atomically through the platform-effect outbox; delivery is at-least-once and uncertain external effects are never blindly retried.
 
 Required states include queued, ready, running, waiting-for-permission, waiting-for-user, blocked, retryable, interrupted, uncertain, completed, failed and cancelled. A side effect running at process death is uncertain until a postcondition or independent receipt proves its outcome. It must not be replayed blindly.
 

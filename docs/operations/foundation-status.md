@@ -72,11 +72,11 @@ PR #6 is a design proposal only. No product feature, browser engine or model run
 The system-plane and index reconciliation are documentation checks only. They do not make the architecture accepted or the foundation complete.
 
 
-## Latest Actions observation — 2026-11-20 09:15 UTC
+## FFI and durable execution contract pass — 2026-11-20
 
-Security and policy workflow run 44709172176 for head 3f3f99c76b765730e95f3d2da826ff34669797ed concluded FAILURE. Its job record shows runner_id=0, empty runner_name, and steps=[]; the run completed in approximately two seconds. No shell or validator step executed in that job. This points to a runner allocation/dispatch failure before workflow execution, not a reported failure in the architecture documents or tests. GitHub did not expose a more specific cause through the available check/job/log endpoints. Do not label the architecture changes or validators as passed or failed on the basis of this run.
-
-
-### Retry confirmation — Actions run 44709172176, attempt 2
-
-A controlled retry was requested and accepted by GitHub. Attempt 2 again completed as FAILURE with job runner_id=0, empty runner_name and steps=[]. No command ran. This confirms the available evidence points to a pre-runner dispatch/allocation failure. CI remains UNVERIFIED; no workflow command or architecture validator can be marked pass/fail from this run.
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Command/query/event FFI contract | Proposed specification | docs/architecture/ffi-command-event-protocol.md; ADR-0014; current exported ABI remains ping-only |
+| Durable execution/recovery | Proposed specification | docs/architecture/durable-execution-and-recovery.md; ADR-0015; no execution engine/outbox implemented |
+| Native side-effect delivery semantics | Explicitly defined in proposal | At-least-once delivery, stable effect IDs, leases/fencing, uncertain states and no blind retries |
+| FFI contract verification | Not implemented | C/JNI ownership, invalid input, concurrency, replay and recovery tests remain future gate |

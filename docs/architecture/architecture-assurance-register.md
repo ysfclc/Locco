@@ -13,7 +13,7 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 | Product vision | Vision, scope and original brief | PROPOSED | Trace requirements/non-goals to architecture/tests |
 | Rust domain | Kernel crate is a stub | Scaffold only | Records, commands, transitions, invariants |
 | Rust application layer | Described but no application crate in workspace | PROPOSED | Crate/port boundaries and service ownership |
-| FFI/JNI | ABI version and ping only | Link scaffold | Async command/event protocol, bounds and ownership |
+| FFI/JNI | ABI version and ping only | Link scaffold | Typed command/query envelopes, engine handles, durable event replay, effect lease/fencing, buffer ownership, panic/size/thread safety |
 | Canonical persistence | ADR-0008 direction only | PROPOSED | Encryption/storage spike, schema, migrations, recovery |
 | Evidence/provenance | Data-model contract only | PROPOSED | Stable identity, source offsets, immutable preservation |
 | Source adapters | Adapter contract only | PROPOSED | Lifecycle, authorization, partial results and cancellation |
@@ -25,7 +25,7 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 | Model runtimes | No inference runtime in Locco scaffold | PROPOSED | Runtime matrix and load/device spikes |
 | Model device fit | No measurements | UNVERIFIED | RAM/thermal/storage/latency on target hardware |
 | Capability Compiler | No implementation | PROPOSED | TaskSpec, graph, library, readiness and package |
-| Execution coordinator | No durable engine | PROPOSED | Async journal, cancellation, recovery and idempotency |
+| Execution coordinator | No durable engine | PROPOSED | Transactional outbox, leases/fencing, cancellation, crash-point recovery, idempotency and uncertain-side-effect verification |
 | Policy/approval | Design rules only | PROPOSED | Exact target/payload/authority/expiry tests |
 | Context/memory | Contracts only | PROPOSED | Admission, redaction, conflicts and curation |
 | Native UX | One placeholder Compose Activity | Scaffold only | Original IA, design system and real flows |
@@ -45,7 +45,7 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 ### B. Contracts
 - [ ] Approve system context, trust boundaries and module responsibilities.
 - [ ] Specify canonical identity, evidence, provenance, entities, claims, memory, events and artifacts.
-- [ ] Specify command/event/FFI protocol.
+- [x] Specify proposed command/event/FFI protocol in ffi-command-event-protocol.md (contract tests still absent).
 - [ ] Specify persistence, encryption, migration, backup, restore and deletion.
 - [ ] Specify offline behavior and resource budgets.
 
@@ -75,7 +75,7 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 - [ ] Specify component kinds, versions and trust.
 - [ ] Specify deterministic assembly and readiness.
 - [ ] Specify ExecutionPackage and generic DAG.
-- [ ] Specify cancellation, checkpoint, retry, process death and uncertain effects.
+- [x] Specify cancellation, checkpoint, retry, process death and uncertain effects in durable-execution-and-recovery.md (implementation/tests still absent).
 - [ ] Test unrelated task shapes without planner code branches.
 
 ### F. Native UX

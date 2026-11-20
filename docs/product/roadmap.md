@@ -12,7 +12,7 @@ Every delivery has a LOC issue, exact goal, baseline commit, owner/reviewers, so
 
 - 0.1 Governance, issue traceability, change control, review and branch protection.
 - 0.2 One pinned toolchain; reproducible Rust formatting/test/Clippy.
-- 0.3 Versioned Rust/JNI/FFI command, event and error contract.
+- 0.3 Versioned Rust/JNI/FFI command, query, event, buffer-ownership and platform-effect contract (ADR-0014).
 - 0.4 Three Android ABI builds and symbol inspection.
 - 0.5 Native APK assembly, identity/signature/hash and runtime ABI check.
 - 0.6 Security, dependency, workflow, SBOM/provenance and release controls.
@@ -31,7 +31,7 @@ No product subsystem is accepted merely because it is described.
 - 1.2 Canonical local store and migrations; encryption design proven before sensitive records.
 - 1.3 Original evidence/blob storage, content identity, provenance and atomic writes.
 - 1.4 Entities, relationships, observations and claims with conflict handling.
-- 1.5 Append-only event and execution journal foundations.
+- 1.5 Durable execution state, transactional platform-effect outbox, append-only event journal and consumer cursors (ADR-0015).
 - 1.6 Lexical/full-text indexes and rebuildable derived indexes.
 - 1.7 Export, restore, integrity verification and migration recovery.
 - 1.8 First integrated vertical slice: capture → preserve → inspect → link → search → export/restore.

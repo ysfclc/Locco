@@ -7,7 +7,9 @@ The target architecture is under active review. This index separates accepted ba
 | overview.md | Canonical five-plane system model, data authority and dependency flow |
 | module-boundaries.md | Rust, Android, platform adapter and iOS boundaries (actual vs proposed) |
 | data-model.md | Stable records, evidence, identity, tasks, capabilities, execution and artifacts |
-| ffi-contract.md | Versioned Rust/native transport and safety rules |
+| ffi-contract.md | FFI boundary invariants and implementation status |
+| ffi-command-event-protocol.md | Versioned C ABI, JSON envelopes, event replay and platform-effect transport |
+| durable-execution-and-recovery.md | Transactional outbox, leases, cancellation, uncertainty and process recovery |
 | source-adapters.md | Authorized acquisition methods, browser capture and provenance |
 | constraints.md | Device, source and trust constraints |
 | context-feeding-contract.md | Evidence admission and bounded context |
@@ -45,3 +47,5 @@ Source requirements: LOC-0003 (Phase 0), LOC-0004 (architecture audit) and LOC-0
 ADR-0013 records a browser-engine investigation; it intentionally selects neither WebView nor GeckoView yet.
 
 Status terms must distinguish PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFIED and BLOCKED. A document is not implementation evidence.
+
+ADR-0014 proposes the FFI transport; ADR-0015 proposes durable execution/outbox semantics. Both require contract tests and independent review before acceptance.

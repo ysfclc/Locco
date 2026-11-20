@@ -18,7 +18,7 @@ The domain kernel is a logical ownership boundary across the Control and Data re
 
 ## Dependency direction
 
-Native UI → Android platform adapters → versioned FFI/application commands → Rust application services → Rust domain contracts.
+Native UI → Android platform adapters → versioned FFI/application commands → Rust application services → Rust domain contracts. Long-running commands return durable operation IDs; native adapters claim outbox effects and poll/ack durable events. No Rust worker calls Kotlin/Swift callbacks.
 
 The domain kernel imports no Android API, Kotlin/JVM type, UI, browser engine, network client, model SDK, database driver or OS key API. Application services depend on typed ports; adapters implement those ports. Rust validates every durable command and model-generated proposal before canonical mutation.
 

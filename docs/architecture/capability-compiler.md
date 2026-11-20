@@ -101,7 +101,11 @@ The same compiler and execution engine must handle, without planner code changes
 
 These are fixtures, not shipped workflow templates. Architecture tests must prevent planner branches on vertical labels such as CRM, job application or social publishing.
 
-## 11. Open decisions
+## 11. Execution and transport boundary
+
+Compiled execution packages are immutable manifests. Runtime state, attempts and external effects are recorded separately under [durable-execution-and-recovery.md](durable-execution-and-recovery.md). The compiler does not dispatch Android APIs directly; it emits validated operation/effect intents that pass through the Rust coordinator, transactional outbox and platform adapter contract. The FFI transport is defined separately in [ffi-command-event-protocol.md](ffi-command-event-protocol.md).
+
+## 12. Open decisions
 
 - Persisted DAG state machine versus event-sourced transitions or a hybrid.
 - Component/package serialization and evolution format.
