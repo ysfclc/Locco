@@ -54,6 +54,7 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 ### C. Browser/DOM
 - [x] Specify the proposed full native browser, account/session and DOM observation architecture in browser-dom-and-session.md (engine/runtime implementation and device acceptance remain open).
 - [x] Specify everyday browser completeness (address/search, safe popups, tabs, upload/download, external links, site permissions/data controls, page controls, recovery) and OS credential/autofill boundaries in browser-dom-and-session.md section 12 (all runtime behavior remains unimplemented and engine-dependent).
+- [x] Specify the mandatory simultaneous normal/private profile baseline and engine ineligibility when actual profile isolation is unavailable (browser-dom-and-session.md §§4.1/4.5; device isolation tests remain open).
 - [ ] Reproduce LOC-0005 login/session problem.
 - [ ] Compare AndroidX WebView multi-profile with GeckoView session contexts on the target phone.
 - [ ] Verify AndroidX WebKit MULTI_PROFILE and JS_INJECTION_IN_FRAME_AND_WORLD support on target WebView.
@@ -161,3 +162,8 @@ Update this register in the same PR as material architecture changes.
 ## Browser completeness additions — 2026-11-20
 
 The proposed daily-use browser contract is recorded in browser-dom-and-session.md §12 and evaluated in browser-engine-evaluation.md §8. The additional matrix requirements are LOC-R023 (everyday browser controls and safe file/permission/window behavior) and LOC-R024 (OS credential/autofill interoperability without owning or exposing secrets). These checkmarks mean the requirements are specified only; engine comparison, UI implementation, provider/device tests and acceptance remain open.
+
+
+## Profile completeness gate — 2026-11-20
+
+The daily-browser contract requires a real persistent normal profile and a simultaneously usable isolated private/ephemeral profile. WebView without runtime MULTI_PROFILE support fails the full-browser profile gate on that device; no cookie copying or fake privacy mode. Private data is destroyed on final private-tab close or process death and is not restored from persistent history/backup. This is specified but not implemented or device-verified.

@@ -25,7 +25,7 @@ Select only after the scorecard in docs/architecture/browser-engine-evaluation.m
 
 - Browser implementation does not begin with an irreversible engine dependency.
 - Stable product contracts cover tabs, profile identity, navigation, observations, downloads, permissions and lifecycle; engine-specific DOM APIs are not assumed to be drop-in portable.
-- WebView multi-profile is used only when MULTI_PROFILE is runtime-supported. setProfile must occur before page operations except attaching the view.
+- Full-browser eligibility requires simultaneous persistent normal + private/ephemeral profile isolation on the reference device and each declared support tier. WebView multi-profile is used only when MULTI_PROFILE is runtime-supported; setProfile must occur before page operations except attaching the view. Without it, the WebView/device combination fails the full-browser privacy gate rather than silently dropping private mode; evaluate GeckoView or another reviewed engine.
 - Third-party cookies remain rejected by default. Any per-WebView exception requires a documented compatibility reason and test.
 - DOM observation prefers origin-allowlisted scripts in isolated JavaScript worlds. If unavailable, privileged DOM automation is unavailable; page-world fallback cannot authorize actions.
 - OAuth/OIDC connection uses supported auth surfaces with PKCE/state/nonce validation. It does not grant Locco access to the Auth Tab/Chrome cookie jar from embedded WebView.

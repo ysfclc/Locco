@@ -265,3 +265,12 @@ The build scripts' presence and static checks do not constitute a successful bui
 | Context input/output budget contradiction | Corrected in architecture proposal | `context-feeding-contract.md` now defines input_limit = min(70% of actual usable context, context minus task-specific output reserve minus 10% safety margin). |
 | Allocation weights | Corrected | The 10/15/10/55/10 weights now total 100% of available input and explicitly cover static instructions, task envelope, current state, evidence and curated memory. They are not percentages of the full context window. |
 | Regression coverage | Specified, not implemented | LOC-R025 requires hard-ceiling, output reserve, safety margin, weight-sum, tokenizer/multimodal cost and insufficient-budget fallback tests. |
+
+
+## Browser profile eligibility clarification — 2026-11-20
+
+| Gate | State | Evidence |
+|---|---|---|
+| Normal/private profile contract | SPECIFIED / NOT DEVICE-VERIFIED | Full browser requires simultaneous persistent normal and isolated ephemeral contexts. On process death, private context is discarded rather than restored; whole-profile deletion must verify actual engine data removal. |
+| WebView eligibility | NOT DECIDED | A WebView provider lacking MULTI_PROFILE cannot pass the full browser profile gate for that device. Evaluate GeckoView or another reviewed engine; no cookie-copy shim. |
+| Site-data deletion claims | ENGINE-DEPENDENT / UNVERIFIED | The UI may report only the data classes/scope the selected engine can actually clear and verify. |

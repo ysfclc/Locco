@@ -14,7 +14,7 @@
 
 - Browser engine choice remains open between Android System WebView + AndroidX WebKit and GeckoView; see browser-engine-evaluation.md and ADR-0013.
 - AndroidX WebKit Profile/ProfileStore, third-party cookie behavior, isolated-world JavaScript injection and message listeners are runtime feature-gated. Check WebViewFeature support on the actual installed provider.
-- Bind a WebView to a non-default profile before any page operation other than attaching it to the hierarchy. When multi-profile is not supported, expose only a single browser profile; never imitate isolation by moving cookies.
+- Bind a WebView to a non-default profile before any page operation other than attaching it to the hierarchy. Full-browser eligibility requires simultaneous persistent normal + isolated private/ephemeral profiles. If MULTI_PROFILE is not supported by the installed provider, that provider/device combination fails the full-browser privacy gate; evaluate GeckoView or another reviewed engine. A single-profile diagnostic mode must be clearly labelled as degraded, never marketed as complete private browsing. Never imitate isolation by copying or selectively deleting cookies in a shared store.
 - Third-party cookie policy is per WebView. Keep denied by default; any scoped opt-in has a documented test and user-visible rationale.
 - OAuth/OIDC account connection uses supported system/browser authentication paths with PKCE/state/nonce validation. Do not send an IdP OAuth request inside an embedded WebView when provider policy disallows it.
 - Browser renderer crash, process death, provider update and profile deletion are explicit lifecycle events. Never assume WebView page state survives.

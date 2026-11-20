@@ -73,8 +73,9 @@ A provider may permit ordinary username/password login inside an embedded browse
 
 ### S1 — WebView profile/auth capability
 - Check MULTI_PROFILE and JS_INJECTION_IN_FRAME_AND_WORLD on the target WebView.
-- Create default and two named profiles; verify cookies, localStorage and service-worker/storage data do not cross profiles.
-- Bind each profile before page operations; close a test profile, delete it, recreate it and confirm data is gone.
+- Create the required simultaneous persistent normal + private/ephemeral profiles; test a third named profile as an optional capability. Verify cookies, localStorage, IndexedDB, service workers, cache, permissions, downloads and history do not cross profiles.
+- Bind each profile before page operations; close a test profile, delete it, recreate it and confirm data is gone. Confirm private-session destruction after last-tab close, process death and force-stop without persistent history/backup leakage.
+- Measure per-site data deletion; distinguish it from whole-profile clearing and verify every claimed data class.
 - Test third-party cookie default and per-WebView opt-in with controlled fixtures. Opt-in is explicit and narrowly scoped.
 - Test same-site, cross-site redirect, popup and MFA flows.
 - Test app process restart, app update and WebView provider update.
@@ -120,9 +121,9 @@ Weights can be revised before testing, not after seeing which candidate wins. Re
 
 ## 6. Decision criteria
 
-Choose WebView if the multi-profile and isolated-world APIs exist on target/support devices, the user's actual account sign-in/session needs pass where providers permit embedded browsing, and DOM, performance and lifecycle gates pass.
+Choose WebView only if simultaneous persistent normal + private/ephemeral profiles and isolated-world APIs exist and pass on the reference device and each declared support tier; the user's actual account sign-in/session needs pass where providers permit embedded browsing; and DOM, full everyday-browser, credential, security, performance and lifecycle gates pass. A provider without MULTI_PROFILE fails the full-browser profile requirement on that device.
 
-Choose GeckoView if WebView cannot meet required browser/DOM/login compatibility after safe platform-supported fixes, and GeckoView passes the same login/profile/DOM/device suite within the storage, RAM, thermal and maintenance budget.
+Choose GeckoView if WebView cannot meet required browser/DOM/login/profile compatibility after safe platform-supported fixes, and GeckoView passes the same full-browser, credential, profile-destruction, DOM, security and target-device suite within the storage, RAM, thermal and maintenance budget.
 
 Do not choose GeckoView to evade embedded identity-provider policy. It is still an embedded browser component.
 
@@ -165,3 +166,14 @@ Add results to the same WebView-vs-GeckoView scorecard. If a capability differs 
 | Engineering and maintenance | 5 |
 
 The weight set is fixed before comparative device testing. Record unsupported capabilities and failure cases, not just a total score.
+
+## 9. Hard eligibility gates (not score-tradeable)
+
+The weighted scorecard is applied only after the candidate passes all hard gates:
+- Simultaneous persistent normal and isolated private/ephemeral sessions on the reference device; no cookie/storage copying or history-only simulation.
+- Demonstrated cross-profile isolation for cookies, local storage, IndexedDB, service workers, cache, permissions, downloads and history.
+- Private session destruction on final-tab close and process death, with no persistent history/backup leakage.
+- TLS certificate errors fail closed; user-selected file access is least-privilege; no privileged page-world bridge.
+- Supported account/credential flows do not bypass provider policy or pretend Auth Tab cookies enter the embedded profile.
+
+A candidate that fails a hard gate is ineligible regardless of aggregate score. Report the exact device/provider version and failure. Do not average an unacceptable privacy/security result against good performance.

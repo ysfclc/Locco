@@ -54,7 +54,8 @@ Implications:
 - A private profile may use a separate ephemeral lifecycle only after deletion of cookies, WebStorage and profile data is verified.
 - Tabs belong to a profile and share its identity; they are not separate account silos.
 - Use the profile-specific CookieManager and WebStorage, not the default global manager, for non-default profiles.
-- If MULTI_PROFILE is unavailable, expose only the default session. Do not simulate isolation by copying cookie strings or sharing global cookie state.
+- Locco's first full-browser release requires simultaneous persistent normal and isolated private/ephemeral profiles on every declared supported device. A WebView provider without MULTI_PROFILE is not eligible for the full-browser support matrix on that device; it may be used only for a clearly labelled degraded single-profile diagnostic mode, never advertised as complete private browsing.
+- If the target provider lacks MULTI_PROFILE, evaluate GeckoView or another reviewed engine that can prove the required partitioning. Do not simulate isolation by copying cookie strings, deleting selected cookies from a shared jar, or sharing global cookie/storage state.
 - Before deletion, close/destroy every WebView bound to the profile, delete it through ProfileStore, then verify removal.
 - Test profile creation, switching, deletion and persistence on the target phone's actual WebView provider version.
 
@@ -330,3 +331,14 @@ Run on both candidate engines during the spike, then on the selected engine:
 - `browser.tls-error-fail-closed`, `browser.safe-browsing-warning`, `browser.renderer-crash-recovery`.
 - `credential.autofill-selected-provider`, `credential.passkey-first-party-domain-boundary`, `credential.no-secret-dom-or-log`, `credential.auth-tab-no-webview-cookie-transfer`.
 - Every journey is tested with no model installed and with AI/DOM inspection disabled.
+
+### 4.5 Private profile lifecycle and minimum supported profile set
+
+The minimum full-browser profile set is:
+- **Normal:** persistent cookie/storage context; normal tabs, history, bookmarks and restore metadata survive normal app restart/update where the website and engine permit.
+- **Private:** distinct ephemeral cookie/storage/cache context; private URLs, page text, form data and tab metadata are not committed to persistent browser history, model context or backup unless the user explicitly saves selected material as an ordinary workspace artifact. Destroy private site data when the final private tab is closed or the user explicitly closes the private session. On process death, force-stop or reboot, discard the private context on next startup rather than restoring a private browsing session; make this behavior clear in the UI.
+- **Additional named profiles:** optional later capability, only after simultaneous isolation, per-profile permission and cleanup semantics are measured. Do not imply account separation unless cookies, DOM storage, IndexedDB, service workers, cache, permissions, downloads and history are proven isolated.
+
+The two required contexts must be simultaneously usable without cross-contamination. A single global WebView data directory, cookie-copy shim or history filtering is not private-profile isolation. Test cookies, localStorage, IndexedDB, service workers, cache, permissions, download metadata, history, app restore and deletion after process death.
+
+Per-site data deletion is reported successful only for data classes the selected engine actually removes and verifies. If it can only clear an entire profile, label the scope accurately and offer whole-profile clearing instead of claiming a per-site wipe.
