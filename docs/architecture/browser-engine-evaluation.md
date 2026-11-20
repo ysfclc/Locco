@@ -138,3 +138,30 @@ The spike produces device/version inventory, redacted test evidence, package/res
 Run S0-S4 first on the reference Redmi Note 12 Pro 5G (Dimensity 1080, 8 GB RAM, 256 GB storage). At the start of each run, record exact Android build/security patch, Android System WebView package and version, Chrome version, free storage, memory headroom and thermal state. The provider versions are runtime facts and must not be inferred from the handset model.
 
 The login comparison must use the exact user-reported account/site and the same sign-in surface in both reference apps where supported. If the installed Memo-2 APK/build cannot be tied to the audited source revision, record that provenance gap rather than treating main-branch source as the installed artifact.
+
+## 8. Everyday browser and credential parity gates
+
+Engine evaluation must include the ordinary browser contract in section 12 of browser-dom-and-session.md, not only DOM automation:
+- URL/search behavior, tab restoration, user-initiated popup/new-window policy, history/bookmark/private-profile isolation.
+- User-selected file upload through system picker, downloads, validated external app intents and site permission grant/revoke.
+- Page zoom/text scale, desktop-site mode, find-in-page, save/print PDF and renderer/process recovery.
+- Selected Android Autofill/Credential Manager provider behavior, password suggestions and save/update flow where supported, eligible passkeys and explicit limits.
+- Certificate-error failure behavior, Safe Browsing availability/interstitial handling and no untrusted local-file bridge.
+
+Add results to the same WebView-vs-GeckoView scorecard. If a capability differs by engine/provider, show it as a compatibility result; do not emulate it using an unsafe native bridge or claim parity without testing. The default supported-browser contract is the intersection of safe, verified behavior on the selected engine and supported device matrix, plus clearly labelled optional capabilities.
+
+### Updated evaluation weights (total 100)
+
+| Dimension | Weight |
+|---|---:|
+| User-reported account login and session continuity | 20 |
+| Everyday browser completeness (tabs, popup, file I/O, permissions, credentials, page controls) | 15 |
+| Web compatibility | 10 |
+| DOM isolation, safety and coverage | 15 |
+| Profile/session isolation | 10 |
+| Performance and resource usage | 10 |
+| Security and update response | 10 |
+| Lifecycle and recovery | 5 |
+| Engineering and maintenance | 5 |
+
+The weight set is fixed before comparative device testing. Record unsupported capabilities and failure cases, not just a total score.

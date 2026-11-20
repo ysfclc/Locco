@@ -43,8 +43,9 @@ Gate: deterministic schema/migration/round-trip/integrity/offline tests, data-pr
 **Outcome:** users can bring authorized information into Locco and use a real browser with reliable account/session behavior.
 
 - 2.1 Source adapter contract and provenance lifecycle.
-- 2.2 Native browser shell: address/search, tabs, navigation, history, bookmarks, downloads and page controls.
-- 2.3 Browser engine decision (WebView vs GeckoView), persistent/ephemeral profiles, account sign-in, cookie/storage lifecycle and secure Auth Tab/Custom Tabs handoff.
+- 2.2 Native browser shell: address/search, tabs and safe pop-ups, navigation, history/bookmarks, downloads and system-picker uploads, external app links, find/zoom/desktop mode and save/print PDF.
+- 2.3 Browser engine decision (WebView vs GeckoView), persistent/ephemeral profiles, account sign-in, OS autofill/Credential Manager interoperability, cookie/storage lifecycle and secure Auth Tab/Custom Tabs handoff.
+- 2.3a Site permission/data controls, popup policy, browser recovery and profile clearing.
 - 2.4 Bounded, versioned DOM observation with origin/frame provenance, isolated-world injection where supported and sensitive-field redaction.
 - 2.5 Inspect/Select UI, semantic locators, page mutation and observation diffs.
 - 2.6 Share/import, file/document, manual, public-page and permitted API acquisition.

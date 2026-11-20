@@ -33,3 +33,11 @@ Imported data/code is never executed automatically. AI cannot widen authority. A
 ## Model authenticity refinement
 
 A matching digest verifies byte integrity against a particular manifest; it does not authenticate the publisher or prove model safety. Keep source pinning, digest verification, signature/attestation verification, parser validation, runtime load, device fit and task quality as separate evidence. Never permit a model catalogue to install native/runtime code. See docs/architecture/model-ecosystem.md, section 14.
+
+## Browser upload, popup and credential additions
+
+- A compromised page may request arbitrary file upload. User must select each file through the Android picker; validate URI, content type and size, pass only that URI with a temporary grant, and never expose broad storage access or app-private paths.
+- Popup/new-window and external-intent requests are untrusted navigation requests. Require allowed scheme/host handling, user-gesture checks and native confirmation; preserve profile/opener ownership. Never attach privileged observation/action channels to a popup by default.
+- Password/passkey values are controlled by the OS and selected credential provider. Do not collect or store them in Locco, page snapshots, Stitching outputs, logs, model context, backups or execution artifacts. Autofill and site session success are tested separately.
+- Site camera/microphone/location/notification permissions require both site-origin policy and the relevant Android runtime permission. Denial/revocation must clear pending grants and stop use.
+- Downloads remain inert files; opening/installation is a separate explicit user action and file-type verification. Never silently install or execute downloaded content.

@@ -270,3 +270,63 @@ Models may propose mappings and relationships only. Transform execution uses a s
 - Model-generated selector/transform payloads cannot execute code or exceed the declarative operation budget.
 - Cross-page Stitching preserves per-field observation provenance and rejects conflicting/unmapped samples.
 - Drift tests demote a previously valid schema before any action is authorized.
+
+## 12. Everyday browser completeness contract
+
+The native browser must be a useful daily browser before it is judged as an AI surface. The following is the browser's minimum product contract, not a promise that a particular engine already supports every item.
+
+### 12.1 First usable browser release (required)
+
+| Area | Required user capability | Contract and failure behavior |
+|---|---|---|
+| Address and search | URL entry, URL/search disambiguation, configurable search provider, local history/bookmark suggestions | Suggestions are local by default; disclose any search-provider network request. Invalid/unsupported schemes are rejected or handed off explicitly. |
+| Navigation | Back, forward, stop, reload, current origin/security state and useful load/error feedback | TLS certificate errors are cancelled; no “proceed anyway” override. Preserve an understandable recovery path. |
+| Tabs/windows | Create, switch, close, reopen recently closed, restore session; handle target=_blank and user-initiated popup windows | Popup creation is a controlled native decision; associate each window with its owning profile/opener and prevent untrusted windows from acquiring extra privileges. Block unsolicited/pop-under windows. |
+| Profiles and privacy | Default persistent profile, private/ephemeral mode, clear site data/history, inspect and revoke site permissions | Private data is not restored as persistent history/session; destruction and profile isolation are device-tested. Additional named profiles are enabled only when engine isolation is verified. |
+| History/bookmarks | Search, edit, remove and export/import user bookmarks; clear history by scope | History/bookmark records remain profile-aware; private mode does not leak into persistent history. |
+| Downloads | Visible queue, progress, pause/resume where transport permits, cancel, retry, safe destination, rename/share/open | Never auto-execute downloaded files or install APKs silently. Verify content metadata and preserve the download result/error. |
+| Uploads | Select one/multiple user-chosen files or media through Android system pickers; cancel and return cleanly | Grant only the selected URI and minimum read access; validate returned URIs and do not expose app-private file paths or broad filesystem access to page content. |
+| External links | Verified app links and supported external schemes can hand off to Android with clear user choice | Validate scheme/host, avoid implicit arbitrary intent execution, preserve origin/tab and offer cancel. |
+| Site permissions | Per-origin/per-profile camera, microphone, location, notifications and other supported browser grants | Show site and requested resource, obtain OS runtime permission separately, default deny, support revoke and renderer/profile cleanup. |
+| Credentials | Interoperate with user-selected Android Autofill/Credential Manager providers where the selected engine supports it; support eligible passkey flows | Locco does not create a password vault, read credential values into DOM snapshots, log secrets or bypass provider restrictions. Unsupported flows receive an honest fallback. |
+| Page controls | Find in page, zoom/text scaling, desktop-site request, open in external app, share, save page/PDF or print where engine supports it | Each control has explicit unsupported/error states and must not imply that a page was fully saved when only a URL was stored. |
+| Recovery | Restore normal tabs/session metadata after process death; handle renderer crash, browser provider update and app upgrade | Recreate live pages safely; never persist raw credential material or assume renderer state survived. |
+
+### 12.2 Credential interoperability — hard boundary
+
+Use Android's system credential ecosystem instead of inventing another password store:
+- Support the active Android Autofill service and Credential Manager pathways exposed by the chosen rendering engine; test with at least one system credential provider and one user-selected third-party provider where available.
+- Treat username/password autofill, passkeys, federated account linking and website cookie sessions as distinct flows.
+- For WebView, test actual Autofill behavior on supported WebView/provider versions. Passkey/WebAuthn support is first-party/domain-association constrained and WebView lacks Conditional UI; don't advertise general third-party passkey autofill. Use Auth Tab/Custom Tabs or native Credential Manager for supported identity-provider/app-account flows.
+- Auth Tab/Custom Tabs may use the selected browser's credential store, but their cookie/session state is not copied into Locco's embedded browser profile. A returned OAuth token is a scoped app credential, not a browser login.
+- Credential suggestions, save/update prompts and passkey UI remain under the user's selected OS/provider control. Locco's DOM observer sees field structure/state only; password, OTP, recovery, card and passkey values remain unread/redacted.
+
+Official platform references: [Autofill Framework](https://developer.android.com/identity/autofill), [Credential Manager/passkey architecture](https://developer.android.com/identity/passkeys/architecture), [WebView Credential Manager integration](https://developer.android.com/identity/sign-in/credential-manager-webview), [Auth Tab](https://developer.chrome.com/docs/android/custom-tabs/guide-auth-tab).
+
+### 12.3 Safe file and popup handling
+
+WebView's default file chooser cancels page file requests unless the host handles `onShowFileChooser`. The app must validate the selected URI and provide only the user-selected file; WebView itself does not enforce that selected files are trusted. Avoid broad `file://` access and use Android's document/content URI mechanisms. For popups, implement an explicit `WebChromeClient` policy; the default behavior ignores new windows. Enable only user-initiated, profile-bound windows under a reviewed opener policy. A popup never receives a privileged native bridge.
+
+References: [WebChromeClient.onShowFileChooser](https://developer.android.com/reference/android/webkit/WebChromeClient#onShowFileChooser(android.webkit.WebView,android.webkit.ValueCallback,android.webkit.WebChromeClient.FileChooserParams)), [WebView unsafe file inclusion guidance](https://developer.android.com/privacy-and-security/risks/webview-unsafe-file-inclusion), [WebView window management](https://developer.android.com/develop/ui/views/layout/webapps/webview#Manage_windows).
+
+### 12.4 Deliberately deferred capabilities
+
+Not required for the first browser acceptance gate, and not implied by the word “browser”:
+- Browser extension/add-on ecosystem (high privilege and update surface; separate threat model).
+- Cloud account sync, remote password sync or mandatory online profile backup.
+- Built-in VPN/proxy, remote browsing or network interception.
+- Automatic translation or reader mode (evaluate later; local model or explicit external service only).
+- Advanced tracker/ad blocking and user-script injection (separate compatibility/security decision).
+- Desktop-class developer tools.
+
+These may be proposed later against real user demand and explicit threat/resource review. Their absence must not compromise the required daily-browser contract above.
+
+### 12.5 Browser release acceptance set
+
+Run on both candidate engines during the spike, then on the selected engine:
+- `browser.omnibox-url-search`, `browser.local-suggestions-privacy`, `browser.tabs-popup-policy`, `browser.tabs-restore-crash`.
+- `browser.history-bookmarks-private-isolation`, `browser.site-data-clear`, `browser.download-cancel-resume`, `browser.upload-selected-uri-only`.
+- `browser.external-intent-validation`, `browser.site-permission-grant-revoke`, `browser.find-zoom-desktop-mode`, `browser.save-pdf-share`.
+- `browser.tls-error-fail-closed`, `browser.safe-browsing-warning`, `browser.renderer-crash-recovery`.
+- `credential.autofill-selected-provider`, `credential.passkey-first-party-domain-boundary`, `credential.no-secret-dom-or-log`, `credential.auth-tab-no-webview-cookie-transfer`.
+- Every journey is tested with no model installed and with AI/DOM inspection disabled.

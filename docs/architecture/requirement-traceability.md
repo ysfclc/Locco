@@ -44,4 +44,5 @@ Use these states:
 - REGRESSED — previously accepted behavior no longer passes.
 
 When a test fails, preserve the regression, failure evidence, affected requirement ID and next action. Do not downgrade or delete the requirement to make the dashboard green.
-
+| LOC-R023 | First usable browser supports everyday navigation, tabs/windows, file I/O, external links, site permissions, page controls and privacy controls | browser-dom-and-session section 12, browser-engine-evaluation S6, android-platform-policy; native browser adapter | browser.omnibox-url-search; browser.tabs-popup-policy; browser.tabs-restore-crash; browser.upload-selected-uri-only; browser.download-cancel-resume; browser.external-intent-validation; browser.site-permission-grant-revoke; browser.site-data-clear; browser.find-zoom-desktop-mode; browser.save-pdf-share; browser.tls-error-fail-closed | PROPOSED; contract clarification |
+| LOC-R024 | Credential autofill and passkey interoperability use user-selected OS/providers without exposing or owning credential secrets | browser-dom-and-session credential boundary, browser-engine-evaluation S6, android-platform-policy; browser credential adapter | credential.autofill-selected-provider; credential.passkey-first-party-domain-boundary; credential.no-secret-dom-or-log; credential.auth-tab-no-webview-cookie-transfer | PROPOSED; contract clarification |
