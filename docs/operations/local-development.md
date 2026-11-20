@@ -1,7 +1,25 @@
 # Local development
 
-Required: Git, Rust stable/rustup, Android SDK + NDK, JDK 17+, Gradle version pinned by CI, cargo-ndk 4.1.2, Python 3 and actionlint. Rust targets: `aarch64-linux-android`, `armv7-linux-androideabi`, `x86_64-linux-android`. Output: `android/app/src/main/jniLibs/<abi>/liblocco_core.so`.
+Required tools:
+- Git.
+- Rustup/Cargo **1.86.0**, pinned by `rust-toolchain.toml`, with `rustfmt`, `clippy` and the three Android targets.
+- Android SDK + NDK `27.2.12479018`; set `ANDROID_NDK_HOME`.
+- JDK 17+.
+- Gradle **8.9**, matching CI (the repository currently does not include a Gradle wrapper).
+- `cargo-ndk` 4.1.2.
+- Python 3 and actionlint for foundation/workflow checks.
 
-Run `./scripts/verify-foundation.sh`, `./scripts/build-rust-android.sh`, `./scripts/build-android-debug.sh`. Scripts fail clearly if tools/env are missing; no model weights or paid services are downloaded.
+The FFI artifact name is `liblocco_ffi.so`, not `liblocco_core.so`. Output paths:
+- `android/app/src/main/jniLibs/arm64-v8a/liblocco_ffi.so`
+- `android/app/src/main/jniLibs/armeabi-v7a/liblocco_ffi.so`
+- `android/app/src/main/jniLibs/x86_64/liblocco_ffi.so`
 
-Device smoke: install APK, launch, verify ABI label, rotate, background/restore, inspect logcat. Record device/Android version, APK SHA-256 and result. CI build is not device verification.
+Run:
+```bash
+./scripts/verify-foundation.sh
+./scripts/build-android-debug.sh
+```
+
+The debug APK script always rebuilds and validates the Rust FFI libraries for all three ABIs before running `assembleDebug`. Use `./scripts/build-rust-android.sh` separately only when you intentionally want to build/test the native libraries without assembling the APK.
+
+Device smoke: install the APK, launch it, verify the ABI/runtime ping, rotate, background/restore and inspect logcat. Record exact device, Android build, APK SHA-256 and outcome. A CI build is not physical-device verification.

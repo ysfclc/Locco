@@ -32,7 +32,6 @@ The complete level-zero source snapshot is available at [`incoming/foundation.zi
 
 ```bash
 ./scripts/verify-foundation.sh
-./scripts/build-rust-android.sh
 ./scripts/build-android-debug.sh
 ```
 
