@@ -1,6 +1,6 @@
 # Foundation status ledger
 
-As of 2026-11-19. Update only with reproducible evidence.
+As of 2026-11-20. Update only with reproducible evidence.
 
 | Gate | Status | Evidence/blocker |
 |---|---|---|
@@ -90,3 +90,19 @@ The system-plane and index reconciliation are documentation checks only. They do
 | Database encryption selection | Not selected | SQLCipher vs authenticated record/blob encryption must be benchmarked and threat-reviewed |
 | Key-loss/recovery behavior | Contract defined; not implemented | Must enter RECOVERY_REQUIRED and never silently initialize a replacement workspace |
 | Backup/restore continuity | Contract defined; not implemented | Encrypted, staged, verified restore; sessions/secrets excluded by default; no action replay |
+
+
+## Latest user-direction and reference audit — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Memo-2 UI inspiration, second-pass source analysis | Source analysis completed | `docs/architecture/reference-inspiration-audit.md` now records what is useful in the actual six-area Compose UI and Model Hub, where its fixed navigation/static catalogue stop short, and how Locco must improve rather than copy. No final Locco IA or visual language selected. |
+| Locco navigation prototypes | Not started | Three hypotheses and twelve representative journeys are documented in `native-experience.md` and the reference audit. They still need comparative interactive prototypes and task-based evaluation. |
+| Memo-2 account-login report | Unclassified; open in LOC-0005 | User reports sign-in failure in Memo-2 and no equivalent issue in Memo-1. Exact provider, installed APK/build, entry surface and failure stage are not yet identified. The inspected Memo-2 main source has no dedicated browser/session subsystem; this does not explain an installed APK or other account connector. Classify the flow before diagnosis. |
+| LOC-0005 reproduction guard | Updated | Issue #5 distinguishes website sign-in, Auth Tab/Custom Tabs, OAuth/OIDC app connection, remote model/API credentials and third-party app integration. No credentials or session secrets may enter diagnostics. |
+| Browser/account architecture | Proposed, not implemented | `browser-dom-and-session.md`; WebView/Auth Tab/profile and DOM observer features remain runtime-gated and require target-device testing. |
+| Storage security and recovery | Proposed; technology spike open | `storage-security-and-recovery.md` defines data classes, envelope-key direction, key-loss behavior, backup exclusion of session secrets, restore, rotation and deletion tests. No encryption implementation is accepted. |
+| Architecture review | Draft PR open | PR #6, latest checked head `6a744383e2f3a4a5b347c804d7b648576c1a855a`. No independent architecture/security/QA acceptance yet. |
+| Latest Security and policy CI | Pre-runner failure; source checks NOT RUN | Run `44710944012` on the checked head failed. Raw job record: `runner_id=0`, empty runner name, `steps=[]`; the job ended in about one second. No validator or source command ran. This is not evidence of a source-check failure or success; restore runner dispatch or use a controlled runner before accepting CI. |
+| Product UI/browser/model runtime | Not implemented in this pass | The work remains architecture and requirement clarification. No product UI, browser engine, DOM observer or model runtime is claimed. |
+| Phase 0 / Phase 1 gate | Open / Phase 1 not started | LOC-0003 and LOC-0004 still require independent acceptance. Preserve this gate. |
