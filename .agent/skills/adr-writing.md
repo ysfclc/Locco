@@ -23,6 +23,5 @@
 ## Required artifact
 A reviewer must be able to identify: decision owner, date, status, source issue, context, decision, alternatives, rationale, consequences, tests, migration/rollback and superseded decision (if any).
 
-## Pass/fail
-**Pass** when a future contributor can implement and reverse the decision without guessing.  
-**Fail** when there is no evidence, meaningful alternative, explicit boundary, compatibility plan or accountable decision source. Keep the ADR Proposed until its acceptance gate is met.
+## Fail closed
+Reject the ADR when it has no evidence, meaningful alternative, explicit boundary, compatibility plan or accountable decision source. Keep the ADR Proposed until its acceptance gate is met. Do not treat a draft PR, unchecked box or passing documentation validator as acceptance of the underlying architecture.
