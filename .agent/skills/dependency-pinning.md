@@ -5,7 +5,7 @@
 ## Required justification
 State the feature/problem that needs the dependency, why existing code or platform APIs are insufficient, and the smallest acceptable alternative. A transitive dependency is still part of the trust surface.
 
-## Review procedure
+## Procedure
 1. Identify direct and transitive packages, exact versions, source registries, licenses, maintainers, release cadence, open advisories, native binaries and permissions/network behavior.
 2. Prefer maintained upstreams and the smallest dependency surface. Inspect install/build scripts and platform-specific binaries before adoption.
 3. Cargo: commit Cargo.lock for applications/workspaces; use locked CI builds; review cargo tree changes. Run available audit/deny checks and record when tooling is unavailable.
