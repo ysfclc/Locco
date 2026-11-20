@@ -70,3 +70,8 @@ PR #6 is a design proposal only. No product feature, browser engine or model run
 | Architecture acceptance | Open | LOC-0004 review and independent architecture/security/QA reviews remain outstanding |
 
 The system-plane and index reconciliation are documentation checks only. They do not make the architecture accepted or the foundation complete.
+
+
+## Latest Actions observation — 2026-11-20 09:15 UTC
+
+Security and policy workflow run 44709172176 for head 3f3f99c76b765730e95f3d2da826ff34669797ed concluded FAILURE. Its job record shows runner_id=0, empty runner_name, and steps=[]; the run completed in approximately two seconds. No shell or validator step executed in that job. This points to a runner allocation/dispatch failure before workflow execution, not a reported failure in the architecture documents or tests. GitHub did not expose a more specific cause through the available check/job/log endpoints. Do not label the architecture changes or validators as passed or failed on the basis of this run.
