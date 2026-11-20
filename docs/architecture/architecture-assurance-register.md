@@ -14,7 +14,7 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 | Rust domain | Kernel crate is a stub | Scaffold only | Records, commands, transitions, invariants |
 | Rust application layer | Described but no application crate in workspace | PROPOSED | Crate/port boundaries and service ownership |
 | FFI/JNI | ABI version and ping only | Link scaffold | Typed command/query envelopes, engine handles, durable event replay, effect lease/fencing, buffer ownership, panic/size/thread safety |
-| Canonical persistence | ADR-0008 direction only | PROPOSED | Encryption/storage spike, schema, migrations, recovery |
+| Canonical persistence | ADR-0008 direction only | PROPOSED | Encryption/storage spike, schema, WAL/crash behavior, key-loss recovery, backup/restore, rotation and deletion |
 | Evidence/provenance | Data-model contract only | PROPOSED | Stable identity, source offsets, immutable preservation |
 | Source adapters | Adapter contract only | PROPOSED | Lifecycle, authorization, partial results and cancellation |
 | Browser UI | No Locco browser implementation | Not implemented | Native browser chrome, tabs, downloads and sessions |
@@ -46,7 +46,7 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 - [ ] Approve system context, trust boundaries and module responsibilities.
 - [ ] Specify canonical identity, evidence, provenance, entities, claims, memory, events and artifacts.
 - [x] Specify proposed command/event/FFI protocol in ffi-command-event-protocol.md (contract tests still absent).
-- [ ] Specify persistence, encryption, migration, backup, restore and deletion.
+- [x] Specify persistence security, key lifecycle, migration, backup, restore and deletion contract in storage-security-and-recovery.md (technology spike and implementation remain open).
 - [ ] Specify offline behavior and resource budgets.
 
 ### C. Browser/DOM

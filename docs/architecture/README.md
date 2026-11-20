@@ -7,6 +7,7 @@ The target architecture is under active review. This index separates accepted ba
 | overview.md | Canonical five-plane system model, data authority and dependency flow |
 | module-boundaries.md | Rust, Android, platform adapter and iOS boundaries (actual vs proposed) |
 | data-model.md | Stable records, evidence, identity, tasks, capabilities, execution and artifacts |
+| storage-security-and-recovery.md | Encryption boundaries, key lifecycle, backup/restore, browser-session continuity and deletion |
 | ffi-contract.md | FFI boundary invariants and implementation status |
 | ffi-command-event-protocol.md | Versioned C ABI, JSON envelopes, event replay and platform-effect transport |
 | durable-execution-and-recovery.md | Transactional outbox, leases, cancellation, uncertainty and process recovery |

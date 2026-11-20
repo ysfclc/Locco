@@ -28,7 +28,7 @@ No product subsystem is accepted merely because it is described.
 **Outcome:** Locco can preserve, relate, retrieve and recover user information offline.
 
 - 1.1 Stable IDs, versioned commands and domain state transitions.
-- 1.2 Canonical local store and migrations; encryption design proven before sensitive records.
+- 1.2 Canonical local store and migrations; benchmark database/blob encryption, Keystore wrapping, recovery and key rotation before any sensitive records.
 - 1.3 Original evidence/blob storage, content identity, provenance and atomic writes.
 - 1.4 Entities, relationships, observations and claims with conflict handling.
 - 1.5 Durable execution state, transactional platform-effect outbox, append-only event journal and consumer cursors (ADR-0015).

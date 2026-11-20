@@ -116,4 +116,4 @@ The event and execution journals support reconstruction of activity and safe rec
 - Event journal compaction and retention.
 - Per-record conflict, archive, tombstone and secure-delete behavior.
 
-Resolve these through ADRs and test spikes before schema is implemented with real user data.
+Resolve these through ADRs and test spikes before schema is implemented with real user data. See [storage-security-and-recovery.md](storage-security-and-recovery.md) for the required key, backup, restore, browser-profile and deletion contract.

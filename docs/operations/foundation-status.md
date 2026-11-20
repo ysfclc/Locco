@@ -80,3 +80,13 @@ The system-plane and index reconciliation are documentation checks only. They do
 | Durable execution/recovery | Proposed specification | docs/architecture/durable-execution-and-recovery.md; ADR-0015; no execution engine/outbox implemented |
 | Native side-effect delivery semantics | Explicitly defined in proposal | At-least-once delivery, stable effect IDs, leases/fencing, uncertain states and no blind retries |
 | FFI contract verification | Not implemented | C/JNI ownership, invalid input, concurrency, replay and recovery tests remain future gate |
+
+
+## Storage security and recovery contract pass — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Storage/key/backup architecture | Proposed specification | docs/architecture/storage-security-and-recovery.md; ADR-0008 implementation choice still open |
+| Database encryption selection | Not selected | SQLCipher vs authenticated record/blob encryption must be benchmarked and threat-reviewed |
+| Key-loss/recovery behavior | Contract defined; not implemented | Must enter RECOVERY_REQUIRED and never silently initialize a replacement workspace |
+| Backup/restore continuity | Contract defined; not implemented | Encrypted, staged, verified restore; sessions/secrets excluded by default; no action replay |
