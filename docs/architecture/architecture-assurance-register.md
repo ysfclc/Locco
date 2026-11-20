@@ -172,7 +172,7 @@ The daily-browser contract requires a real persistent normal profile and a simul
 ## Android backup and transfer policy
 
 - [x] Specify explicit legacy full-backup and modern cloud/device-transfer exclusions for every app-data domain; current manifest/XML policy is guarded by `scripts/validate_android_backup_policy.py` (OEM/device-transfer tests and future custom export remain open).
-- [x] Add six regression cases for the Android backup validator (valid manifest/policy, positive fixture, allowBackup=true, missing D2D exclusion, missing legacy exclusion and include-rule rejection); device/OEM behavior remains unverified (LOC-R026).
+- [x] Add and locally exercise six regression cases for Android backup policy (valid manifest/policy, positive fixture, allowBackup=true, missing D2D exclusion, missing legacy exclusion and include-rule rejection); all six passed in an isolated project, while device/OEM behavior remains unverified (LOC-R026).
 
 
 ## R026 backup policy validation evidence

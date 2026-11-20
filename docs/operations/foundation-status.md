@@ -283,7 +283,7 @@ The build scripts' presence and static checks do not constitute a successful bui
 | Manifest backup defaults | IMPLEMENTED IN PROPOSAL | `allowBackup=false` plus explicit legacy and Android 12+ backup-rule references. |
 | Legacy cloud backup | EXCLUDED BY POLICY | `backup_rules.xml` excludes all nine app-data domains. |
 | Android 12+ cloud backup and D2D transfer | EXCLUDED BY POLICY | `data_extraction_rules.xml` includes both sections and excludes all nine app-data domains in each. |
-| Static policy validator | ADDED; test execution pending | `scripts/validate_android_backup_policy.py` fails closed if a resource, domain exclusion or transfer section is missing or an include rule appears. |
+| Static policy validator | PASS — isolated six-case regression run | `scripts/validate_android_backup_policy.py` fails closed if a resource, domain exclusion or transfer section is missing or an include rule appears. |
 | OEM/device-transfer behavior | NOT DEVICE-VERIFIED | Must be verified on the reference phone and declared OEM support matrix; `allowBackup=false` alone is not sufficient on all OEMs. |
 | Explicit workspace export | NOT IMPLEMENTED | Future encrypted, user-initiated export excludes browser sessions, credentials and private profile data. |
 
@@ -297,3 +297,13 @@ The build scripts' presence and static checks do not constitute a successful bui
 | Python compilation | PASS | Validator and test module compile with `py_compile`. |
 | Android resource/manifest compilation | NOT RUN | No Android SDK/build-tools/Gradle in this environment; GitHub Android workflow had no runner. |
 | OEM cloud backup/device transfer | NOT DEVICE-VERIFIED | Must be tested on reference Redmi and other declared OEM support targets. |
+
+
+## Latest CI dispatch state — 2026-11-20 10:15 UTC
+
+All three workflows on commit `c2b10dbcc9a2848b93179bff1ec65685f7f35785` failed before runner allocation:
+- Security/policy `44717650378`, job `136225013272`
+- Android debug APK `44717650615`, job `136225014124`
+- Rust core `44717650358`, job `136225012545`
+
+Each job reports `runner_id=0`, empty `runner_name`, and `steps=[]`; each started and completed within roughly two seconds. Therefore all source/build checks remain **NOT RUN**, not FAIL at command level and not PASS. The isolated backup validator/regression results recorded above are separate local evidence and do not replace the Actions checks.
