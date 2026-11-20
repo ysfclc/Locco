@@ -181,3 +181,8 @@ The committed backup XML and validator read back from PR #6 were assembled in an
 
 
 - [x] Specify network egress and local-network access boundaries for background acquisition, user browsing, page-originated requests and local model inference (network-and-egress-policy.md; HTTP/browser engine adversarial tests remain open; LOC-R027).
+
+
+## LOC-R027 network assurance specification
+
+- [x] Define a separate network egress/local-network boundary for background adapters, browser-page requests and local model inference in `network-and-egress-policy.md`; IPv4/IPv6, DNS rebinding, redirect and explicit local-scope test cases are specified (runtime adapter tests and engine adversarial suite remain open).

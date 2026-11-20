@@ -317,3 +317,16 @@ Each job reports `runner_id=0`, empty `runner_name`, and `steps=[]`; each starte
 | Explicit local-network source access | SPECIFIED / NOT IMPLEMENTED | Host/port/purpose/expiry/device/network-bound grants with revocation; no default LAN scanning. |
 | Browser page-to-private-network behavior | ENGINE-SPECIFIC / NOT TESTED | Requires actual request-emission tests across frames, forms, images, fetch/XHR, WebSocket, service workers and redirects. No blanket WebView hook guarantee. |
 | Local model egress | SPECIFIED | Offline by default; remote providers require explicit configuration/consent and separate credential/data contracts. |
+
+
+## Network acquisition security and current head verification — 2026-11-20
+
+| Gate | State | Evidence |
+|---|---|---|
+| Network/local-network policy | SPECIFIED / NOT IMPLEMENTED | `docs/architecture/network-and-egress-policy.md` separates direct user navigation, page-originated requests and background acquisition. Background fetches validate URL schemes, IPv4/IPv6 destination classes, pin validated DNS resolution, revalidate redirects, strip cross-origin credentials, bound resource usage and require explicit host/port/purpose/expiry grants for local devices. |
+| Browser page to local services | ENGINE-SPECIFIC / NOT TESTED | CORS and WebView interception callbacks do not prove the request was not sent; test frames/forms/images/fetch/XHR/WebSocket/service worker/pop-up/redirect paths on the selected engine. |
+| Scope/roadmap alignment | UPDATED | `scope.md` and Phase 2 roadmap include scoped local-network sources and network egress hardening (LOC-R027). |
+| Requirement matrix | 27 rows | LOC-R001–LOC-R027 are contiguous in the matrix before its usage legend. |
+| Latest Actions on `0fbf26ed41d7acde284e3cc1333dcd3a708a553f` | NOT RUN — no runner allocated | Security `44718295375` / job `136227203877`; Rust `44718295378` / job `136227204229`; Android `44718295363` / job `136227204322`. Every job returned `runner_id=0`, empty runner name and `steps=[]` (completed within 1–2 seconds). No workflow command ran. |
+| Backup-policy regression suite | PASS — isolated 6-case run | Exact validator content read back from PR plus mirrored current manifest/rules passed positive and negative scenarios. Android resource compiler and OEM transfer/device verification remain NOT RUN. |
+| Architecture / foundation | OPEN | PR #6 remains a draft; LOC-0003/0004/0005 open; no independent architecture/security/QA acceptance or Phase 0 approval. |
