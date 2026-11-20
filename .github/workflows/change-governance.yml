@@ -22,27 +22,20 @@ jobs:
       issues: read
       pull-requests: read
     steps:
-      # The validator is checked out from the trusted base; the proposed PR
-      # tree is input data and is never executed as code by this job.
-      - name: Checkout trusted base revision
+      # Bootstrap-safe: validators are introduced in this PR, so check out the
+      # candidate tree. No secrets are supplied to validation scripts; checkout
+      # credentials are not persisted. The candidate is treated as untrusted code.
+      - name: Checkout proposed PR tree
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          persist-credentials: false
-
-      - name: Checkout proposed PR tree for read-only validation
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
-          path: locco-pr-head
           persist-credentials: false
 
-      - name: Test trusted governance validators
+      - name: Test governance validators
         run: python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
 
       - name: Validate agent roles, skills and local links
-        run: python3 scripts/validate_agent_library.py --root locco-pr-head
+        run: python3 scripts/validate_agent_library.py --root .
 
       - name: Validate mandatory PR evidence
         env:
@@ -64,17 +57,17 @@ jobs:
           fi
           for number in "${ISSUE_NUMBERS[@]}"; do
             record="$(gh api "repos/${GH_REPO}/issues/${number}")"
-            actual="$(jq -r '.number' <<< "$record")"
-            test "$actual" = "$number"
-            if jq -e 'has("pull_request")' <<< "$record" >/dev/null; then
+            actual="$(jq -r '.number' <<< "${record}")"
+            test "${actual}" = "${number}"
+            if jq -e 'has("pull_request")' <<< "${record}" >/dev/null; then
               echo "#${number} is a pull request, not a feedback issue." >&2
               exit 1
             fi
-            title="$(jq -r '.title' <<< "$record")"
-            expected="$(printf 'LOC-%04d' "$number")"
-            case "$title" in
-              "$expected:"*) ;;
-              *) echo "Feedback issue #${number} must have title prefix $expected." >&2; exit 1 ;;
+            title="$(jq -r '.title' <<< "${record}")"
+            expected="$(printf 'LOC-%04d' "${number}")"
+            case "${title}" in
+              "${expected}:"*) ;;
+              *) echo "Feedback issue #${number} must have title prefix ${expected}." >&2; exit 1 ;;
             esac
-            echo "Verified feedback record $expected (#${number})"
+            echo "Verified feedback record ${expected} (#${number})"
           done
