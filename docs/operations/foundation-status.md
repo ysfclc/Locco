@@ -341,3 +341,17 @@ Each job reports `runner_id=0`, empty `runner_name`, and `steps=[]`; each starte
 | Shared shell/accessibility | SPECIFIED | Global capture/search, activity/approval states, responsive behavior, state preservation, Back semantics, TalkBack/font scale/reduced motion. |
 | Native prototypes/user evaluation | NOT STARTED | All three prototypes must be compared on the same 12 journeys before final IA/visual-token selection (LOC-R028). |
 | Requirements traceability | 28 proposed IDs | LOC-R001–LOC-R028 are in the matrix before its usage legend. |
+
+
+## Latest Actions and local verification environment — 2026-11-20 18:16 CET
+
+| Gate | State | Evidence |
+|---|---|---|
+| Latest Rust CI | NOT RUN — no runner | Run `44781588881`, job `136445375368`, head `d7af29a69e5adb6606604e4ed13f6c900981846c`; `runner_id=0`, empty runner name, `steps=[]`. |
+| Latest Android CI | NOT RUN — no runner | Run `44781588959`, job `136445374967`, same head; `runner_id=0`, empty runner name, `steps=[]`. |
+| Latest Security CI | NOT RUN — no runner | Run `44781588911`, job `136445374807`, same head; `runner_id=0`, empty runner name, `steps=[]`. |
+| Local testbed | UNAVAILABLE | The expected `/testbed` directory does not exist in the execution environment. Available tools include Git and Python; Rustup/Cargo, cargo-ndk, Gradle, Android SDK/adb/NDK and actionlint are absent. |
+| Android backup policy unit suite | PASS — isolated run | Six regression cases previously passed against the read-back validator and backup-rule structure. |
+| Build scripts | PASS — shell syntax only | Bash parser checks passed earlier on the exact read-back versions; no compilation or APK build was possible. |
+| Native UX comparative brief | SPECIFIED | LOC-R028, `locco-ux-prototype-brief.md`; no prototypes/user sessions yet. |
+| Phase 0 | OPEN | No actual Rust/Android build, physical-device test, independent acceptance or verified branch protection. Phase 1 remains gated. |
