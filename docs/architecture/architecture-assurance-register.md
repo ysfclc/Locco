@@ -49,7 +49,7 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 - [x] Specify proposed canonical identity, evidence, provenance, entities, claims, memory, events and artifacts in data-model.md (physical schema, identity algorithm and encryption driver remain open).
 - [x] Specify proposed command/event/FFI protocol in ffi-command-event-protocol.md (contract tests still absent).
 - [x] Specify persistence security, key lifecycle, migration, backup, restore and deletion contract in storage-security-and-recovery.md (technology spike and implementation remain open).
-- [ ] Specify offline behavior and resource budgets.
+- [x] Specify the normative model context admission budget, output reserve, safety margin and insufficient-budget fallback in context-feeding-contract.md (tokenizer/runtime and multimodal cost tests remain open).
 
 ### C. Browser/DOM
 - [x] Specify the proposed full native browser, account/session and DOM observation architecture in browser-dom-and-session.md (engine/runtime implementation and device acceptance remain open).

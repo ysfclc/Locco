@@ -7,7 +7,7 @@ Diagnostics remain on-device by default. Export is user-initiated and redacted.
 
 ## Evaluation
 - Golden sets cover representative tasks and adversarial source text.
-- Deterministic assertions test parsing, ranking, dedupe, evidence lineage, context budget and policy decisions.
+- Deterministic assertions test parsing, ranking, dedupe, evidence lineage, context budget and policy decisions. Context tests assert the hard 70% input ceiling, output reserve, 10% safety margin, 100% allocation of available input weights, tokenizer boundary and multimodal/insufficient-budget fallback.
 - Model outputs are scored against task-specific rubrics and evidence support; no cloud calls required.
 - Compare model/prompt/runtime versions against the same fixtures.
 - Track retrieval precision/recall, unsupported-claim rate, schema-valid rate, fallback rate, latency percentiles and peak memory.

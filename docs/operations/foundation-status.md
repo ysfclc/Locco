@@ -256,3 +256,12 @@ The build scripts' presence and static checks do not constitute a successful bui
 | Browser requirements traceability | 24 proposed rows | LOC-R023 covers daily browser behavior; LOC-R024 covers credential/autofill/passkey boundaries. Both rows are inside the matrix before its legend. |
 | Engine feature parity | NOT TESTED | WebView and GeckoView must run the same popup/file upload/download/external-intent/permission/page-control/credential/provider/session suite on the reference phone before selection. |
 | Login regression | OPEN / UNCLASSIFIED | LOC-0005; exact Memo-2 installed build, affected provider, entry surface and failure stage still unknown. |
+
+
+## Context budget invariant correction — 2026-11-20
+
+| Gate | State | Evidence |
+|---|---|---|
+| Context input/output budget contradiction | Corrected in architecture proposal | `context-feeding-contract.md` now defines input_limit = min(70% of actual usable context, context minus task-specific output reserve minus 10% safety margin). |
+| Allocation weights | Corrected | The 10/15/10/55/10 weights now total 100% of available input and explicitly cover static instructions, task envelope, current state, evidence and curated memory. They are not percentages of the full context window. |
+| Regression coverage | Specified, not implemented | LOC-R025 requires hard-ceiling, output reserve, safety margin, weight-sum, tokenizer/multimodal cost and insufficient-budget fallback tests. |

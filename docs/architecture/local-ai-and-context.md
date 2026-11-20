@@ -22,7 +22,7 @@ The context supplied to inference is not a mirror of the database. It includes:
 
 Admission requires task relevance, provenance, non-duplication, freshness/confidence policy, sensitivity clearance and expected contribution. Record admission/rejection reasons without copying private content into telemetry.
 
-The existing context-feeding contract's initial 10/15/55/10/10 percent budget is a starting heuristic, not a permanent constant. Actual tokenizer, context window, multimodal token cost and task budget determine admission. Hard input ceiling and output reserve remain enforced.
+The context-feeding contract defines an input ceiling of 70% of the actual usable model context, a task-specific output reserve and an additional 10% safety margin. Its 10/15/10/55/10 weights are shares of the available input budget (static instructions, user/task envelope, current state, evidence, curated memory), not shares of the full model context. Actual tokenizer, usable context, multimodal cost and output contract govern admission.
 
 ## Retrieval and memory
 
