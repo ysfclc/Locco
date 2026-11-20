@@ -44,7 +44,68 @@ Profiles to design:
 
 A profile owns its WebView data context, cookies, DOM/local storage, cache policy, permissions, tabs and history. Accounts must not bleed across profiles. Persistent sessions should survive normal restart/update when the website permits.
 
-Do not assume Android CookieManager is automatically profile-isolated. Investigate AndroidX WebKit multi-profile support, WebView data-directory constraints and process requirements. Choose the isolation strategy only after a device/API-level spike and ADR.
+
+### 4.1 Android WebView profiles: viable, but feature-gated
+
+AndroidX WebKit 1.9.0 added the multi-profile API. A Profile represents one browsing session and each profile has separate data such as cookies and WebStorage. ProfileStore manages creation and deletion. WebViewCompat.setProfile binds a WebView to a named profile and must be called before doing anything else with that WebView except attaching it to the view hierarchy. Availability is runtime-gated by WebViewFeature.MULTI_PROFILE.
+
+Implications:
+- Use a named persistent profile for normal browsing.
+- A private profile may use a separate ephemeral lifecycle only after deletion of cookies, WebStorage and profile data is verified.
+- Tabs belong to a profile and share its identity; they are not separate account silos.
+- Use the profile-specific CookieManager and WebStorage, not the default global manager, for non-default profiles.
+- If MULTI_PROFILE is unavailable, expose only the default session. Do not simulate isolation by copying cookie strings or sharing global cookie state.
+- Before deletion, close/destroy every WebView bound to the profile, delete it through ProfileStore, then verify removal.
+- Test profile creation, switching, deletion and persistence on the target phone's actual WebView provider version.
+
+References: [AndroidX Profile](https://developer.android.com/reference/androidx/webkit/Profile), [ProfileStore](https://developer.android.com/reference/androidx/webkit/ProfileStore), [WebViewCompat.setProfile](https://developer.android.com/reference/androidx/webkit/WebViewCompat), [AndroidX WebKit release notes](https://developer.android.com/jetpack/androidx/releases/webkit).
+
+### 4.2 Third-party cookies
+
+Android's CookieManager controls third-party cookies per WebView. Apps targeting Lollipop/API 21 or later default to rejecting third-party cookies. This setting can differ across WebView instances.
+
+Do not enable third-party cookies globally as a speculative login fix. Locco needs a conservative default, per-profile/site compatibility decisions with visible rationale, SameSite/Secure and federated-login fixtures, and no cookie-value diagnostics. Any compatibility exception must have a reproducible reason and test.
+
+Reference: [CookieManager.setAcceptThirdPartyCookies](https://developer.android.com/reference/android/webkit/CookieManager).
+
+### 4.3 Three distinct sign-in paths
+
+Do not collapse these into one "login works" checkbox.
+
+**A. Ordinary website browsing inside Locco.** The user signs into a site in the actual browser profile when that site permits embedded browsers. Its cookies/storage remain in that profile. Verify the authenticated destination after sign-in and app restart.
+
+**B. Connecting an account to Locco.** When Locco needs delegated authorization (OAuth/OIDC), prefer a supported browser authentication flow such as AndroidX Browser Auth Tab where available, or the Custom Tabs fallback. Use authorization code + PKCE, validate state and OIDC nonce, and verify redirect ownership. Auth Tab is an authentication surface, not the Locco browser engine.
+
+Auth Tab shares cookie/credential state with Chrome by default and can be made ephemeral. It does not make the authenticated Chrome session available as cookies in an embedded WebView. A successful OAuth callback may give Locco a scoped token for an authorized API; it does not mean Locco can inspect the provider's logged-in website DOM.
+
+**C. Provider rejects embedded authentication.** Google explicitly disallows OAuth authorization inside embedded WebViews. Do not spoof a user agent, hide the WebView or bypass provider policy. Use supported native sign-in/credential or Auth Tab/Custom Tabs flows. If a user wants to browse a website that requires that provider's login, explain whether the handoff can return a usable page session; do not claim a Chrome/Auth Tab cookie is transferred into Locco's WebView.
+
+WebView passkey support is limited: Android documents it for first-party domains associated with the app through Digital Asset Links; it is not general external-identity-provider support. WebView does not share its cookies/session with Chrome and lacks WebAuthn Conditional UI. Use Credential Manager or Auth Tab for supported native/IdP flows.
+
+References: [Android passkey architecture: Credential Manager vs Auth Tab vs WebView](https://developer.android.com/identity/passkeys/architecture), [Google OAuth best practices](https://developers.google.com/identity/protocols/oauth2/resources/best-practices).
+
+### 4.4 DOM observation scripts in isolated worlds
+
+AndroidX WebKit 1.16.0 adds JS_INJECTION_IN_FRAME_AND_WORLD, including origin-scoped addJavaScriptOnEvent and world-specific addWebMessageListener. Both APIs require runtime feature detection.
+
+Preferred path when supported:
+- Register a static, reviewed observer script in a dedicated isolated JavaScript world.
+- Restrict injected frames to exact allowed-origin rules and intended frames.
+- Register a minimal read-only message listener in the same isolated world.
+- Validate message origin, source frame, schema version, size, profile/tab/document epoch and rate limits in native code.
+- Return only bounded PageObservation data; no native actions, credentials, filesystem, tokens or arbitrary command calls are exposed to page content.
+- Remove the script/listener when the tab/profile is destroyed or observation is disabled.
+
+The older page-world addWebMessageListener API injects an object into the page's global scope; it is not the preferred trust boundary for arbitrary websites. Do not silently substitute it when isolated-world support is missing.
+
+Fallback policy:
+- The browser remains usable.
+- DOM AI features are marked unsupported/degraded for that WebView instance, or limited to a one-shot read-only observation whose page-world result is treated as untrusted and cannot authorize an action.
+- No page-world fallback receives privileged native methods.
+- Never evaluate model-generated JavaScript.
+
+References: [WebViewCompat.addJavaScriptOnEvent](https://developer.android.com/reference/androidx/webkit/WebViewCompat), [WebViewCompat.addWebMessageListener](https://developer.android.com/reference/androidx/webkit/WebViewCompat), [WebViewFeature.JS_INJECTION_IN_FRAME_AND_WORLD](https://developer.android.com/reference/androidx/webkit/WebViewFeature).
+
 
 Authentication scenarios:
 - Username/password form login where allowed.

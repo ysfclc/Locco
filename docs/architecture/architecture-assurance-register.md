@@ -52,7 +52,11 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 ### C. Browser/DOM
 - [ ] Design full native browser.
 - [ ] Reproduce LOC-0005 login/session problem.
-- [ ] Choose profile isolation after WebView/AndroidX WebKit spike.
+- [ ] Compare AndroidX WebView multi-profile with GeckoView session contexts on the target phone.
+- [ ] Verify AndroidX WebKit MULTI_PROFILE and JS_INJECTION_IN_FRAME_AND_WORLD support on target WebView.
+- [ ] Evaluate Auth Tab/Custom Tabs/Credential Manager as separate authentication paths; prove no cookie-sharing assumption is made.
+- [ ] Reproduce embedded identity-provider restrictions using supported handoff.
+- [ ] Accept ADR-0013 only after same-device engine/auth spike results.
 - [ ] Specify DOM snapshot, script ownership and origin boundaries.
 - [ ] Specify DOM Stitching and deterministic schema/locator validation.
 - [ ] Specify typed actions, approval and uncertainty.
@@ -92,7 +96,10 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 ## Explicit architectural risks
 
 1. Rust domain ownership plus Android-owned WebView/model/OS runtimes requires a durable async event/command contract; ping-only FFI is insufficient.
-2. WebView cookie/session behavior may not provide desired profile isolation; global CookieManager assumptions must be tested.
+2. WebView profile isolation is available through AndroidX WebKit 1.9.0+ only when MULTI_PROFILE is supported by the installed provider; fallback must not pretend to isolate sessions.
+2a. AndroidX WebKit 1.16.0 isolated-world DOM APIs require runtime JS_INJECTION_IN_FRAME_AND_WORLD support; older providers must not receive a privileged page-world bridge.
+2b. Auth Tab shares Chrome session by default but does not share Chrome cookies with WebView; an OAuth callback must not be mislabeled as embedded browser sign-in.
+2c. GeckoView offers session/context controls but requires separate engine, resource and maintenance evaluation.
 3. Identity providers can reject embedded browsers; external login does not imply embedded cookie transfer.
 4. Background WebView execution cannot be assumed from invisible overlay windows.
 5. DOM snapshots are observations, not stable element identities; SPAs and virtualized lists invalidate locators.

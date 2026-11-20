@@ -44,14 +44,14 @@ Gate: deterministic schema/migration/round-trip/integrity/offline tests, data-pr
 
 - 2.1 Source adapter contract and provenance lifecycle.
 - 2.2 Native browser shell: address/search, tabs, navigation, history, bookmarks, downloads and page controls.
-- 2.3 Persistent/ephemeral profiles, account sign-in, cookie/storage lifecycle and secure handoff.
-- 2.4 Bounded, versioned DOM observation with origin/frame provenance and sensitive-field redaction.
+- 2.3 Browser engine decision (WebView vs GeckoView), persistent/ephemeral profiles, account sign-in, cookie/storage lifecycle and secure Auth Tab/Custom Tabs handoff.
+- 2.4 Bounded, versioned DOM observation with origin/frame provenance, isolated-world injection where supported and sensitive-field redaction.
 - 2.5 Inspect/Select UI, semantic locators, page mutation and observation diffs.
 - 2.6 Share/import, file/document, manual, public-page and permitted API acquisition.
 - 2.7 Capture pipelines, dedupe, cancellation, partial-result preservation and resume.
 - 2.8 Browser authentication, session isolation and authenticated read-only device acceptance.
 
-Gate: LOC-0005 passes; captured evidence is preserved before parse; native browser works without AI; unsupported access is honest.
+Gate: LOC-0005 passes; engine selection ADR is accepted from target-device evidence; authenticated sessions survive supported restarts/updates; captured evidence is preserved before parse; native browser works without AI; unsupported access is honest.
 
 ## 3 — Model ecosystem and local inference
 

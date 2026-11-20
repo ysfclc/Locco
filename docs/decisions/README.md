@@ -15,3 +15,5 @@ ADRs are append-only. Supersede decisions with a new ADR; never erase rejected a
 | 0009 | Android native stack and build baseline | Accepted |
 | 0010 | Authorization-aware source adapters | Accepted |
 | 0011 | CI trust boundary and release gates | Accepted |
+
+| 0013 | Browser engine and session isolation evaluation | Proposed; WebView vs GeckoView/auth handoff spike required |
