@@ -2,6 +2,8 @@
 
 **Status:** Open; working register for LOC-0004.
 
+Checklist semantics: `[x]` means a proposed document/contract exists and is linked. It does **not** mean the architecture is accepted, code is implemented, tests pass or a physical device has been verified. Those are tracked as separate evidence states.
+
 ## Evidence labels
 
 PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFIED and BLOCKED are distinct. A document or control in a screen does not prove runtime behavior.
@@ -14,11 +16,11 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 | Rust domain | Kernel crate is a stub | Scaffold only | Records, commands, transitions, invariants |
 | Rust application layer | Described but no application crate in workspace | PROPOSED | Crate/port boundaries and service ownership |
 | FFI/JNI | ABI version and ping only | Link scaffold | Typed command/query envelopes, engine handles, durable event replay, effect lease/fencing, buffer ownership, panic/size/thread safety |
-| Canonical persistence | ADR-0008 direction only | PROPOSED | Encryption/storage spike, schema, WAL/crash behavior, key-loss recovery, backup/restore, rotation and deletion |
+| Canonical persistence | ADR-0008 plus storage-security-and-recovery.md contract; physical schema/driver not implemented | PROPOSED | Technology spike, schema, WAL/crash behavior, key-loss recovery, backup/restore, rotation and deletion |
 | Evidence/provenance | Data-model contract only | PROPOSED | Stable identity, source offsets, immutable preservation |
 | Source adapters | Adapter contract only | PROPOSED | Lifecycle, authorization, partial results and cancellation |
 | Browser UI | No Locco browser implementation | Not implemented | Native browser chrome, tabs, downloads and sessions |
-| Browser authentication | No session subsystem | BLOCKED by design gap | LOC-0005 reproduction and device acceptance |
+| Browser authentication | Explicit proposed identity/session contract in browser-dom-and-session.md; no runtime session subsystem yet | PROPOSED; device acceptance blocked | LOC-0005 flow classification/reproduction, engine choice and target-device acceptance |
 | DOM observation | No implementation | PROPOSED | Versioned bounded observation and fixtures |
 | DOM Stitching | No implementation | PROPOSED | Schema/relationship proposal, validation and drift tests |
 | Model catalogue | No Locco model hub implementation | PROPOSED | Metadata schema, sources, cache and trust model |
@@ -44,37 +46,37 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 
 ### B. Contracts
 - [ ] Approve system context, trust boundaries and module responsibilities.
-- [ ] Specify canonical identity, evidence, provenance, entities, claims, memory, events and artifacts.
+- [x] Specify proposed canonical identity, evidence, provenance, entities, claims, memory, events and artifacts in data-model.md (physical schema, identity algorithm and encryption driver remain open).
 - [x] Specify proposed command/event/FFI protocol in ffi-command-event-protocol.md (contract tests still absent).
 - [x] Specify persistence security, key lifecycle, migration, backup, restore and deletion contract in storage-security-and-recovery.md (technology spike and implementation remain open).
 - [ ] Specify offline behavior and resource budgets.
 
 ### C. Browser/DOM
-- [ ] Design full native browser.
+- [x] Specify the proposed full native browser, account/session and DOM observation architecture in browser-dom-and-session.md (engine/runtime implementation and device acceptance remain open).
 - [ ] Reproduce LOC-0005 login/session problem.
 - [ ] Compare AndroidX WebView multi-profile with GeckoView session contexts on the target phone.
 - [ ] Verify AndroidX WebKit MULTI_PROFILE and JS_INJECTION_IN_FRAME_AND_WORLD support on target WebView.
-- [ ] Evaluate Auth Tab/Custom Tabs/Credential Manager as separate authentication paths; prove no cookie-sharing assumption is made.
+- [x] Specify Auth Tab/Custom Tabs/Credential Manager as distinct authentication paths and document cookie/session boundaries; target-device compatibility and LOC-0005 reproduction remain open.
 - [ ] Reproduce embedded identity-provider restrictions using supported handoff.
 - [ ] Accept ADR-0013 only after same-device engine/auth spike results.
-- [ ] Specify DOM snapshot, script ownership and origin boundaries.
-- [ ] Specify DOM Stitching and deterministic schema/locator validation.
-- [ ] Specify typed actions, approval and uncertainty.
+- [x] Specify bounded DOM observations, script ownership and origin boundaries in browser-dom-and-session.md (observer implementation and adversarial fixtures remain open).
+- [x] Specify proposed DOM Stitching and deterministic schema/locator validation in browser-dom-and-session.md and capability-compiler.md (implementation/tests remain open).
+- [x] Specify typed capabilities, exact approval binding, action uncertainty and verification in capability-compiler.md and durable-execution-and-recovery.md (implementation/tests remain open).
 - [ ] Test SPA, frames, shadow roots, virtualized lists, stale nodes and prompt injection.
 
 ### D. Model ecosystem
-- [ ] Define model/artifact metadata schemas.
-- [ ] Define catalogue sources, provenance and trust.
-- [ ] Define runtime compatibility descriptors.
-- [ ] Define import/download/verification/install lifecycle.
-- [ ] Define device fit, benchmarking, scheduling and resource governor.
+- [x] Specify proposed model, release and artifact metadata contracts in model-ecosystem.md (schema implementation and validation remain open).
+- [x] Specify catalogue-source adapters, provenance and trust boundaries in model-ecosystem.md (source adapters remain unimplemented).
+- [x] Specify runtime capability and compatibility descriptors in model-ecosystem.md (runtime matrix must be measured on device).
+- [x] Specify model import/download/verification/staging/install/load-test lifecycle in model-ecosystem.md (implementation/tests remain open).
+- [x] Specify device-fit levels, benchmark dimensions, resource scheduling and a conservative resource governor in model-ecosystem.md (target-device measurements remain open).
 - [ ] Validate candidate LiteRT-LM/GGUF/specialist runtimes on target hardware.
 
 ### E. Compiler/execution
-- [ ] Specify TaskSpec and RequirementGraph.
-- [ ] Specify component kinds, versions and trust.
-- [ ] Specify deterministic assembly and readiness.
-- [ ] Specify ExecutionPackage and generic DAG.
+- [x] Specify TaskSpec and RequirementGraph in capability-compiler.md (serialization and contract tests remain open).
+- [x] Specify versioned capability-library component kinds and trust promotion in capability-compiler.md (implementation/tests remain open).
+- [x] Specify deterministic linking, conflict checks and readiness/capability-gap reporting in capability-compiler.md (implementation/tests remain open).
+- [x] Specify immutable ExecutionPackage and generic execution graph in capability-compiler.md (implementation/tests remain open).
 - [x] Specify cancellation, checkpoint, retry, process death and uncertain effects in durable-execution-and-recovery.md (implementation/tests still absent).
 - [ ] Test unrelated task shapes without planner code branches.
 
@@ -82,11 +84,11 @@ PROPOSED, IMPLEMENTED, TESTED, DEVICE-VERIFIED, EXTERNALLY-CONSTRAINED, UNVERIFI
 - [x] Inspect Memo-1 and Memo-2 source and separate working behavior from plans; see reference-inspiration-audit.md.
 - [ ] Produce and test Locco-specific navigation alternatives; initial hypotheses are recorded.
 - [ ] Define original tokens, components, motion and accessibility.
-- [ ] Define Browser and Model Hub UX.
+- [x] Specify proposed Browser and Model Hub UX in browser-dom-and-session.md, model-ecosystem.md and native-experience.md (interactive prototypes and device acceptance remain open).
 - [ ] Verify each control and state.
 
 ### G. Security/quality
-- [ ] Map trust boundaries and attack surfaces.
+- [x] Specify initial trust boundaries and attack surfaces in target-system-blueprint.md and security/threat-model.md (independent review and adversarial tests remain open).
 - [ ] Define contract, property, fuzz, emulator, device and upgrade tests.
 - [x] Create initial requirement-to-architecture/test mapping in requirement-traceability.md.
 - [ ] Convert planned test IDs into implemented tests with passing evidence.
