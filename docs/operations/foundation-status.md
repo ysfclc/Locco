@@ -186,3 +186,17 @@ The founding/raw brainstorm remains preserved unchanged. The reviewed product sc
 | Locally available checks | Bash syntax only | `bash -n` passed on the exact read-back versions of `build-rust-android.sh` and `build-android-debug.sh`. This is not a Rust/Gradle/Android build. |
 | Local build environment | BLOCKED / unavailable | This execution environment has Java but no rustup, cargo, cargo-ndk, Gradle, Android SDK/sdkmanager or NDK. |
 | Account-login issue | Broadened and open | LOC-0005 title/body now explicitly require classifying embedded website login, Auth Tab/Custom Tabs, OAuth/OIDC, model/API account credentials and third-party app sign-in before diagnosis. |
+
+
+## Final architecture assurance synchronization — 2026-11-20
+
+| Gate | Status | Evidence/blocker |
+|---|---|---|
+| Architecture proposal head | Open draft | PR #6 head `48ce5884fc9a70f50664c33b322a5f1a0d0329ff`; 48 files changed. |
+| Requirements traceability | 22 rows, IDs LOC-R001–LOC-R022 | LOC-R021 and LOC-R022 are now inside the requirements table and referenced by the assurance register. All remain proposed until implementation evidence exists. |
+| Model catalogue trust | Specified, not implemented | Source pinning, digest integrity, publisher authenticity, registry attestations, parser safety, runtime validation and device quality remain distinct. |
+| DOM observation/Stitching safety | Specified, not implemented | Snapshot-local identity, live locator re-resolution, mutation budgets, sensitive-value redaction and evidence-backed collection completeness are documented. |
+| Latest full CI set | NOT RUN — no runner allocated | On `48ce5884fc9a70f50664c33b322a5f1a0d0329ff`: Security run `44712940813`, Rust run `44712940800`, Android run `44712940782`. Each raw job reports `runner_id=0`, empty runner name and `steps=[]`; none of the commands ran. |
+| Build script static syntax | PASS (Bash parser only) | `bash -n` passed on read-back script contents. Rust/NDK/Gradle/APK builds are still NOT RUN. |
+| Independent review / Phase 0 | OPEN | No independent architecture/security/QA acceptance; no device verification; LOC-0003/0004/0005 remain open. |
+
