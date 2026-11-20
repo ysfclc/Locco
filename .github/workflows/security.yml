@@ -62,6 +62,9 @@ jobs:
       - name: Validate workflows
         run: actionlint .github/workflows/*.yml
 
+      - name: Validate Android backup policy
+        run: python3 scripts/validate_android_backup_policy.py
+
       - name: Verify foundation structure
         run: bash scripts/verify-foundation.sh
 
