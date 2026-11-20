@@ -3,7 +3,7 @@ name: Android debug APK
 on:
   push:
     branches: [main]
-    paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
+    paths: ["core/**", "android/**", "scripts/build-*.sh", "scripts/verify-android-apk.sh", ".github/workflows/android.yml"]
   pull_request:
     paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
 
@@ -44,14 +44,12 @@ jobs:
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
       - name: Install cargo-ndk
         run: cargo install cargo-ndk --version 4.1.2 --locked
-      - name: Build Rust libraries
-        run: cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -o android/app/src/main/jniLibs build --manifest-path core/Cargo.toml --release -p locco-ffi
       - name: Configure Gradle
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         with:
           gradle-version: "8.9"
-      - name: Assemble debug APK
-        run: gradle -p android --no-daemon assembleDebug
+      - name: Build and verify debug APK (same entrypoint as local development)
+        run: ./scripts/build-android-debug.sh
       - name: Upload debug APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
