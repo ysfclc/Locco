@@ -3,9 +3,9 @@ name: Android debug APK
 on:
   push:
     branches: [main]
-    paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
+    paths: ["core/**", "android/**", "rust-toolchain.toml", "scripts/build-*.sh", "scripts/verify-android-apk.sh", ".github/workflows/android.yml"]
   pull_request:
-    paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
+    paths: ["core/**", "android/**", "rust-toolchain.toml", "scripts/build-*.sh", "scripts/verify-android-apk.sh", ".github/workflows/android.yml"]
 
 permissions:
   contents: read
@@ -22,6 +22,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - name: Check shell script syntax
+        run: |
+          for script in scripts/*.sh; do
+            bash -n "$script"
+          done
       - name: Cache Cargo registry and build output
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -41,17 +46,24 @@ jobs:
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
-          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
+          {
+            echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018"
+            echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/27.2.12479018"
+            echo "NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018"
+          } >> "$GITHUB_ENV"
       - name: Install cargo-ndk
         run: cargo install cargo-ndk --version 4.1.2 --locked
-      - name: Build Rust libraries
-        run: cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -o android/app/src/main/jniLibs build --manifest-path core/Cargo.toml --release -p locco-ffi
+      - name: Set up JDK 17
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: '17'
       - name: Configure Gradle
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         with:
           gradle-version: "8.9"
-      - name: Assemble debug APK
-        run: gradle -p android --no-daemon assembleDebug
+      - name: Build and verify debug APK (same entrypoint as local development)
+        run: ./scripts/build-android-debug.sh
       - name: Upload debug APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

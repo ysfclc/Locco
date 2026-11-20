@@ -1,0 +1,17 @@
+flowchart TD
+  GOAL["User objective"] --> TASKSPEC["TaskSpec"]
+  TASKSPEC --> REQ["Bounded RequirementGraph"]
+  REQ --> LINK["Deterministic capability linker"]
+  LIB["Versioned capability library"] --> LINK
+  DATA["Authorized data / evidence bindings"] --> LINK
+  RUNTIME["Verified runtime and platform capabilities"] --> LINK
+  LINK --> READY["Readiness validation"]
+  READY -->|"Critical gaps"| GAP["Ask user / explain capability gap"]
+  READY -->|"Ready"| PACKAGE["Immutable ExecutionPackage"]
+  PACKAGE --> GRAPH["Typed execution graph"]
+  GRAPH --> POLICY["Policy, scope, approval and budgets"]
+  POLICY --> EXEC["Durable execution coordinator"]
+  EXEC --> VERIFY["Evidence and postcondition evaluation"]
+  VERIFY --> OUTCOME["Outcome + experience record"]
+  VERIFY -->|"Bounded repair"| REPAIR["Revise only responsible component"]
+  REPAIR --> READY

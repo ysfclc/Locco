@@ -39,19 +39,22 @@ jobs:
       - name: Generate dependency lockfile for audit
         run: cargo generate-lockfile --manifest-path core/Cargo.toml
 
+      - name: Install security tooling toolchain
+        run: rustup toolchain install 1.88.0 --profile minimal --no-self-update
+
       - name: Install cargo-deny and cargo-audit
         run: |
-          cargo install cargo-deny --version 0.18.4 --locked
-          cargo install cargo-audit --version 0.21.2 --locked
+          cargo +1.88.0 install cargo-deny --version 0.19.9 --locked
+          cargo +1.88.0 install cargo-audit --version 0.23.0 --locked
 
       - name: Check dependency policy
         working-directory: core
-        run: cargo deny --config ../deny.toml check
+        run: cargo deny check --config ../deny.toml
 
       - name: Audit Rust dependencies
         run: cargo audit --file core/Cargo.lock
 
-      - name: Run hostile ZIP validator tests
+      - name: Run Python policy regression tests
         run: python3 -m unittest discover -s scripts/tests -v
 
       - name: Install actionlint
@@ -61,6 +64,9 @@ jobs:
 
       - name: Validate workflows
         run: actionlint .github/workflows/*.yml
+
+      - name: Validate Android backup policy
+        run: python3 scripts/validate_android_backup_policy.py
 
       - name: Verify foundation structure
         run: bash scripts/verify-foundation.sh

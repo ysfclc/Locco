@@ -1,8 +1,62 @@
 flowchart TB
-  AND["Android · Kotlin / Compose"] --> JNI["JNI adapter"] --> ABI["Versioned C ABI"] --> APP["Rust application services"]
-  IOS["iOS · Swift · gated"] -. future .-> ABI
-  APP --> DOM["Domain kernel"]
-  APP --> STORE["Local persistence"]
-  APP --> CTX["Context compiler"] --> MODEL["On-device model"]
-  APP --> POLICY["Capability policy"] --> EXEC["Native execution adapters"]
-  SRC["Source adapters"] --> APP
+  subgraph UX["Native experience plane"]
+    INTENT["Intent and conversations"]
+    WORKSPACE["Workspace and evidence"]
+    BROWSER_UI["Full native browser"]
+    MODEL_HUB["Model Hub"]
+    ACTIVITY["Activity, approvals and control"]
+  end
+
+  subgraph PLATFORM["Android platform and adapters"]
+    WEBVIEW["WebView session engine"]
+    DOM["DOM observation and stitching adapter"]
+    SOURCES["File, share, browser and authorized source adapters"]
+    RUNTIMES["LiteRT-LM / GGUF / specialist runtime adapters"]
+    OS["Lifecycle, permissions, storage and background scheduler"]
+  end
+
+  subgraph INTELLIGENCE["Intelligence plane"]
+    CATALOG["Model catalogue and compatibility"]
+    CONTEXT["Evidence retrieval and context compiler"]
+    INFER["Inference and evaluation"]
+    STITCH["Semantic DOM Stitching"]
+  end
+
+  subgraph CONTROL["Rust control/application plane"]
+    TASK["TaskSpec and RequirementGraph"]
+    COMPILER["Capability Compiler"]
+    POLICY["Policy and approval"]
+    EXEC["Durable async execution graph"]
+  end
+
+  subgraph DOMAIN["Rust domain kernel"]
+    EVIDENCE["Evidence and provenance"]
+    GRAPH["Entities, claims and relationships"]
+    REGISTRY["Versioned capability registry"]
+    EVENTS["Events and state transitions"]
+  end
+
+  subgraph DATA["Local canonical data plane"]
+    DB["Encrypted canonical relational store"]
+    BLOBS["Encrypted evidence and artifact blobs"]
+    INDEX["Rebuildable search and embedding indexes"]
+    JOURNAL["Execution journal and audit"]
+  end
+
+  INTENT --> TASK
+  WORKSPACE --> DOMAIN
+  BROWSER_UI --> WEBVIEW
+  MODEL_HUB --> CATALOG
+  ACTIVITY --> EXEC
+  WEBVIEW --> DOM --> STITCH
+  SOURCES --> EVIDENCE
+  RUNTIMES --> INFER
+  CATALOG --> RUNTIMES
+  EVIDENCE --> CONTEXT --> INFER --> COMPILER
+  STITCH --> EVIDENCE
+  TASK --> COMPILER --> POLICY --> EXEC
+  EXEC --> REGISTRY
+  EXEC --> EVENTS
+  DOMAIN --> DATA
+  POLICY --> EVENTS
+  OS --> PLATFORM

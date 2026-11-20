@@ -1,0 +1,220 @@
+# Local model ecosystem and runtime management
+
+**Status:** Proposed for LOC-0004 review. This defines an extensible model platform, not a hardcoded list of recommendations.
+
+## 1. Separate four concepts
+
+1. Catalogue entry — metadata describing a model/release and source.
+2. Artifact manifest — exact immutable revision, file/shard list, sizes and digests.
+3. Runtime adapter — engine support for formats, architectures, tasks, backends and limits.
+4. Device compatibility result — measured outcome for a model + artifact + runtime + device/OS/backend combination.
+
+A model being listed does not mean it is compatible, downloadable, loadable or useful on this device.
+
+Memo-2's current source has three fixed Qwen LiteRT-LM entries and basic download/import/discovery. Its GGUF/LiteRT runtime interface and router are useful references. Its broader multi-family Hugging Face catalogue is described in a build plan, not proven implemented. Locco should improve and extend the pattern.
+
+## 2. Catalogue task taxonomy
+
+Extendable categories:
+- Language: chat, instruction following, planning, reasoning, coding, structured extraction.
+- Embedding: text/document/image vectors.
+- Reranking: retrieval candidate ordering.
+- Vision: image/screenshot understanding and classification.
+- Speech recognition: streaming/offline ASR and language identification.
+- Speech generation: natural TTS and supported voice tasks.
+- Audio: audio understanding and sound classification.
+- Image generation: text-to-image and transformations.
+- Multimodal: combinations of text, image and audio.
+- Specialist: OCR, layout, segmentation and other typed tasks.
+
+These categories are possible capabilities, not a promise that every model runs on Android.
+
+## 3. Metadata contract
+
+A catalogue release describes stable model/family ID, publisher, repository/provider, immutable revision, name/description/tags, modalities/tasks, architecture, parameter count, quantization/precision/format, context/tokenizer/chat template, structured output/tool calling, license/restrictions, gated status, exact file/shard manifest with size/SHA-256, required auxiliary files, runtime compatibility claims, source provenance and metadata freshness.
+
+Remote metadata is untrusted until validated. Floating revisions or missing digests cannot become VERIFIED. Gated sources require a user-controlled upstream authentication flow; tokens never appear in metadata or logs.
+
+## 4. Discovery sources
+
+Provider-neutral catalogue-source adapters may include:
+- Curated bundled seed.
+- Hugging Face.
+- Official runtime/vendor catalogues.
+- User-added catalogue sources with trust labels.
+- Local filesystem discovery.
+- User-selected imports.
+- Offline cache.
+
+Adapters normalize, paginate and preserve provenance; they do not decide device fitness. User catalogues cannot inject executable adapters. Search/filter by task, modality, format, architecture, quantization, license, publisher, size, runtime and device-fit status. Unknown metadata stays visibly unknown.
+
+## 5. Runtime ecosystem
+
+Initial candidates to evaluate:
+- LiteRT-LM for explicitly supported artifacts.
+- llama.cpp for supported GGUF models and architectures.
+- ONNX Runtime or another specialist runtime where mobile support and artifact justify it.
+- Android-native speech/OCR/image libraries where verified.
+
+Each adapter advertises formats, architectures, tasks/modalities, quantization, CPU/GPU/NPU backend, context/batch/concurrency/memory limits, streaming, cancellation, unload, tokenizer/processor requirements, unsupported features, runtime version and ABI compatibility.
+
+An extension is not proof of compatibility. No runtime is promised to load every model in a format.
+
+## 6. Compatibility levels
+
+1. Metadata-compatible.
+2. Artifact-valid.
+3. Runtime-loadable.
+4. Feature-compatible.
+5. Device-fit.
+6. Quality-usable.
+
+Only later stages justify activation for a role. Device fit and quality require tests, not parameter-count guesses.
+
+The resource manager observes storage, memory headroom, thermal state, battery and app foreground/background status. It bounds concurrent residency and switches intentionally. Initial policy should be conservative until target-device benchmarks prove multiple large models can coexist. OOM is a typed failure.
+
+## 7. Acquisition lifecycle
+
+Discover → Inspect → Compare → Assess compatibility → Confirm license/access → Storage preflight → Download/import → Verify → Stage → Load-test → Benchmark → Activate.
+
+Downloads require resumable bounded transfer, correct Range/ETag handling, immutable revision, complete file manifest, exact size/digest checks, atomic staging, rollback, cancellation/restart recovery, storage preflight and real progress. Never delete a previous working model until replacement is fully verified and load-tested.
+
+Unknown imports may be preserved as untrusted artifacts but cannot become active without integrity/runtime assessment. Do not install executable plugins from model repositories.
+
+## 8. Runtime lifecycle and request contract
+
+A model runtime exposes discovery/capabilities, load, health, info, streaming inference, cancellation, unload and close.
+
+Each request binds model/artifact/runtime versions, task role, schema, bounded context references, supported sampling parameters, deadline/resource budget, privacy class, cancellation and correlation ID. Unsupported settings are rejected or clearly unavailable, never silently ignored. Partial output remains partial until the runtime completes.
+
+## 9. Routing
+
+Routing considers task/modality, runtime compatibility, quality evidence, privacy/consent, user pin/preferences, current resources, health/failures, latency, cost and network limits. The result includes rationale and rejected alternatives.
+
+Local-first is default when a local model is eligible and meets readiness/quality requirements. Otherwise report the capability gap or ask the user. Never route private material to remote services without permission.
+
+## 10. Model Hub experience
+
+Native Model Hub capabilities:
+- Featured/recommended models with reasons.
+- Full searchable/filterable normalized catalogue.
+- Detail pages for task, size, license, revision, files and compatibility.
+- Side-by-side comparison.
+- Durable download queue and per-file progress.
+- Import/local discovery.
+- Installed library with integrity/health.
+- Runtime/backend diagnostics.
+- Per-model parameters and role/task assignments.
+- Benchmark history and device-fit explanation.
+- Safe storage removal with dependency warnings.
+- Offline cached catalogue/manual import.
+
+Do not show a download action unless the artifact and acquisition path exist. Do not show a compatibility badge without a test/result or explicit unknown state.
+
+## 11. Security and verification
+
+Weights, tokenizer/config files and metadata are untrusted. Enforce path/size/shard/parser limits and checksum verification. Keep runtime libraries separate from model artifacts. Display license and gated status. Catalogue browsing must not transmit workspace content.
+
+Tests cover source pagination/cache, malformed metadata, floating revisions, missing/tampered shards, Range changes, cancellation/process death, suspicious imports, compatibility matrices, OOM, streaming, cancellation, tokenizer/template mismatch, CPU fallback, routing privacy and golden-set quality.
+
+## 12. Open decisions
+
+Resolve by spike/ADR: minimum runtime set, catalogue providers/trust model, runtime implementation language/boundary, cache/storage limits, benchmark thresholds and whether specialist modalities fit the actual device's memory/thermal envelope.
+
+
+## 13. Reference-driven improvements and registry separation
+
+Memo-2's current source catalogue contains three fixed Qwen LiteRT-LM entries. Its acquisition implementation offers useful pinned-revision, SHA-256 and resumable-download patterns, but it is not the rich catalogue described by its future build plan. Locco's seed catalogue must be data-driven and expandable; a curated seed is an initial source, not a hardcoded limit.
+
+Keep four registries distinct:
+
+1. **Local model catalogue:** model families, releases, tasks, modalities, metadata and provenance.
+2. **Artifact registry:** exact downloadable/imported weight files, shards, tokenizer, config, processor and other required non-executable assets with immutable revisions, sizes and digests.
+3. **Runtime registry:** installed engine adapters and their tested support for formats, architectures, tasks, backends, streaming, cancellation, concurrency and hardware requirements.
+4. **Remote inference/provider registry:** optional API endpoints and browser-backed services. These are not local model artifacts; they have separate authentication, privacy, cost, terms, rate and session requirements. A website account is not an API key, and a browser service must not be represented as a runtime that Locco can call without a visible user-controlled session.
+
+A model family may have multiple releases and quantizations, one artifact can require multiple files, and more than one runtime may claim partial compatibility. Keep those identities separate and link them explicitly. A model being discoverable does not make it installable, and being loadable does not make it good enough for a task.
+
+### Model Hub interaction model to validate
+
+The following are candidate subareas, not a final screen arrangement:
+- Discover: search, task/modality filters, sources, curated collections and recommendations with reasons.
+- Compare: side-by-side architecture, quality evidence, license, file size, context, runtime support and measured device fit.
+- Downloads: durable queue, per-file/shard progress, pause/resume/cancel and recoverable failures.
+- Installed: verified artifacts, load-test state, active assignments and safe removal.
+- Runtimes: installed engines, supported formats/tasks/backends, diagnostics and version information.
+- Benchmarks: device/environment-specific latency, memory, thermal, power and golden-set quality evidence.
+- Imports and sources: local discovery, user-selected import, catalogue-source management and offline metadata cache.
+
+Do not turn the Model Hub into a leaderboard of unverified model claims. Distinguish publisher metadata, community claims, Locco test results and measurements from the user's device. Unknown remains visible as unknown.
+
+### Required robustness beyond the reference implementation
+
+- Compare artifact digests, not file size, when establishing identity. A filename/size match is only a candidate.
+- Surface import, download, verification, load and cancellation errors as typed, recoverable states. Never swallow a failure after deleting temporary data.
+- Use immutable revisions and complete file manifests. Validate Range/ETag behavior on resume; never append bytes from a changed remote object.
+- Stage verified artifacts atomically; preserve the previous working version until the replacement is load-tested.
+- Separate “installed”, “verified”, “runtime-loadable”, “device-fit”, “quality-usable” and “active”.
+- Never automatically activate a newly downloaded model solely because it is the first installed entry.
+- Preserve unknown imports in a quarantine/library state, but do not execute or load them until the artifact/runtime policy is satisfied.
+- Remove installed files only after checking active model assignments, pending tasks and dependency references.
+- Keep browser frontier accounts, optional APIs and local weights as distinct authentication/privacy paths.
+
+
+## 14. Reference-device measurement protocol
+
+The first required device-fit baseline is the Redmi Note 12 Pro 5G with Dimensity 1080, 8 GB RAM and 256 GB storage. Record the exact OS build, available storage, WebView/Chrome versions and initial thermal/memory state. This device is a minimum real-world target, not an exclusive support guarantee.
+
+Do not convert physical RAM or model parameter count into a guessed safe model size. For every candidate model + artifact + runtime + backend combination, measure:
+- download/install footprint, temporary staging peak and post-install storage;
+- process PSS/peak native memory and system available-memory delta;
+- cold load, warm load, first-token latency, steady-state throughput and p50/p95 latency;
+- task-specific golden-set quality and schema/evidence validity;
+- CPU/GPU/NPU utilization, thermal response and throttling over sustained runs;
+- battery cost and foreground/background behavior;
+- unload, cancellation, model-switch recovery and low-memory failure behavior;
+- contention with browser renderer, Compose UI, storage/index work and OS services.
+
+The initial residency policy is at most one heavyweight generative model at a time. Embedding, reranker, vision and speech co-residency is not assumed: benchmark each permitted combination and define explicit admission headroom. If memory/thermal safety cannot be demonstrated, queue, unload or fall back to deterministic/lexical behavior; never rely on an OOM crash as a scheduler.
+
+Each result records the model/artifact digest, runtime version, backend, device/OS, power/thermal state, test corpus/version, repetitions and raw summary. Device-fit evidence expires when any material combination input changes.
+
+
+## Artifact authenticity, publisher trust and parser isolation
+
+**Integrity and authenticity are different claims.** A SHA-256 match proves that downloaded bytes match the digest in the selected manifest. It does not prove who published the manifest, who controls the repository, or whether the publisher/model is trustworthy.
+
+Every artifact record therefore carries separate, non-collapsible trust facts:
+
+- **Source identity:** canonical provider, repository/model ID, owner namespace, immutable revision/commit, exact file path and retrieval origin.
+- **Manifest integrity:** every required file has an exact byte count and cryptographic digest; shards and auxiliary files are all accounted for.
+- **Transport evidence:** TLS endpoint and retrieval timestamp are recorded. TLS protects transport to the endpoint; it does not establish publisher identity.
+- **Publisher authenticity:** signature or provenance attestation is checked only when the publisher provides a supported verifiable statement. Record signer identity, trust root, signature/attestation format, verification time, key status and result. Do not invent signatures where none exist.
+- **Registry attestation:** a trusted catalogue may attest to a revision, but its authority and signing key are separately governed. A catalogue's own digest field does not automatically authenticate the publisher.
+- **Local validation:** format/parser checks, exact digest verification, runtime load test and task-quality test are independent evidence stages.
+
+Use explicit provenance/trust values such as:
+- publisher_signed — supported publisher signature verified against a configured trust root.
+- registry_attested — trusted registry signed/attested this exact immutable manifest.
+- source_pinned_integrity_only — immutable source revision and digests verified, but publisher authenticity not established.
+- user_imported_unverified — locally supplied artifact not yet validated against a trusted manifest.
+- unknown_or_invalid — missing, conflicting, revoked or failed provenance evidence.
+
+These are trust-evidence labels, not a single numeric trust score. Show which claims are missing. A lack of signatures does not mean a model is malicious, but it does mean Locco cannot claim publisher authenticity. Activation policy can distinguish built-in curated artifacts from user imports without treating either as universally safe.
+
+Never take a verification key from the same untrusted artifact/repository and use it as its own trust root. Trust roots are shipped with Locco or explicitly configured by the user through a reviewed trust-management surface; key rotation, revocation and rollback protection must be defined. Pin metadata and artifacts to immutable revisions. Mutable branch/tag names are discovery pointers only.
+
+No model repository may supply executable plugins, native libraries, runtime adapters, scripts or dynamic code that Locco loads. Runtime adapters are reviewed application components shipped through the Locco release supply chain. Model data remains untrusted input to bounded parsers and model runtimes. Treat tokenizer, processor, config, vocabulary and template files as potentially hostile; parser complexity and resource use are bounded. Do not deserialize arbitrary language-native object/pickle formats. If a required artifact format cannot be safely parsed under the selected runtime boundary, reject it or require an explicitly reviewed compatibility path.
+
+Keep user imports in quarantine until the manifest, path, file type, digest (where a trusted expected digest exists), runtime compatibility and safety checks have completed. A locally computed digest without an expected trusted digest is an identity/fixity record, not proof of authenticity.
+
+### Required authenticity evidence
+
+- Same bytes from two different sources produce the same content identity but retain distinct provenance.
+- Same filename/size with different digest is always a different artifact.
+- A manifest modified together with file bytes is not considered publisher-authenticated merely because its new digest matches.
+- Missing/invalid/revoked signature or attestation never silently falls back to publisher_signed.
+- Key rotation and revoked signing key fixtures fail closed.
+- Untrusted catalogues cannot register runtime code or widen supported capabilities.
+- Unsafe/unsupported tokenizer/config/weight formats are rejected without corrupting existing installed models.
+- Model detail UI distinguishes publisher metadata, source claims, signature evidence, Locco validation and this device's measurements.
