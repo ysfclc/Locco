@@ -118,8 +118,8 @@ impl EvidenceRecord {
         content_hash: Option<String>,
         captured_at: i64,
     ) -> Result<Self, RecordError> {
-        if excerpt.as_ref().is_none_or(String::is_empty)
-            && content_hash.as_ref().is_none_or(String::is_empty)
+        if excerpt.as_ref().map_or(true, String::is_empty)
+            && content_hash.as_ref().map_or(true, String::is_empty)
         {
             return Err(RecordError::MissingEvidencePayload);
         }
