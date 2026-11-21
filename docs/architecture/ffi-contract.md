@@ -14,7 +14,7 @@ Canonical cross-platform boundary: versioned C ABI. Android uses a small JNI shi
 
 All schema statements and version sequencing live in locco-kernel. Platform shells execute the ordered statements inside their database transaction; they do not duplicate DDL or choose migration versions. Android's JNI adapter exposes schema version, statement count and statement strings to SQLiteOpenHelper.
 
-## Safety rules
+The C declarations are maintained in `core/ffi/include/locco.h`; keep the header, Rust exports, JNI adapter and tests in parity. The header is the portable native consumer contract; Android JNI remains a shell adapter over the same kernel catalogue.\n\n## Safety rules
 
 Use the `locco_` prefix; explicit ABI version; UTF-8 pointer+length inputs; caller-owned output buffers or explicit free for any future Rust-owned buffers; no Rust references cross the boundary; validate null/length/encoding; no panic unwinds; stable error codes; no secrets in diagnostics; bounded synchronous foundation calls; future long jobs use durable IDs/events. Changes require an ADR and parity tests.
 
