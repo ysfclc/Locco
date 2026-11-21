@@ -45,7 +45,9 @@ pub enum RecordError {
 impl fmt::Display for RecordError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let message = match self {
-            Self::InvalidId => "record ID must be non-empty, bounded, and contain no control characters",
+            Self::InvalidId => {
+                "record ID must be non-empty, bounded, and contain no control characters"
+            }
             Self::InvalidKind => "record kind must be non-empty and bounded",
             Self::InvalidName => "canonical name must be non-empty and bounded",
             Self::InvalidRelation => "relation type must be non-empty and bounded",
@@ -96,7 +98,13 @@ impl SourceRecord {
             return Err(RecordError::InvalidKind);
         }
         validate_timestamp(captured_at)?;
-        Ok(Self { id, kind, locator, title, captured_at })
+        Ok(Self {
+            id,
+            kind,
+            locator,
+            title,
+            captured_at,
+        })
     }
 }
 
@@ -124,7 +132,13 @@ impl EvidenceRecord {
             return Err(RecordError::MissingEvidencePayload);
         }
         validate_timestamp(captured_at)?;
-        Ok(Self { id, source_id, excerpt, content_hash, captured_at })
+        Ok(Self {
+            id,
+            source_id,
+            excerpt,
+            content_hash,
+            captured_at,
+        })
     }
 }
 
@@ -155,7 +169,13 @@ impl EntityRecord {
             return Err(RecordError::InvalidName);
         }
         validate_timestamp(created_at)?;
-        Ok(Self { id, kind, canonical_name, description, created_at })
+        Ok(Self {
+            id,
+            kind,
+            canonical_name,
+            description,
+            created_at,
+        })
     }
 }
 
@@ -182,7 +202,13 @@ impl EntityRelation {
             return Err(RecordError::InvalidRelation);
         }
         validate_timestamp(created_at)?;
-        Ok(Self { id, from_entity_id, relation_type, to_entity_id, created_at })
+        Ok(Self {
+            id,
+            from_entity_id,
+            relation_type,
+            to_entity_id,
+            created_at,
+        })
     }
 }
 
@@ -205,7 +231,11 @@ impl KernelEvent {
             return Err(RecordError::InvalidKind);
         }
         validate_timestamp(occurred_at)?;
-        Ok(Self { id, event_type, occurred_at })
+        Ok(Self {
+            id,
+            event_type,
+            occurred_at,
+        })
     }
 }
 
@@ -221,7 +251,10 @@ mod tests {
     fn rejects_empty_unbounded_and_control_character_ids() {
         assert_eq!(RecordId::parse(""), Err(RecordError::InvalidId));
         assert_eq!(RecordId::parse("bad\nid"), Err(RecordError::InvalidId));
-        assert_eq!(RecordId::parse("x".repeat(MAX_ID_BYTES + 1)), Err(RecordError::InvalidId));
+        assert_eq!(
+            RecordId::parse("x".repeat(MAX_ID_BYTES + 1)),
+            Err(RecordError::InvalidId)
+        );
     }
 
     #[test]
@@ -234,7 +267,14 @@ mod tests {
             SourceRecord::new(id("s1"), "web", None, None, -1).unwrap_err(),
             RecordError::InvalidTimestamp
         );
-        let source = SourceRecord::new(id("s1"), "web", Some("https://example.test".into()), None, 1).unwrap();
+        let source = SourceRecord::new(
+            id("s1"),
+            "web",
+            Some("https://example.test".into()),
+            None,
+            1,
+        )
+        .unwrap();
         assert_eq!(source.id.as_str(), "s1");
     }
 
@@ -245,8 +285,13 @@ mod tests {
             RecordError::MissingEvidencePayload
         );
         let evidence = EvidenceRecord::new(
-            id("ev1"), id("src1"), Some("original excerpt".into()), None, 2
-        ).unwrap();
+            id("ev1"),
+            id("src1"),
+            Some("original excerpt".into()),
+            None,
+            2,
+        )
+        .unwrap();
         assert_eq!(evidence.source_id.as_str(), "src1");
     }
 
