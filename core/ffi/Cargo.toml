@@ -15,4 +15,4 @@ locco-kernel = { path = "../kernel" }
 
 [dependencies]
 locco-kernel = { path = "../kernel" }
-jni = "0.21.1"
+jni = "=0.21.1"
