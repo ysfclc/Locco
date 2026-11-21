@@ -41,7 +41,8 @@ class MainActivity:ComponentActivity() {
  override fun onCreate(savedInstanceState:Bundle?) { super.onCreate(savedInstanceState); setContent { LoccoCore() } }
 }
 @Composable private fun LoccoCore() {
- val store=remember { LocalStore(LocalContext.current.applicationContext) }
+ val context=LocalContext.current
+ val store=remember { LocalStore(context.applicationContext) }
  var sessions by remember { mutableStateOf(store.load()) }
  var activeId by remember { mutableStateOf(sessions.firstOrNull()?.id) }
  var text by remember { mutableStateOf("") }
