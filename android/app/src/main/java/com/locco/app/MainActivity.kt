@@ -60,7 +60,7 @@ class MainActivity:ComponentActivity() {
       Card(Modifier.fillMaxWidth().padding(vertical=5.dp).clickable { activeId=s.id; library=false },colors=CardDefaults.cardColors(containerColor=Color(0xFF171C26))) { Column(Modifier.padding(16.dp)) { Text(s.title,color=Color.White); Text("${s.notes.size} notes · ${java.text.DateFormat.getDateInstance().format(s.time)}",color=Color.Gray,style=MaterialTheme.typography.bodySmall) } }
      } }
     } else if(active==null) {
-     Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center) { Column(horizontalAlignment=Alignment.Center,modifier=Modifier.padding(28.dp)) {
+     Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center) { Column(horizontalAlignment=Alignment.CenterHorizontally,modifier=Modifier.padding(28.dp)) {
       Text("A space to think, collect and connect.",color=Color.White,style=MaterialTheme.typography.headlineSmall)
       Text("Start with a thought, question or piece of information.",color=Color.Gray,modifier=Modifier.padding(top=8.dp))
       Button(onClick={start()},modifier=Modifier.padding(top=18.dp)) { Text("Start a session") }
