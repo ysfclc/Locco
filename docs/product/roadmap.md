@@ -4,9 +4,11 @@
 Product, principles, architecture, FFI, Rust workspace, empty Android shell, iOS plan, security, agents, skills, ZIP protocol and CI. Gate: three Rust Android ABIs + placeholder APK; docs agree; no product logic.
 
 ## 1 — Local kernel
-**IN PROGRESS:** native session workspace, pure capture kernel, five Kotlin unit tests (written; execution pending), and a local SQLite session store with legacy preference import. Rust now defines validated platform-neutral Source, Evidence, Entity, Relationship and Event records with unit tests. Rust tests/build are not yet executed in this environment.
+**IN PROGRESS:** native session workspace, pure capture kernel, five Kotlin unit tests (written; Android JUnit execution pending), local SQLite session persistence and legacy preference import. Rust defines validated platform-neutral Source, Evidence, Entity, Relationship and Event records.
 
-**Architecture gap to close before acceptance:** the current Android SQLite helper still owns the physical schema and has no explicit migration path. The accepted data contract says Rust owns migrations and cross-platform domain invariants. Design and implement the Rust-owned storage/migration boundary through the versioned FFI before adding evidence/entity persistence APIs to Kotlin. Then wire source/evidence provenance, entity relations, append-only events, searchable retrieval and export/restore. Gate: deterministic domain tests, migration/round-trip/integrity tests, offline tests, Android CI and device evidence.
+**Implemented in this slice:** Rust now owns schema versions 1–2 and ordered SQLite DDL. ABI v2 exposes a bounded caller-buffer C API and Android JNI adapter. Android SQLiteOpenHelper executes those migrations, rather than defining tables itself. Version 2 adds note-to-source provenance links. ADR-0012 is proposed and requires architect, Android, QA and security review.
+
+**Acceptance still requires:** Rust CI, all three Android native ABI builds, APK assembly, SQLite tests against the exact kernel migration statements (fresh install and populated v1 upgrade), Android instrumentation/device tests, and privacy review. ADR-0008's encryption-at-rest requirement remains a blocker before handling sensitive private notes as production-safe data. Then implement source/evidence CRUD, entity relation operations, append-only event APIs, lexical retrieval and verified export/restore.
 
 ## 2 — Acquisition
 Source contract, share/import, file and visible browser capture. Gate: provenance, dedupe, cancellation and hostile-input tests.
