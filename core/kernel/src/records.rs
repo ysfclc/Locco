@@ -126,9 +126,9 @@ impl EvidenceRecord {
         content_hash: Option<String>,
         captured_at: i64,
     ) -> Result<Self, RecordError> {
-        if excerpt.as_ref().map_or(true, String::is_empty)
-            && content_hash.as_ref().map_or(true, String::is_empty)
-        {
+        let has_excerpt = matches!(excerpt.as_deref(), Some(value) if !value.is_empty());
+        let has_content_hash = matches!(content_hash.as_deref(), Some(value) if !value.is_empty());
+        if !has_excerpt && !has_content_hash {
             return Err(RecordError::MissingEvidencePayload);
         }
         validate_timestamp(captured_at)?;
