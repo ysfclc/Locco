@@ -1,7 +1,6 @@
 package com.locco.app
 
 import android.content.Context
-import android.security.keystore.KeyProperties
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.After
