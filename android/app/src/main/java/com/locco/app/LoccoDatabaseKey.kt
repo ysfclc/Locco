@@ -74,7 +74,7 @@ internal object LoccoDatabaseKey {
         val ciphertext = envelope.copyOfRange(ivSize, envelope.size)
         return try {
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            cipher.init(Cipher.DECRYPT_MODE, wrappingKey(), GCMParameterSpec(GCM_TAG_BITS, iv))
+            cipher.init(Cipher.DECRYPT_MODE, existingWrappingKey(), GCMParameterSpec(GCM_TAG_BITS, iv))
             cipher.doFinal(ciphertext).also {
                 check(it.size == KEY_BYTES) { "Locco database key has an invalid length." }
             }
@@ -86,6 +86,12 @@ internal object LoccoDatabaseKey {
         }
     }
 
+
+    private fun existingWrappingKey(): SecretKey {
+        val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+        return store.getKey(ALIAS, null) as? SecretKey
+            ?: throw IllegalStateException("Locco Android Keystore key is missing; existing database data was preserved.")
+    }
 
     private fun wrappingKey(): SecretKey {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
