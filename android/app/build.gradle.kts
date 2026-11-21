@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "com.locco.app"
-    compileSdk = 35
+    // SQLCipher 4.20.0 declares minCompileSdk 36. This does not change targetSdk behavior.
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.locco.app"
