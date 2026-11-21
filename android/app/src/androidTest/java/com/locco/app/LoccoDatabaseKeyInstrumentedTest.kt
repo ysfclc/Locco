@@ -67,6 +67,22 @@ class LoccoDatabaseKeyInstrumentedTest {
     }
 
     @Test
+    fun missingKeystoreWrappingKeyDoesNotReplaceExistingDatabase() {
+        val key = LoccoDatabaseKey.obtain(context)
+        key.fill(0)
+        database.parentFile?.mkdirs()
+        database.writeBytes(byteArrayOf(1, 2, 3, 4))
+        KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+            .deleteEntry("com.locco.app.database.wrap.v1")
+
+        assertThrows(IllegalStateException::class.java) {
+            LoccoDatabaseKey.obtain(context)
+        }
+        assertTrue(database.exists())
+        assertArrayEquals(byteArrayOf(1, 2, 3, 4), database.readBytes())
+    }
+
+    @Test
     fun malformedKeyEnvelopeFailsClosed() {
         context.getSharedPreferences("locco_database_key_v1", Context.MODE_PRIVATE)
             .edit().putString("wrapped_key", "!").commit()
@@ -74,10 +90,6 @@ class LoccoDatabaseKeyInstrumentedTest {
             LoccoDatabaseKey.obtain(context)
         }
         assertTrue(!database.exists())
-    }
-
-    private fun assertEqualsKeyLength(key: ByteArray) {
-        assert(key.size == 32)
     }
 
     private fun clearState() {
