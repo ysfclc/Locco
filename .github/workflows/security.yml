@@ -46,7 +46,7 @@ jobs:
 
       - name: Check dependency policy
         working-directory: core
-        run: cargo deny --config ../deny.toml check
+        run: cargo deny check --config ../deny.toml
 
       - name: Audit Rust dependencies
         run: cargo audit --file core/Cargo.lock
