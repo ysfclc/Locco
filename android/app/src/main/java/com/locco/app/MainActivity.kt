@@ -1,41 +1,95 @@
 package com.locco.app
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.UUID
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val nativeStatus = runCatching {
-            "Rust ABI ${NativeBridge.nativeAbiVersion()} · ping ${NativeBridge.nativePing()}"
-        }.getOrElse { "Native core not linked: ${it.javaClass.simpleName}" }
-
-        setContent {
-            MaterialTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text("Locco", style = MaterialTheme.typography.headlineLarge)
-                        Text("Foundation shell", style = MaterialTheme.typography.titleMedium)
-                        Text(nativeStatus, modifier = Modifier.padding(top = 16.dp))
-                        Text("No product features are implemented in Phase 0.")
-                    }
-                }
-            }
-        }
+private data class Note(val id:String,val text:String,val time:Long)
+private data class Session(val id:String,val title:String,val time:Long,val notes:List<Note>)
+private class LocalStore(context:Context) {
+ private val p=context.getSharedPreferences("locco_core_v1",Context.MODE_PRIVATE)
+ fun load():List<Session> = runCatching {
+  val a=JSONArray(p.getString("sessions","[]") ?: "[]")
+  (0 until a.length()).map { i ->
+   val s=a.getJSONObject(i); val n=s.optJSONArray("notes") ?: JSONArray()
+   Session(s.getString("id"),s.optString("title","Session"),s.optLong("time"),(0 until n.length()).map { j -> val x=n.getJSONObject(j); Note(x.getString("id"),x.getString("text"),x.optLong("time")) })
+  }.sortedByDescending { it.time }
+ }.getOrDefault(emptyList())
+ fun save(list:List<Session>) {
+  val a=JSONArray()
+  list.forEach { s -> val n=JSONArray(); s.notes.forEach { x -> n.put(JSONObject().put("id",x.id).put("text",x.text).put("time",x.time)) }; a.put(JSONObject().put("id",s.id).put("title",s.title).put("time",s.time).put("notes",n)) }
+  p.edit().putString("sessions",a.toString()).apply()
+ }
+}
+class MainActivity:ComponentActivity() {
+ override fun onCreate(savedInstanceState:Bundle?) { super.onCreate(savedInstanceState); setContent { LoccoCore() } }
+}
+@Composable private fun LoccoCore() {
+ val store=remember { LocalStore(LocalContext.current.applicationContext) }
+ var sessions by remember { mutableStateOf(store.load()) }
+ var activeId by remember { mutableStateOf(sessions.firstOrNull()?.id) }
+ var text by remember { mutableStateOf("") }
+ var library by remember { mutableStateOf(false) }
+ val active=sessions.firstOrNull { it.id==activeId }
+ fun update(next:List<Session>) { sessions=next.sortedByDescending { it.time }; store.save(sessions) }
+ fun start() { val s=Session(UUID.randomUUID().toString(),"New session",System.currentTimeMillis(),emptyList()); update(sessions+s); activeId=s.id; library=false }
+ fun addNote() {
+  val value=text.trim(); if(value.isEmpty()) return
+  if(active==null) { start(); return }
+  val n=Note(UUID.randomUUID().toString(),value,System.currentTimeMillis())
+  val title=if(active.notes.isEmpty()) value.take(40).let { if(value.length>40) it+"…" else it } else active.title
+  update(sessions.map { if(it.id==active.id) it.copy(title=title,notes=it.notes+n) else it })
+  text=""
+ }
+ MaterialTheme(colorScheme=darkColorScheme(primary=Color(0xFF93A5FF),secondary=Color(0xFF84DCC9),background=Color(0xFF0B0E13),surface=Color(0xFF171C26))) {
+  Surface(Modifier.fillMaxSize(),color=Color(0xFF0B0E13)) {
+   Column(Modifier.fillMaxSize()) {
+    Row(Modifier.fillMaxWidth().padding(20.dp),verticalAlignment=Alignment.CenterVertically) {
+     Column { Text("LOCCO",color=Color(0xFF93A5FF),fontWeight=FontWeight.Bold); Text(if(library) "Library" else "Think · Capture · Connect",color=Color.White,style=MaterialTheme.typography.titleLarge) }
+     Spacer(Modifier.weight(1f)); TextButton(onClick={library=!library}) { Text(if(library) "Workspace" else "Library",color=Color(0xFF84DCC9)) }
     }
+    if(library) {
+     Row(Modifier.fillMaxWidth().padding(horizontal=16.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) { Text("${sessions.size} sessions",color=Color.LightGray); Button(onClick={start()}) { Text("New") } }
+     if(sessions.isEmpty()) Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center) { Text("Your saved sessions appear here.",color=Color.Gray) }
+     else LazyColumn(Modifier.fillMaxSize().padding(horizontal=12.dp)) { items(sessions,key={it.id}) { s ->
+      Card(Modifier.fillMaxWidth().padding(vertical=5.dp).clickable { activeId=s.id; library=false },colors=CardDefaults.cardColors(containerColor=Color(0xFF171C26))) { Column(Modifier.padding(16.dp)) { Text(s.title,color=Color.White); Text("${s.notes.size} notes · ${java.text.DateFormat.getDateInstance().format(s.time)}",color=Color.Gray,style=MaterialTheme.typography.bodySmall) } }
+     } }
+    } else if(active==null) {
+     Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center) { Column(horizontalAlignment=Alignment.Center,modifier=Modifier.padding(28.dp)) {
+      Text("A space to think, collect and connect.",color=Color.White,style=MaterialTheme.typography.headlineSmall)
+      Text("Start with a thought, question or piece of information.",color=Color.Gray,modifier=Modifier.padding(top=8.dp))
+      Button(onClick={start()},modifier=Modifier.padding(top=18.dp)) { Text("Start a session") }
+      TextButton(onClick={library=true}) { Text("Browse saved sessions",color=Color(0xFF84DCC9)) }
+     } }
+    } else {
+     LazyColumn(Modifier.weight(1f).fillMaxWidth().padding(horizontal=16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
+      item { Text(active.title,color=Color.White,style=MaterialTheme.typography.titleMedium,modifier=Modifier.padding(vertical=10.dp)) }
+      items(active.notes,key={it.id}) { n -> Card(colors=CardDefaults.cardColors(containerColor=Color(0xFF192331)),modifier=Modifier.fillMaxWidth()) { Text(n.text,color=Color(0xFFE5EAF2),modifier=Modifier.padding(16.dp)) } }
+      if(active.notes.isEmpty()) item { Text("Capture ideas and information here. Notes are stored locally.",color=Color.Gray) }
+     }
+     Row(Modifier.fillMaxWidth().padding(12.dp),verticalAlignment=Alignment.Bottom) {
+      OutlinedTextField(value=text,onValueChange={text=it},modifier=Modifier.weight(1f),placeholder={Text("Capture a thought…")},maxLines=5)
+      Spacer(Modifier.width(8.dp)); Button(onClick={addNote()},enabled=text.isNotBlank()) { Text("Save") }
+     }
+     Text("On-device notes · No cloud · AI not connected yet",color=Color.Gray,style=MaterialTheme.typography.labelSmall,modifier=Modifier.align(Alignment.CenterHorizontally).padding(bottom=10.dp))
+    }
+   }
+  }
+ }
 }
