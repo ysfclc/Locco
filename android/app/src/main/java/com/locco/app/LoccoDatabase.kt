@@ -17,6 +17,8 @@ internal class LoccoDatabase(context: Context) : SQLiteOpenHelper(
     null,
     NativeBridge.databaseSchemaVersion()
 ) {
+    private val appContext = context.applicationContext
+
     init { setWriteAheadLoggingEnabled(true) }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -25,7 +27,7 @@ internal class LoccoDatabase(context: Context) : SQLiteOpenHelper(
 
     override fun onCreate(db: SQLiteDatabase) {
         migrate(db, 0, NativeBridge.databaseSchemaVersion())
-        importLegacyPrefs(db, context = context)
+        importLegacyPrefs(db, context = appContext)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
