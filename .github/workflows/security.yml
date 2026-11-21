@@ -41,12 +41,12 @@ jobs:
 
       - name: Install cargo-deny and cargo-audit
         run: |
-          cargo install cargo-deny --version 0.18.3 --locked
-          cargo install cargo-audit --version 0.21.2 --locked
+          cargo install cargo-deny --version 0.18.3 --locked --root "$CARGO_HOME/tools"
+          cargo install cargo-audit --version 0.21.2 --locked --root "$CARGO_HOME/tools"
 
       - name: Check dependency policy
         working-directory: core
-        run: cargo deny check --config ../deny.toml
+        run: cargo deny check --config ../deny.toml --disable-fetch
 
       - name: Audit Rust dependencies
         run: cargo audit --file core/Cargo.lock
