@@ -33,10 +33,23 @@ Use full-database encryption (SQLCipher-compatible encrypted SQLite) as the targ
 
 Protects against offline inspection of copied database files and database sidecars when key material is unavailable. Does not protect data while the app is unlocked and running, rooted/compromised devices, malicious code in the app process, screenshots, user-exported plaintext, or someone who can access the device while Locco is unlocked. Metadata such as app presence, file sizes, and timing may remain observable.
 
+## Library spike (research snapshot 2026-11-21)
+
+**Preferred Android candidate: `net.zetetic:sqlcipher-android` Community Edition (4.20.0 at research time), plus `androidx.sqlite:sqlite:2.7.0`. The upstream `sqlcipher-android` project describes this as the long-term Android binding replacement, API 23+ support and ABIs including arm64-v8a, armeabi-v7a and x86_64. Its native library is explicitly loaded before database use; the current Locco minSdk 26 and ABI list fit its stated compatibility. It uses a different API package (`net.zetetic.database.sqlcipher`) than the legacy binding, so Locco's existing framework SQLiteOpenHelper adapter needs a deliberate conversion, not a blind import swap. The Community Edition Maven artifact is documented by Zetetic; review the exact license terms for the intended distribution before release.
+
+
+| Candidate | Status | Assessment |
+|---|---|---|
+| `net.zetetic:sqlcipher-android` (new upstream Android bindings) | Preferred spike target | Current long-term replacement; API 23+; matches Locco's API 26 baseline and arm64/armv7/x86_64 targets. Verify 16KB page support, native size, dependency compatibility and license. |
+| `net.zetetic:android-database-sqlcipher` (legacy bindings) | Reject for new integration | Deprecated upstream; migration guidance points to new `sqlcipher-android`. |
+| Per-field encryption or custom file wrapper | Reject | Incomplete coverage risk, complex index/query handling and sidecar exposure. |
+
+Compatibility notes: SQLCipher Android API replaces Android framework SQLite classes; it provides database helpers and key/password support. Android platform Keystore should protect a randomly generated database key (key wrapping), not be treated as a SQLCipher passphrase itself. Do not persist the unwrapped database key. Dependency/license review is still required, and this research is not runtime validation.
+
 ## Spike acceptance gates
 
 Before implementation is accepted:
-1. Compare SQLCipher-compatible library choices (maintenance, Android API support, licensing, ABI footprint, backup/WAL behavior, JNI/FFI compatibility, and future iOS availability).
+1. Confirm selected library version, license and Gradle resolution; record native ABI footprint, API support, 16KB page support, dependency compatibility, backup/WAL behavior, JNI/FFI compatibility, and future iOS availability.
 2. Prove encrypted database, WAL/journal, temp artifacts and indexes contain no plaintext test sentinel after writes/checkpoint/close.
 3. Verify wrong key and missing/invalidated Keystore key fail closed without replacing or deleting the existing database.
 4. Verify key lifecycle: creation, app process restart, lock/unlock policy, reinstall, backup exclusion, key loss and failure UX.
