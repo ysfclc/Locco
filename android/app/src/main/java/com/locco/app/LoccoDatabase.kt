@@ -14,6 +14,10 @@ import org.json.JSONObject
 internal class LoccoDatabase(context: Context) : SQLiteOpenHelper(context, "locco_kernel.db", null, 1) {
     init { setWriteAheadLoggingEnabled(true) }
 
+    override fun onConfigure(db: SQLiteDatabase) {
+        db.setForeignKeyConstraintsEnabled(true)
+    }
+
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("""CREATE TABLE sessions (
             id TEXT PRIMARY KEY NOT NULL,
@@ -99,7 +103,6 @@ internal class LoccoDatabase(context: Context) : SQLiteOpenHelper(context, "locc
 
     private fun importLegacyPrefs(db: SQLiteDatabase, context: Context) {
         val prefs = context.getSharedPreferences("locco_core_v1", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("sqlite_import_done", false)) return
         val json = prefs.getString("sessions", "[]") ?: "[]"
         runCatching {
             val arr = JSONArray(json)
@@ -116,9 +119,8 @@ internal class LoccoDatabase(context: Context) : SQLiteOpenHelper(context, "locc
                 }
                 db.setTransactionSuccessful()
             } finally { db.endTransaction() }
-            prefs.edit().putBoolean("sqlite_import_done", true).apply()
         }.onFailure {
-            // Leave legacy data intact; next launch can retry.
+            // Leave legacy preferences untouched for recovery; the database is still usable.
         }
     }
 }
