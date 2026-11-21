@@ -112,7 +112,7 @@ pub extern "system" fn Java_com_locco_app_NativeBridge_nativeMigrationStatementC
 
 #[no_mangle]
 pub extern "system" fn Java_com_locco_app_NativeBridge_nativeMigrationStatement(
-    mut env: JNIEnv<'_>,
+    env: JNIEnv<'_>,
     _class: JClass<'_>,
     version: jint,
     index: jint,
