@@ -11,5 +11,5 @@ crate-type = ["cdylib", "staticlib"]
 workspace = true
 
 [dependencies]
-locco-kernel = { path = "../kernel" }
+locco-kernel = { path = "../kernel", version = "=0.1.0" }
 jni = "=0.21.1"
