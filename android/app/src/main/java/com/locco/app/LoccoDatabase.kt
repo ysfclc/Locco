@@ -16,49 +16,49 @@ internal class LoccoDatabase(context: Context) : SQLiteOpenHelper(context, "locc
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("""CREATE TABLE sessions (
-            id TEXT PRIMARY PRIMARY KEY NOT NULL,
+            id TEXT PRIMARY KEY NOT NULL,
             title TEXT NOT NULL,
             created_at INTEGER NOT NULL
-        )""".replace("PRIMARY PRIMARY", "PRIMARY"))
+        )""")
         db.execSQL("""CREATE TABLE notes (
-            id TEXT PRIMARY PRIMARY KEY NOT NULL,
+            id TEXT PRIMARY KEY NOT NULL,
             session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
             content TEXT NOT NULL,
             created_at INTEGER NOT NULL
-        )""".replace("PRIMARY PRIMARY", "PRIMARY"))
+        )""")
         db.execSQL("CREATE INDEX notes_session_time ON notes(session_id, created_at)")
         db.execSQL("""CREATE TABLE sources (
-            id TEXT PRIMARY PRIMARY KEY NOT NULL,
+            id TEXT PRIMARY KEY NOT NULL,
             kind TEXT NOT NULL,
             uri TEXT,
             title TEXT,
             captured_at INTEGER NOT NULL,
             metadata_json TEXT NOT NULL DEFAULT '{}'
-        )""".replace("PRIMARY PRIMARY", "PRIMARY"))
+        )""")
         db.execSQL("""CREATE TABLE entities (
-            id TEXT PRIMARY PRIMARY KEY NOT NULL,
+            id TEXT PRIMARY KEY NOT NULL,
             kind TEXT NOT NULL,
             canonical_name TEXT NOT NULL,
             description TEXT,
             created_at INTEGER NOT NULL,
             metadata_json TEXT NOT NULL DEFAULT '{}'
-        )""".replace("PRIMARY PRIMARY", "PRIMARY"))
+        )""")
         db.execSQL("""CREATE TABLE entity_relations (
-            id TEXT PRIMARY PRIMARY KEY NOT NULL,
+            id TEXT PRIMARY KEY NOT NULL,
             from_entity_id TEXT NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
             relation_type TEXT NOT NULL,
             to_entity_id TEXT NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
             created_at INTEGER NOT NULL,
             metadata_json TEXT NOT NULL DEFAULT '{}'
-        )""".replace("PRIMARY PRIMARY", "PRIMARY"))
+        )""")
         db.execSQL("CREATE INDEX entity_relations_from ON entity_relations(from_entity_id)")
         db.execSQL("CREATE INDEX entity_relations_to ON entity_relations(to_entity_id)")
         db.execSQL("""CREATE TABLE kernel_events (
-            id TEXT PRIMARY PRIMARY KEY NOT NULL,
+            id TEXT PRIMARY KEY NOT NULL,
             event_type TEXT NOT NULL,
             occurred_at INTEGER NOT NULL,
             payload_json TEXT NOT NULL DEFAULT '{}'
-        )""".replace("PRIMARY PRIMARY", "PRIMARY"))
+        )""")
         importLegacyPrefs(db, context)
     }
 
