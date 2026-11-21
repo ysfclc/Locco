@@ -20,7 +20,7 @@ import java.util.UUID
 internal data class Note(val id:String,val text:String,val time:Long)
 internal data class Session(val id:String,val title:String,val time:Long,val notes:List<Note>)
 private class LocalStore(context:android.content.Context) {
- private val db=LoccoDatabase(context)
+ private val db=LoccoDatabase.create(context)
  fun load():List<Session> = db.readSessions()
  fun save(list:List<Session>) = db.replaceSessions(list)
 }
