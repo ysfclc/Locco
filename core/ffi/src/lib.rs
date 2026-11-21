@@ -40,8 +40,11 @@ pub extern "C" fn locco_migration_statement_len(version: u32, index: u32) -> i64
 /// Copies a statement into caller-owned memory. No NUL terminator is appended.
 /// Stable return codes: 0 success, -1 unknown statement, -2 null output,
 /// -3 output capacity too small.
+///
+/// # Safety
+/// When the statement exists, output must point to capacity writable bytes.
 #[no_mangle]
-pub extern "C" fn locco_migration_statement_copy(
+pub unsafe extern "C" fn locco_migration_statement_copy(
     version: u32,
     index: u32,
     output: *mut u8,
@@ -88,8 +91,8 @@ pub extern "system" fn Java_com_locco_app_NativeBridge_nativePing(
 
 #[no_mangle]
 pub extern "system" fn Java_com_locco_app_NativeBridge_nativeSchemaVersion(
-    _env: JNIEnv,
-    _class: JClass,
+    _env: JNIEnv<'_>,
+    _class: JClass<'_>,
 ) -> jint {
     locco_schema_version() as jint
 }
@@ -106,7 +109,7 @@ pub extern "system" fn Java_com_locco_app_NativeBridge_nativeMigrationStatementC
 
 #[no_mangle]
 pub extern "system" fn Java_com_locco_app_NativeBridge_nativeMigrationStatement(
-    mut env: JNIEnv,
+    mut env: JNIEnv<'_>,
     _class: JClass,
     version: jint,
     index: jint,
