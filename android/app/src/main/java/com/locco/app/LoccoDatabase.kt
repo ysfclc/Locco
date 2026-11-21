@@ -1,25 +1,31 @@
 package com.locco.app
 
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteOpenHelper
+import android.database.Cursor
+import net.zetetic.database.sqlcipher.SQLiteDatabase
+import net.zetetic.database.sqlcipher.SQLiteOpenHelper
 import org.json.JSONArray
 
 /**
- * Android SQLite execution adapter for the Rust-owned Locco kernel schema.
- *
- * Kotlin owns SQLite lifecycle and transactions only. Canonical schema SQL,
- * version sequencing and migration contents are supplied by locco-kernel.
+ * SQLCipher storage adapter for the Rust-owned Locco kernel schema.
+ * Existing plaintext databases are intentionally blocked until the verified
+ * copy-and-verify migration is implemented; they are never opened as empty stores.
  */
-internal class LoccoDatabase(context: Context) : SQLiteOpenHelper(
+internal class LoccoDatabase private constructor(
+    context: Context,
+    password: ByteArray
+) : SQLiteOpenHelper(
     context,
     "locco_kernel.db",
+    password,
     null,
-    NativeBridge.databaseSchemaVersion()
+    NativeBridge.databaseSchemaVersion(),
+    0,
+    null,
+    null,
+    true
 ) {
     private val appContext = context.applicationContext
-
-    init { setWriteAheadLoggingEnabled(true) }
 
     override fun onConfigure(db: SQLiteDatabase) {
         db.setForeignKeyConstraintsEnabled(true)
@@ -129,7 +135,19 @@ internal class LoccoDatabase(context: Context) : SQLiteOpenHelper(
                 db.endTransaction()
             }
         }.onFailure {
-            // Leave legacy preferences untouched for recovery; the database remains usable.
+            // Leave legacy preferences untouched for recovery; the encrypted database remains usable.
+        }
+    }
+
+    companion object {
+        fun create(context: Context): LoccoDatabase {
+            System.loadLibrary("sqlcipher")
+            val key = LoccoDatabaseKey.obtain(context)
+            return try {
+                LoccoDatabase(context.applicationContext, key)
+            } finally {
+                key.fill(0)
+            }
         }
     }
 }
