@@ -52,13 +52,11 @@ class MainActivity:ComponentActivity() {
  fun start() { val s=Session(UUID.randomUUID().toString(),"New session",System.currentTimeMillis(),emptyList()); update(sessions+s); activeId=s.id; library=false }
  fun addNote() {
   val value=text.trim(); if(value.isEmpty()) return
-  val n=Note(UUID.randomUUID().toString(),value,System.currentTimeMillis())
-  if(active==null) {
-   val fresh=Session(UUID.randomUUID().toString(),value.take(40).let { if(value.length>40) it+"…" else it },n.time,listOf(n))
-   update(sessions+fresh); activeId=fresh.id; library=false; text=""; return
-  }
-  val title=if(active.notes.isEmpty()) value.take(40).let { if(value.length>40) it+"…" else it } else active.title
-  update(sessions.map { if(it.id==active.id) it.copy(title=title,notes=active.notes+n) else it })
+  val captured=SessionKernel.capture(active,value,System.currentTimeMillis(),UUID.randomUUID().toString(),UUID.randomUUID().toString()) ?: return
+  val next=if(active==null) sessions+captured else sessions.map { if(it.id==active.id) captured else it }
+  update(next)
+  activeId=captured.id
+  library=false
   text=""
  }
  MaterialTheme(colorScheme=darkColorScheme(primary=Color(0xFF93A5FF),secondary=Color(0xFF84DCC9),background=Color(0xFF0B0E13),surface=Color(0xFF171C26))) {
