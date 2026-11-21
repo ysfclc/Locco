@@ -23,6 +23,7 @@ internal object LoccoDatabaseKey {
     private const val KEY_BYTES = 32
     private const val GCM_TAG_BITS = 128
 
+
     @Synchronized
     fun obtain(context: Context): ByteArray {
         val app = context.applicationContext
@@ -31,7 +32,9 @@ internal object LoccoDatabaseKey {
         if (encoded != null) return unwrap(encoded)
 
         val database = app.getDatabasePath("locco_kernel.db")
-        if (database.exists() && database.length() > 0L) {
+        // Any pre-existing file without its key envelope is suspect, including a zero-byte
+        // file left behind by an interrupted open/create. Never initialize over it.
+        if (database.exists()) {
             if (isPlaintextSQLite(database)) {
                 throw IllegalStateException(
                     "Locco found an existing plaintext database. A verified plaintext-to-encrypted migration is required; the original data was left untouched."
@@ -58,6 +61,7 @@ internal object LoccoDatabaseKey {
         }
     }
 
+
     private fun unwrap(encoded: String): ByteArray {
         val envelope = try {
             Base64.decode(encoded, Base64.NO_WRAP)
@@ -82,6 +86,7 @@ internal object LoccoDatabaseKey {
         }
     }
 
+
     private fun wrappingKey(): SecretKey {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         (store.getKey(ALIAS, null) as? SecretKey)?.let { return it }
@@ -98,6 +103,7 @@ internal object LoccoDatabaseKey {
         )
         return generator.generateKey()
     }
+
 
     private fun isPlaintextSQLite(file: File): Boolean {
         val header = ByteArray(16)
