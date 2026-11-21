@@ -5,6 +5,7 @@
 
 use std::ffi::c_void;
 use std::ptr;
+
 use jni::objects::JClass;
 use jni::sys::{jint, jstring};
 use jni::JNIEnv;
@@ -99,18 +100,20 @@ pub extern "system" fn Java_com_locco_app_NativeBridge_nativeSchemaVersion(
 
 #[no_mangle]
 pub extern "system" fn Java_com_locco_app_NativeBridge_nativeMigrationStatementCount(
-    _env: JNIEnv,
-    _class: JClass,
+    _env: JNIEnv<'_>,
+    _class: JClass<'_>,
     version: jint,
 ) -> jint {
-    if version < 0 { return 0; }
+    if version < 0 {
+        return 0;
+    }
     locco_migration_statement_count(version as u32) as jint
 }
 
 #[no_mangle]
 pub extern "system" fn Java_com_locco_app_NativeBridge_nativeMigrationStatement(
     mut env: JNIEnv<'_>,
-    _class: JClass,
+    _class: JClass<'_>,
     version: jint,
     index: jint,
 ) -> jstring {
@@ -118,7 +121,10 @@ pub extern "system" fn Java_com_locco_app_NativeBridge_nativeMigrationStatement(
         return ptr::null_mut();
     }
     match locco_kernel::migrations::migration_statement(version as u32, index as u32) {
-        Some(statement) => env.new_string(statement).map(|value| value.into_raw()).unwrap_or(ptr::null_mut()),
+        Some(statement) => env
+            .new_string(statement)
+            .map(|value| value.into_raw())
+            .unwrap_or(ptr::null_mut()),
         None => ptr::null_mut(),
     }
 }
@@ -138,16 +144,29 @@ mod tests {
 
     #[test]
     fn c_abi_copies_sql_into_caller_owned_memory() {
-        let statement = b"CREATE TABLE";
-        let mut output = vec![0_u8; statement.len()];
+        let mut output = vec![0_u8; 128];
         let sql = locco_kernel::migrations::migration_statement(2, 0).unwrap();
+        output.resize(sql.len(), 0);
         assert_eq!(locco_migration_statement_len(2, 0), sql.len() as i64);
+        // SAFETY: output is a writable Vec whose length equals the required SQL byte length.
         unsafe {
-            assert_eq!(locco_migration_statement_copy(2, 0, output.as_mut_ptr(), output.len()), 0);
+            assert_eq!(
+                locco_migration_statement_copy(2, 0, output.as_mut_ptr(), output.len()),
+                0
+            );
             assert_eq!(output, sql.as_bytes());
-            assert_eq!(locco_migration_statement_copy(3, 0, output.as_mut_ptr(), output.len()), -1);
-            assert_eq!(locco_migration_statement_copy(2, 0, output.as_mut_ptr(), 1), -3);
-            assert_eq!(locco_migration_statement_copy(2, 0, ptr::null_mut(), output.len()), -2);
+            assert_eq!(
+                locco_migration_statement_copy(3, 0, output.as_mut_ptr(), output.len()),
+                -1
+            );
+            assert_eq!(
+                locco_migration_statement_copy(2, 0, output.as_mut_ptr(), 1),
+                -3
+            );
+            assert_eq!(
+                locco_migration_statement_copy(2, 0, ptr::null_mut(), output.len()),
+                -2
+            );
         }
     }
 }
