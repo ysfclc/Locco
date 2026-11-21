@@ -43,3 +43,7 @@ jobs:
         run: cargo test --manifest-path core/Cargo.toml --workspace
       - name: Clippy
         run: cargo clippy --manifest-path core/Cargo.toml --workspace --all-targets -- -D warnings
+      - name: Build migration FFI
+        run: cargo build --manifest-path core/Cargo.toml -p locco-ffi
+      - name: Test SQLite migrations from the Rust ABI
+        run: python3 scripts/test-kernel-migrations.py
