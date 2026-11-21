@@ -2,6 +2,8 @@
 
 //! Foundation-only domain kernel. Product behavior is intentionally absent.
 
+pub mod records;
+
 /// Version of the stable Locco bridge contract.
 pub const ABI_VERSION: u32 = 1;
 
