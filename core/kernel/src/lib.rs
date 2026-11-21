@@ -17,7 +17,7 @@ mod tests {
 
     #[test]
     fn foundation_contract_is_stable() {
-        assert_eq!(ABI_VERSION, 1);
+        assert_eq!(ABI_VERSION, 2);
         assert_eq!(CORE_PING, 0);
     }
 }
