@@ -56,6 +56,8 @@ jobs:
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         with:
           gradle-version: "8.9"
+      - name: Run Android unit tests
+        run: gradle -p android --no-daemon testDebugUnitTest
       - name: Assemble debug APK
         run: gradle -p android --no-daemon assembleDebug
       - name: Upload debug APK
