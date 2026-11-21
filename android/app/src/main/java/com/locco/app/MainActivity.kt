@@ -76,7 +76,7 @@ class MainActivity:ComponentActivity() {
       OutlinedTextField(value=text,onValueChange={text=it},modifier=Modifier.weight(1f),placeholder={Text("Capture a thought…")},maxLines=5)
       Spacer(Modifier.width(8.dp)); Button(onClick={addNote()},enabled=text.isNotBlank()) { Text("Save") }
      }
-     Text("On-device notes · No cloud · AI not connected yet",color=Color.Gray,style=MaterialTheme.typography.labelSmall,modifier=Modifier.align(Alignment.CenterHorizontally).padding(bottom=10.dp))
+     Text("Local-only · Not encrypted · AI not connected",color=Color.Gray,style=MaterialTheme.typography.labelSmall,modifier=Modifier.align(Alignment.CenterHorizontally).padding(bottom=10.dp))
     }
    }
   }
