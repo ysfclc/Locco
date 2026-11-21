@@ -29,12 +29,16 @@ pub extern "system" fn Java_com_locco_app_NativeBridge_nativeAbiVersion(
     catch_unwind(AssertUnwindSafe(|| locco_abi_version() as i32)).unwrap_or(-1)
 }
 
+fn guarded_core_ping() -> i32 {
+    locco_core_ping()
+}
+
 #[no_mangle]
 pub extern "system" fn Java_com_locco_app_NativeBridge_nativePing(
     _env: *mut c_void,
     _class: *mut c_void,
 ) -> i32 {
-    catch_unwind(AssertUnwindSafe(locco_core_ping)).unwrap_or(-1)
+    catch_unwind(AssertUnwindSafe(guarded_core_ping)).unwrap_or(-1)
 }
 
 #[cfg(test)]
