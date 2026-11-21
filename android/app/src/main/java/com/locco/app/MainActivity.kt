@@ -20,8 +20,8 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
 
-private data class Note(val id:String,val text:String,val time:Long)
-private data class Session(val id:String,val title:String,val time:Long,val notes:List<Note>)
+internal data class Note(val id:String,val text:String,val time:Long)
+internal data class Session(val id:String,val title:String,val time:Long,val notes:List<Note>)
 private class LocalStore(context:Context) {
  private val p=context.getSharedPreferences("locco_core_v1",Context.MODE_PRIVATE)
  fun load():List<Session> = runCatching {
