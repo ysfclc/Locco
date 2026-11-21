@@ -14,4 +14,4 @@ ADRs are append-only. Supersede decisions with a new ADR; never erase rejected a
 | 0008 | Local relational store and derived indexes | Accepted for foundation; implementation deferred |
 | 0009 | Android native stack and build baseline | Accepted |
 | 0010 | Authorization-aware source adapters | Accepted |
-| 0011 | CI trust boundary and release gates | Accepted |
+| 0011 | CI trust boundary and release gates | Accepted |\n| 0012 | Rust-owned SQLite migrations through versioned FFI | Proposed |
