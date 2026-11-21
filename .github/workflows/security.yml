@@ -41,7 +41,7 @@ jobs:
 
       - name: Install cargo-deny and cargo-audit
         run: |
-          cargo install cargo-deny --version 0.18.3 --locked --root "$CARGO_HOME/tools"
+          cargo install cargo-deny --version 0.19.9 --locked --root "$CARGO_HOME/tools"
           cargo install cargo-audit --version 0.21.2 --locked --root "$CARGO_HOME/tools"
           echo "$CARGO_HOME/tools/bin" >> "$GITHUB_PATH"
 
