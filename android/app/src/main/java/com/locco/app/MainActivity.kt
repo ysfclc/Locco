@@ -1,6 +1,5 @@
 package com.locco.app
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,26 +15,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.UUID
 
 internal data class Note(val id:String,val text:String,val time:Long)
 internal data class Session(val id:String,val title:String,val time:Long,val notes:List<Note>)
-private class LocalStore(context:Context) {
- private val p=context.getSharedPreferences("locco_core_v1",Context.MODE_PRIVATE)
- fun load():List<Session> = runCatching {
-  val a=JSONArray(p.getString("sessions","[]") ?: "[]")
-  (0 until a.length()).map { i ->
-   val s=a.getJSONObject(i); val n=s.optJSONArray("notes") ?: JSONArray()
-   Session(s.getString("id"),s.optString("title","Session"),s.optLong("time"),(0 until n.length()).map { j -> val x=n.getJSONObject(j); Note(x.getString("id"),x.getString("text"),x.optLong("time")) })
-  }.sortedByDescending { it.time }
- }.getOrDefault(emptyList())
- fun save(list:List<Session>) {
-  val a=JSONArray()
-  list.forEach { s -> val n=JSONArray(); s.notes.forEach { x -> n.put(JSONObject().put("id",x.id).put("text",x.text).put("time",x.time)) }; a.put(JSONObject().put("id",s.id).put("title",s.title).put("time",s.time).put("notes",n)) }
-  p.edit().putString("sessions",a.toString()).apply()
- }
+private class LocalStore(context:android.content.Context) {
+ private val db=LoccoDatabase(context)
+ fun load():List<Session> = db.readSessions()
+ fun save(list:List<Session>) = db.replaceSessions(list)
 }
 class MainActivity:ComponentActivity() {
  override fun onCreate(savedInstanceState:Bundle?) { super.onCreate(savedInstanceState); setContent { LoccoCore() } }
