@@ -6,6 +6,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -35,7 +36,7 @@ class LoccoDatabaseKeyInstrumentedTest {
         val second = LoccoDatabaseKey.obtain(context)
         try {
             assertArrayEquals(first, second)
-            assertEqualsKeyLength(first)
+            assertTrue(first.size == 32)
         } finally {
             first.fill(0)
             second.fill(0)
@@ -50,7 +51,7 @@ class LoccoDatabaseKeyInstrumentedTest {
             LoccoDatabaseKey.obtain(context)
         }
         check(database.exists())
-        assert(database.length() == 0L)
+        assertTrue(database.length() == 0L)
     }
 
     @Test
@@ -60,8 +61,8 @@ class LoccoDatabaseKeyInstrumentedTest {
         assertThrows(IllegalStateException::class.java) {
             LoccoDatabaseKey.obtain(context)
         }
-        assert(database.exists())
-        assert(database.readBytes().take(16).toByteArray()
+        assertTrue(database.exists())
+        assertTrue(database.readBytes().take(16).toByteArray()
             .contentEquals("SQLite format 3\u0000".toByteArray(Charsets.US_ASCII)))
     }
 
@@ -72,7 +73,7 @@ class LoccoDatabaseKeyInstrumentedTest {
         assertThrows(IllegalStateException::class.java) {
             LoccoDatabaseKey.obtain(context)
         }
-        assert(!database.exists())
+        assertTrue(!database.exists())
     }
 
     private fun assertEqualsKeyLength(key: ByteArray) {
