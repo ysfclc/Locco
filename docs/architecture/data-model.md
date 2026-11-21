@@ -15,4 +15,4 @@ core/kernel/src/records.rs is the current platform-neutral source of truth for r
 
 Every record has an opaque stable ID. Derived records must link evidence IDs, source offsets, hashes, parser/model version and timestamp. Conflicts coexist with provenance. Rust owns domain invariants and migrations. Search indexes and embeddings are rebuildable derived data.
 
-**Implementation boundary:** the current Android SQLite store is still a first-slice persistence adapter. Its schema/migration ownership has not yet been moved behind the Rust kernel/FFI contract. Do not treat the existing Kotlin SQLiteOpenHelper as the final cross-platform storage architecture or add feature migrations there.
+**Implementation boundary:** Rust now owns canonical SQLite schema versions 1–2 and ordered migration statements, exposed through ABI v2; Android SQLiteOpenHelper owns database lifecycle, transactions and execution of those statements. The Android adapter still owns first-slice session read/write operations, while Rust-owned CRUD/domain APIs and cross-platform storage ports remain future work. Do not add canonical DDL or domain invariants in Kotlin.
