@@ -24,13 +24,16 @@ class LoccoNotificationObserver : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         // Copy only the small metadata fields needed by the worker. Never read notification.extras.
         val packageName = sbn.packageName ?: return
+        val initialAllowlist = getSharedPreferences(OBSERVER_PREFS, MODE_PRIVATE)
+            .getStringSet(OBSERVED_PACKAGES_KEY, emptySet()) ?: emptySet()
+        if (packageName !in initialAllowlist) return
         val postedAt = sbn.postTime
         val category = sbn.notification.category?.take(80)
         val notificationKey = sbn.key
         worker.post {
-            val prefs = getSharedPreferences(OBSERVER_PREFS, MODE_PRIVATE)
-            val allowlist = prefs.getStringSet(OBSERVED_PACKAGES_KEY, emptySet()) ?: emptySet()
-            if (packageName !in allowlist) return@post
+            val latestAllowlist = getSharedPreferences(OBSERVER_PREFS, MODE_PRIVATE)
+                .getStringSet(OBSERVED_PACKAGES_KEY, emptySet()) ?: emptySet()
+            if (packageName !in latestAllowlist) return@post
             val dedupe = sha256("$packageName|$notificationKey|$postedAt")
             runCatching {
                 val database = LoccoDatabase.create(applicationContext)
