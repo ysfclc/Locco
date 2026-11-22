@@ -17,6 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     permissions:
       contents: read
     steps:
@@ -79,4 +80,11 @@ jobs:
             sleep 5
           done
           adb shell getprop sys.boot_completed | grep -q 1
-          gradle -p android --no-daemon connectedDebugAndroidTest
+          timeout 15m gradle -p android --no-daemon connectedDebugAndroidTest || {
+            adb logcat -d > /tmp/locco-logcat.txt || true
+            echo '===== Emulator boot log ====='
+            cat /tmp/locco-emulator.log || true
+            echo '===== Android logcat (last 300 lines) ====='
+            tail -n 300 /tmp/locco-logcat.txt || true
+            exit 1
+          }
