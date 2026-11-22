@@ -69,7 +69,7 @@ internal object LoccoDatabaseKey {
             throw IllegalStateException("Locco database key envelope is invalid; database access was blocked.", failure)
         }
         val ivSize = 12
-        require(envelope.size > ivSize + 16) { "Locco database key envelope is truncated." }
+        check(envelope.size > ivSize + 16) { "Locco database key envelope is truncated; database access was blocked." }
         val iv = envelope.copyOfRange(0, ivSize)
         val ciphertext = envelope.copyOfRange(ivSize, envelope.size)
         return try {
