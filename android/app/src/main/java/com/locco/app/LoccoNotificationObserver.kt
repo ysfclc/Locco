@@ -32,18 +32,20 @@ class LoccoNotificationObserver : NotificationListenerService() {
             val allowlist = prefs.getStringSet(OBSERVED_PACKAGES_KEY, emptySet()) ?: emptySet()
             if (packageName !in allowlist) return@post
             val dedupe = sha256("$packageName|$notificationKey|$postedAt")
-            val database = runCatching { LoccoDatabase.create(applicationContext) }.getOrNull() ?: return@post
-            try {
-                database.recordNotificationObservation(
-                    id = UUID.randomUUID().toString(),
-                    dedupeKey = dedupe,
-                    sourcePackage = packageName,
-                    occurredAt = postedAt,
-                    receivedAt = System.currentTimeMillis(),
-                    category = category
-                )
-            } finally {
-                database.close()
+            runCatching {
+                val database = LoccoDatabase.create(applicationContext)
+                try {
+                    database.recordNotificationObservation(
+                        id = UUID.randomUUID().toString(),
+                        dedupeKey = dedupe,
+                        sourcePackage = packageName,
+                        occurredAt = postedAt,
+                        receivedAt = System.currentTimeMillis(),
+                        category = category
+                    )
+                } finally {
+                    database.close()
+                }
             }
         }
     }
