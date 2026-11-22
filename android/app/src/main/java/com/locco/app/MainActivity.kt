@@ -88,7 +88,7 @@ private fun LoccoCore() {
                             activeId = selected.id
                             selectedTab = LoccoTab.Capture
                         }, ::start)
-                        LoccoTab.Observe -> ObserverScreen(onBack = { selectedTab = LoccoTab.Capture })
+                        LoccoTab.Observe -> ObserverScreen()
                     }
                 }
                 NavigationBar(containerColor = Color(0xFF111722), contentColor = Color.White) {
