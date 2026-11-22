@@ -35,6 +35,7 @@ internal fun ObserverScreen() {
     }
     var events by remember { mutableStateOf(emptyList<AppObservation>()) }
     var hasAccess by remember { mutableStateOf(notificationAccessEnabled(context)) }
+    var hasUsageAccess by remember { mutableStateOf(UsageStatsObserver.hasAccess(context)) }
     var error by remember { mutableStateOf<String?>(null) }
     var search by remember { mutableStateOf("") }
     val installedApps = remember(context) { discoverLaunchableApps(context.packageManager, context.packageName) }
@@ -47,10 +48,12 @@ internal fun ObserverScreen() {
 
     fun refresh() {
         hasAccess = notificationAccessEnabled(context)
+        hasUsageAccess = UsageStatsObserver.hasAccess(context)
         runCatching { LoccoDatabase.create(context.applicationContext) }
             .onSuccess { db ->
                 try {
-                    events = db.readObservations()
+                    if (hasUsageAccess) UsageStatsObserver.collect(context, observedPackages, db)
+                    events = (db.readObservations() + db.readUsageObservations()).sortedByDescending { it.receivedAt }.take(100)
                     error = null
                 } catch (failure: Throwable) {
                     error = failure.message ?: "Could not read local observations."
@@ -109,6 +112,35 @@ internal fun ObserverScreen() {
             }
         }
 
+        Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+            Column(Modifier.padding(14.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        color = if (hasUsageAccess) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer,
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Text(
+                            if (hasUsageAccess) "Usage access active" else "Usage access required",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                }
+                Text("App lifecycle observation", fontWeight = FontWeight.SemiBold)
+                Text(
+                    "With Usage Access, Locco can read Android foreground/background events for selected apps. It cannot see screen contents or in-app actions. History is collected when this Observer screen refreshes.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    },
+                    modifier = Modifier.padding(top = 8.dp)
+                ) { Text(if (hasUsageAccess) "Manage usage access" else "Enable usage access") }
+            }
+        }
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Installed apps", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
             Text("${observedPackages.size} selected", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
@@ -153,7 +185,7 @@ internal fun ObserverScreen() {
         }
         if (events.isEmpty()) {
             Text(
-                "No observations yet. Enable notification access, select an app, then wait for a notification from it.",
+                "No observations yet. Grant the relevant Android permission, select an app, then refresh after it is used or sends a notification.",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall
             )
