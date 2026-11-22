@@ -34,6 +34,7 @@ class MainActivity:ComponentActivity() {
  var activeId by remember { mutableStateOf(sessions.firstOrNull()?.id) }
  var text by remember { mutableStateOf("") }
  var library by remember { mutableStateOf(false) }
+ var observer by remember { mutableStateOf(false) }
  val active=sessions.firstOrNull { it.id==activeId }
  fun update(next:List<Session>) { sessions=next.sortedByDescending { it.time }; store.save(sessions) }
  fun start() { val s=Session(UUID.randomUUID().toString(),"New session",System.currentTimeMillis(),emptyList()); update(sessions+s); activeId=s.id; library=false }
@@ -51,9 +52,13 @@ class MainActivity:ComponentActivity() {
    Column(Modifier.fillMaxSize()) {
     Row(Modifier.fillMaxWidth().padding(20.dp),verticalAlignment=Alignment.CenterVertically) {
      Column { Text("LOCCO",color=Color(0xFF93A5FF),fontWeight=FontWeight.Bold); Text(if(library) "Library" else "Think · Capture · Connect",color=Color.White,style=MaterialTheme.typography.titleLarge) }
-     Spacer(Modifier.weight(1f)); TextButton(onClick={library=!library}) { Text(if(library) "Workspace" else "Library",color=Color(0xFF84DCC9)) }
+     Spacer(Modifier.weight(1f))
+     TextButton(onClick={observer=!observer; library=false}) { Text(if(observer) "Close observer" else "Observer",color=Color(0xFF84DCC9)) }
+     TextButton(onClick={library=!library; observer=false}) { Text(if(library) "Workspace" else "Library",color=Color(0xFF84DCC9)) }
     }
-    if(library) {
+    if(observer) {
+     ObserverScreen(onBack={observer=false})
+    } else if(library) {
      Row(Modifier.fillMaxWidth().padding(horizontal=16.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) { Text("${sessions.size} sessions",color=Color.LightGray); Button(onClick={start()}) { Text("New") } }
      if(sessions.isEmpty()) Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center) { Text("Your saved sessions appear here.",color=Color.Gray) }
      else LazyColumn(Modifier.fillMaxSize().padding(horizontal=12.dp)) { items(sessions,key={it.id}) { s ->
