@@ -17,7 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 120
     permissions:
       contents: read
     steps:
@@ -68,10 +68,31 @@ jobs:
           if-no-files-found: error
       - name: Run Android unit tests
         run: gradle -p android --no-daemon testDebugUnitTest
+      - name: Restore Android emulator cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/emulator
+            ${{ env.ANDROID_HOME }}/system-images
+            ${{ env.ANDROID_HOME }}/platform-tools
+            ~/.android/avd
+          key: ${{ runner.os }}-locco-emulator-api35-google-apis-x86_64-v1
       - name: Run Android instrumentation tests
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "emulator" "platform-tools" "system-images;android-35;google_apis;x86_64"
+      - name: Save Android emulator cache
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/emulator
+            ${{ env.ANDROID_HOME }}/system-images
+            ${{ env.ANDROID_HOME }}/platform-tools
+            ~/.android/avd
+          key: ${{ runner.os }}-locco-emulator-api35-google-apis-x86_64-v1
+      - name: Boot emulator and run instrumentation tests
+        run: |
+          echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n locco-ci -k "system-images;android-35;google_apis;x86_64" -d pixel_2
           echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n locco-ci -k "system-images;android-35;google_apis;x86_64" -d pixel_2
           "$ANDROID_HOME/emulator/emulator" -avd locco-ci -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot > /tmp/locco-emulator.log 2>&1 &
           adb wait-for-device
