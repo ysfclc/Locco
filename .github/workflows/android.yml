@@ -40,7 +40,7 @@ jobs:
       - name: Install Android SDK and NDK
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018" "emulator" "platform-tools" "system-images;android-35;google_apis;x86_64"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
       - name: Install cargo-ndk
@@ -69,6 +69,8 @@ jobs:
         run: gradle -p android --no-daemon testDebugUnitTest
       - name: Run Android instrumentation tests
         run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "emulator" "platform-tools" "system-images;android-35;google_apis;x86_64"
           echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n locco-ci -k "system-images;android-35;google_apis;x86_64" -d pixel_2
           "$ANDROID_HOME/emulator/emulator" -avd locco-ci -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot > /tmp/locco-emulator.log 2>&1 &
           adb wait-for-device
