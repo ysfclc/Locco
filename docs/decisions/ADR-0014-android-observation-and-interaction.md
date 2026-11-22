@@ -1,6 +1,6 @@
 # ADR-0014: Android app observation and interaction as a core capability
 
-**Status:** Accepted product direction; implementation and platform feasibility gates pending  
+**Status:** Accepted product direction; first notification metadata prototype implemented; platform acceptance gates pending  
 **Date:** 2026-11-22  
 **Owners:** Product + Android  
 **Review:** Architect, Security, QA
@@ -42,6 +42,16 @@ The existing Locco roadmap mentions notifications and source adapters but does n
 - **Accessibility as universal app API:** rejected; it is incomplete, user-sensitive and not equivalent to private app internals.
 - **Root or modified third-party APKs as default:** rejected; changes the device trust model, can break provider integrity and is not a viable assumed daily-device path.
 - **Only official APIs:** rejected as the sole architecture because many apps expose no public API; retain as the preferred structured provider adapter where available.
+
+## Initial implementation now present
+
+- Rust schema v3 introduces the redacted `app_observations` ledger and idempotency index.
+- Android registers a user-enabled NotificationListenerService and provides a manual package allowlist.
+- Only package, category and timestamps are acquired; notification content is not read.
+- Locco exposes a local Observer feed backed by SQLCipher.
+- Instrumentation coverage checks encrypted persistence and deduplication.
+
+This does not yet prove real-device background delivery or provide semantic visibility into private app state.
 
 ## Verification required
 

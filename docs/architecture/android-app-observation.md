@@ -1,6 +1,6 @@
 # Android App Observation and Interaction Architecture
 
-**Status:** product-critical architecture direction, implementation pending.  
+**Status:** product-critical architecture accepted; first notification-metadata prototype implemented, real-device acceptance pending.  
 **Origin:** user direction, reinforced by the App Observer and Provider Bridge research in `ysfclc/BusyBee`.  
 **Product owner:** Locco.
 
@@ -179,6 +179,22 @@ Locco must re-evaluate exact source, tests, licences, package IDs and build stat
 - High-impact actions require explicit approval and independent postcondition verification.
 
 ## 7. First engineering proof and acceptance
+
+### 7.1 Implemented prototype (not yet device-verified)
+
+The first Locco-owned observation adapter is now present in the Android shell:
+
+- A system-bound `NotificationListenerService` receives notification lifecycle callbacks while Locco is not foregrounded.
+- The user manually allowlists Android package names in the Observer screen and must separately grant Android's notification-listener permission.
+- The adapter copies only package name, post timestamp and standard notification category. It never reads notification title, text, actions or extras.
+- A SHA-256 digest of the notification identity is used as a unique idempotency key; the raw notification key is not persisted.
+- Rust migration schema v3 adds an indexed `app_observations` ledger table with acquisition method, source package, event/receive timestamps and explicit redaction metadata.
+- The event is stored through the SQLCipher database and displayed in Locco's Observer feed.
+- Instrumentation coverage verifies encrypted-at-rest observation metadata, reopen behavior and duplicate suppression.
+
+This is an initial system-signal adapter, not semantic understanding of the source app. It proves only that Android exposed a notification event for an explicitly selected package.
+
+### 7.2 Remaining acceptance work
 
 The first implementation milestone is not an attractive dashboard. It is an end-to-end native observation slice.
 

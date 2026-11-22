@@ -119,9 +119,36 @@ def test_populated_v1_upgrade() -> None:
     ).fetchone() == (0,)
 
 
+def test_v2_to_v3_upgrade_preserves_kernel_data() -> None:
+    connection = sqlite3.connect(":memory:")
+    connection.execute("PRAGMA foreign_keys=ON")
+    apply(connection, 1)
+    apply(connection, 2)
+    connection.execute("INSERT INTO sessions VALUES('keep-s1', 'keep me', 7)")
+    connection.execute("INSERT INTO notes VALUES('keep-n1', 'keep-s1', 'keep this note', 8)")
+    apply(connection, 3)
+    assert connection.execute("SELECT title FROM sessions WHERE id='keep-s1'").fetchone() == ("keep me",)
+    assert connection.execute("SELECT content FROM notes WHERE id='keep-n1'").fetchone() == ("keep this note",)
+    connection.execute(
+        "INSERT INTO app_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method,category) "
+        "VALUES('obs1','dedupe1','com.example.app','notification_posted',10,11,'android_notification_listener','message')"
+    )
+    try:
+        connection.execute(
+            "INSERT INTO app_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method) "
+            "VALUES('obs2','dedupe1','com.example.app','notification_posted',10,12,'android_notification_listener')"
+        )
+    except sqlite3.IntegrityError:
+        pass
+    else:
+        raise AssertionError("Duplicate observation idempotency key was accepted")
+    assert connection.execute("SELECT count(*) FROM app_observations").fetchone() == (1,)
+
+
 if __name__ == "__main__":
     assert ffi.locco_schema_version() == 3
     assert ffi.locco_migration_statement_count(4) == 0
     test_fresh_install()
     test_populated_v1_upgrade()
+    test_v2_to_v3_upgrade_preserves_kernel_data()
     print("PASS: Rust ABI migration catalogue; fresh schema; populated v1 -> v2; evidence joins; FK and cascade integrity.")

@@ -10,8 +10,10 @@ Product, principles, architecture, FFI, Rust workspace, Android shell, iOS plan,
 
 **Acceptance still required:** confirm the current CI run including emulator instrumentation; prove actual session plaintext is absent from DB/WAL/journal while records reopen correctly; implement a safe, recoverable migration for existing plaintext databases; complete source/evidence CRUD, entity relation operations, append-only event APIs, lexical retrieval and verified export/restore. Sensitive-data readiness remains blocked until migration and security review pass.
 
-## 2 — Acquisition and Android Observation
+## 2 — Acquisition and Android Observation (IN PROGRESS — first vertical slice)
 This is a defining Locco capability, not a generic file-import phase. Build the Android observation subsystem and capability registry: app identity/version, UsageStats/UsageEvents, opt-in NotificationListenerService, scoped Accessibility observation, share/import, intents/App Links and documented provider interfaces. Signals must be persisted as provenance-bearing evidence, interpreted into typed source-neutral events, correlated and surfaced in Locco while the source app is not foregrounded.
+
+**Implemented prototype (device verification pending):** opt-in NotificationListenerService, manual per-package allowlist, metadata-only notification receipts, SHA-256 idempotency key, Rust-owned schema v3, SQLCipher persistence and a native Observer feed. It intentionally ignores notification title/text/actions/extras. Instrumentation tests cover the ledger boundary; the end-to-end listener callback still needs real-device proof.
 
 **First acceptance slice:** a real background Android signal from an explicitly selected app becomes a typed event in the encrypted local ledger and appears in Locco without opening the source app. Verify source/method/time/coverage, permission revocation, duplicate delivery, process restart, redaction, health and device battery/latency. See [Android App Observation and Interaction](../architecture/android-app-observation.md).
 
