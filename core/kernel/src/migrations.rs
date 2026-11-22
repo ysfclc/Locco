@@ -3,7 +3,7 @@
 //! Platform adapters execute these statements inside their database transaction.
 //! They must not define or mutate the schema independently.
 
-pub const SCHEMA_VERSION: u32 = 3;
+pub const SCHEMA_VERSION: u32 = 4;
 
 const V1: &[&str] = &[
     "CREATE TABLE sessions (id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL, created_at INTEGER NOT NULL)",
@@ -30,12 +30,19 @@ const V3: &[&str] = &[
     "CREATE INDEX app_observations_source_time ON app_observations(source_package, occurred_at DESC)",
 ];
 
+const V4: &[&str] = &[
+    "CREATE TABLE app_usage_events (id TEXT PRIMARY KEY NOT NULL CHECK(length(id) BETWEEN 1 AND 128), dedupe_key TEXT NOT NULL UNIQUE CHECK(length(dedupe_key)=64), source_package TEXT NOT NULL CHECK(length(source_package) BETWEEN 3 AND 255), event_type TEXT NOT NULL CHECK(event_type IN ('app_foregrounded','app_backgrounded')), occurred_at INTEGER NOT NULL CHECK(occurred_at >= 0), received_at INTEGER NOT NULL CHECK(received_at >= 0), acquisition_method TEXT NOT NULL CHECK(acquisition_method='android_usage_events'))",
+    "CREATE INDEX app_usage_events_received ON app_usage_events(received_at DESC)",
+    "CREATE INDEX app_usage_events_source_time ON app_usage_events(source_package, occurred_at DESC)",
+];
+
 /// Number of SQL statements in one migration version; zero means unsupported.
 pub fn migration_statement_count(version: u32) -> u32 {
     match version {
         1 => V1.len() as u32,
         2 => V2.len() as u32,
         3 => V3.len() as u32,
+        4 => V4.len() as u32,
         _ => 0,
     }
 }
@@ -46,6 +53,7 @@ pub fn migration_statement(version: u32, index: u32) -> Option<&'static str> {
         1 => V1,
         2 => V2,
         3 => V3,
+        4 => V4,
         _ => return None,
     };
     statements.get(index as usize).copied()
