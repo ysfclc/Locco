@@ -108,6 +108,43 @@ internal class LoccoDatabase private constructor(
         }
     }
 
+    /** Stores only a redacted system receipt; notification title/text/extras never cross this boundary. */
+    fun recordNotificationObservation(
+        id: String,
+        dedupeKey: String,
+        sourcePackage: String,
+        occurredAt: Long,
+        receivedAt: Long,
+        category: String?
+    ) {
+        writableDatabase.execSQL(
+            "INSERT OR IGNORE INTO app_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method,category) VALUES(?,?,?,?,?,?,?,?)",
+            arrayOf(id, dedupeKey, sourcePackage, "notification_posted", occurredAt, receivedAt, "android_notification_listener", category)
+        )
+    }
+
+    fun readObservations(limit: Int = 100): List<AppObservation> {
+        val result = mutableListOf<AppObservation>()
+        readableDatabase.rawQuery(
+            "SELECT id,source_package,event_type,occurred_at,received_at,acquisition_method,category,redacted_fields_json FROM app_observations ORDER BY received_at DESC LIMIT ?",
+            arrayOf(limit.coerceIn(1, 500).toString())
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                result += AppObservation(
+                    id = cursor.getString(0),
+                    sourcePackage = cursor.getString(1),
+                    eventType = cursor.getString(2),
+                    occurredAt = cursor.getLong(3),
+                    receivedAt = cursor.getLong(4),
+                    acquisitionMethod = cursor.getString(5),
+                    category = if (cursor.isNull(6)) null else cursor.getString(6),
+                    redactedFields = cursor.getString(7)
+                )
+            }
+        }
+        return result
+    }
+
     private fun importLegacyPrefs(db: SQLiteDatabase, context: Context) {
         val prefs = context.getSharedPreferences("locco_core_v1", Context.MODE_PRIVATE)
         val json = prefs.getString("sessions", "[]") ?: "[]"
