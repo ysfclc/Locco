@@ -93,13 +93,28 @@ jobs:
       - name: Boot emulator and run instrumentation tests
         run: |
           echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n locco-ci -k "system-images;android-35;google_apis;x86_64" -d pixel_2
-          "$ANDROID_HOME/emulator/emulator" -avd locco-ci -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot > /tmp/locco-emulator.log 2>&1 &
-          adb wait-for-device
+          "$ANDROID_HOME/emulator/emulator" -avd locco-ci -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -wipe-data -memory 2048 -cores 2 -verbose > /tmp/locco-emulator.log 2>&1 &
+          dump_emulator_diagnostics() {
+            echo '===== ADB devices ====='
+            adb devices -l || true
+            echo '===== Emulator boot log ====='
+            tail -n 500 /tmp/locco-emulator.log || true
+            echo '===== Android logcat ====='
+            adb logcat -d | tail -n 300 || true
+          }
+          timeout 3m adb wait-for-device || {
+            dump_emulator_diagnostics
+            exit 1
+          }
+          booted=false
           for _ in $(seq 1 60); do
-            if adb shell getprop sys.boot_completed | grep -q 1; then break; fi
+            if adb shell getprop sys.boot_completed | grep -q 1; then booted=true; break; fi
             sleep 5
           done
-          adb shell getprop sys.boot_completed | grep -q 1
+          if [ "$booted" != true ]; then
+            dump_emulator_diagnostics
+            exit 1
+          fi
           timeout 15m gradle -p android --no-daemon connectedDebugAndroidTest || {
             adb logcat -d > /tmp/locco-logcat.txt || true
             echo '===== Emulator boot log ====='
