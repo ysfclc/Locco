@@ -3,7 +3,7 @@
 //! Platform adapters execute these statements inside their database transaction.
 //! They must not define or mutate the schema independently.
 
-pub const SCHEMA_VERSION: u32 = 2;
+pub const SCHEMA_VERSION: u32 = 3;
 
 const V1: &[&str] = &[
     "CREATE TABLE sessions (id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL, created_at INTEGER NOT NULL)",
@@ -22,11 +22,20 @@ const V2: &[&str] = &[
     "CREATE INDEX note_sources_source_time ON note_sources(source_id, attached_at)",
 ];
 
+/// Minimal, privacy-preserving Android observation receipts. Notification text,
+/// title, actions, extras and raw Notification payloads are never persisted.
+const V3: &[&str] = &[
+    "CREATE TABLE app_observations (id TEXT PRIMARY KEY NOT NULL, dedupe_key TEXT NOT NULL UNIQUE, source_package TEXT NOT NULL, event_type TEXT NOT NULL, occurred_at INTEGER NOT NULL, received_at INTEGER NOT NULL, acquisition_method TEXT NOT NULL, category TEXT, redacted_fields_json TEXT NOT NULL DEFAULT '[\\"notification_text\\",\\"notification_title\\",\\"notification_extras\\"]')",
+    "CREATE INDEX app_observations_received ON app_observations(received_at DESC)",
+    "CREATE INDEX app_observations_source_time ON app_observations(source_package, occurred_at DESC)",
+];
+
 /// Number of SQL statements in one migration version; zero means unsupported.
 pub fn migration_statement_count(version: u32) -> u32 {
     match version {
         1 => V1.len() as u32,
         2 => V2.len() as u32,
+        3 => V3.len() as u32,
         _ => 0,
     }
 }
@@ -36,6 +45,7 @@ pub fn migration_statement(version: u32, index: u32) -> Option<&'static str> {
     let statements = match version {
         1 => V1,
         2 => V2,
+        3 => V3,
         _ => return None,
     };
     statements.get(index as usize).copied()
@@ -47,10 +57,11 @@ mod tests {
 
     #[test]
     fn schema_versions_are_sequential_and_supported() {
-        assert_eq!(SCHEMA_VERSION, 2);
+        assert_eq!(SCHEMA_VERSION, 3);
         assert!(migration_statement_count(1) > 0);
         assert!(migration_statement_count(2) > 0);
-        assert_eq!(migration_statement_count(3), 0);
+        assert!(migration_statement_count(3) > 0);
+        assert_eq!(migration_statement_count(4), 0);
     }
 
     #[test]
@@ -62,6 +73,7 @@ mod tests {
             }
         }
         assert!(migration_statement(2, migration_statement_count(2)).is_none());
+        assert!(migration_statement(3, 0).unwrap().contains("dedupe_key TEXT NOT NULL UNIQUE"));
     }
 
     #[test]
