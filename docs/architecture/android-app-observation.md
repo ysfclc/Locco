@@ -193,6 +193,8 @@ The first Locco-owned observation adapter is now present in the Android shell:
 - Rust migration schema v3 adds an indexed `app_observations` ledger table with acquisition method, source package, event/receive timestamps and explicit redaction metadata.
 - The event is stored through the SQLCipher database and displayed in Locco's Observer feed. The feed refreshes when the Observer destination is opened.
 - Instrumentation coverage verifies encrypted-at-rest observation metadata, reopen behavior and duplicate suppression.
+- Rust migration schema v4 adds a separate `app_usage_events` ledger for package-level foreground/background transitions.
+- When Usage Access is granted, Observer refresh queries Android `UsageEvents` for the selected package allowlist (last 24 hours), persists deduplicated transitions, and merges them into the local feed. This is history-on-refresh, not a continuous background monitor; no screen contents or in-app actions are exposed.
 
 This is an initial system-signal adapter, not semantic understanding of the source app. It proves only that Android exposed a notification event for an explicitly selected package. App discovery and version display are not evidence that a source integration is active.
 
