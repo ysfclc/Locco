@@ -2,14 +2,73 @@
   "schema_version": "1.0",
   "product": "Locco",
   "identity": "Personal local-first mobile intelligence and action environment",
-  "constraints": ["zero budget", "Android primary", "Rust core", "on-device AI", "no HTML/web UI", "future iOS shell"],
-  "loop": ["acquire", "preserve", "understand", "connect", "reason", "decide", "act", "verify", "learn"],
+  "constraints": [
+    "zero budget",
+    "Android primary",
+    "Rust core",
+    "on-device AI",
+    "no HTML/web UI",
+    "future iOS shell",
+    "Android observation is first-class but permission-scoped and sandbox-aware"
+  ],
+  "loop": [
+    "acquire",
+    "preserve",
+    "understand",
+    "connect",
+    "reason",
+    "decide",
+    "act",
+    "verify",
+    "learn"
+  ],
   "capabilities": {
-    "acquisition": ["public source adapters", "visible browser capture", "Android share/import", "files", "notifications", "manual capture"],
-    "intelligence": ["evidence lineage", "extraction", "entity resolution", "relationships", "dedupe", "search", "claims", "patterns"],
-    "reasoning": ["deterministic analysis", "local semantic inference", "compact context", "retrieval", "evaluation"],
-    "execution": ["capability registry", "workflow plans", "approvals", "native adapters", "postcondition verification"],
-    "workspace": ["capture", "search", "entity views", "evidence inspection", "review", "analysis", "action"]
+    "acquisition": [
+      "public source adapters",
+      "visible browser capture",
+      "Android share/import",
+      "files",
+      "notifications",
+      "manual capture",
+      "Android app observation: UsageStats/UsageEvents, opt-in notifications, scoped Accessibility, intents/App Links and supported provider interfaces"
+    ],
+    "intelligence": [
+      "evidence lineage",
+      "extraction",
+      "entity resolution",
+      "relationships",
+      "dedupe",
+      "search",
+      "claims",
+      "patterns",
+      "background app activity interpretation",
+      "source capability/health registry",
+      "cross-app event correlation and lifecycle reconstruction"
+    ],
+    "reasoning": [
+      "deterministic analysis",
+      "local semantic inference",
+      "compact context",
+      "retrieval",
+      "evaluation"
+    ],
+    "execution": [
+      "capability registry",
+      "workflow plans",
+      "approvals",
+      "native adapters",
+      "postcondition verification",
+      "native cross-app handoffs and verified supported interactions"
+    ],
+    "workspace": [
+      "capture",
+      "search",
+      "entity views",
+      "evidence inspection",
+      "review",
+      "analysis",
+      "action"
+    ]
   },
   "donor_repositories": {
     "outbound_sourcer": "source adapter and discovery pipeline concepts; not product identity",
@@ -18,9 +77,24 @@
     "troy": "source-aware extraction, interpretation and identity resolution",
     "me": "immutable evidence and derived observation concepts; no personal DB import",
     "memo": "selected Android automation, approval and visible-browser patterns; not base product",
-    "busybee": "native observer/provider adapter research; no arbitrary app inspection assumption",
+    "busybee": "App Observer Lab, Platform Activity Integration, Native Provider Bridge and owned-app plaintext observer research; audit and adapt, never assume arbitrary app internals",
     "vaultos": "local import, indexing, backup and data integrity"
   },
-  "exclusions": ["Memo clone", "sales/trade-only scope", "mandatory cloud", "paid APIs", "web UI", "transcript memory", "unrestricted scraping", "automatic high-impact actions"],
-  "open_evidence": ["model runtime benchmark", "embedding value", "database encryption choice", "device performance budgets", "iOS bridge generator"]
+  "exclusions": [
+    "Memo clone",
+    "sales/trade-only scope",
+    "mandatory cloud",
+    "paid APIs",
+    "web UI",
+    "transcript memory",
+    "unrestricted scraping",
+    "automatic high-impact actions"
+  ],
+  "open_evidence": [
+    "model runtime benchmark",
+    "embedding value",
+    "database encryption choice",
+    "device performance budgets",
+    "iOS bridge generator"
+  ]
 }
