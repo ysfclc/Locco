@@ -9,7 +9,9 @@ Native Android; future iOS shell sharing Rust contracts; local data/evidence/ent
 - Not an Outbound Sourcer clone, sales-only, trade-only, CRM-only or lead-generation product.
 - Not a generic business OS or multi-tenant SaaS.
 - No mandatory cloud, paid model/API/maps/scraping provider, subscription or monetization.
-- No unrestricted scraping, hidden surveillance, credential harvesting or bypass of CAPTCHA/paywall/anti-bot/auth controls.\n- No claim of universal visibility into third-party app processes; Android sandbox boundaries remain real. No root, modified/re-signed third-party APK, TLS pinning bypass, anti-tamper evasion, private endpoint replay or covert monitoring as a production dependency.\n- Notifications, UsageStats, Accessibility, VPN metadata and in-process plaintext observation must remain distinct, accurately labelled acquisition methods.
+- No unrestricted scraping, hidden surveillance, credential harvesting or bypass of CAPTCHA/paywall/anti-bot/auth controls.
+- No claim of universal visibility into third-party app processes; Android sandbox boundaries remain real. No root, modified/re-signed third-party APK, TLS pinning bypass, anti-tamper evasion, private endpoint replay or covert monitoring as a production dependency.
+- Notifications, UsageStats, Accessibility, VPN metadata and in-process plaintext observation must remain distinct, accurately labelled acquisition methods.
 - No high-impact unattended action without policy/approval; no assumption AccessibilityService can inspect arbitrary app internals.
 - No private donor-repo data import; no model weights in Git; iOS is not a Phase 0 build.
 
