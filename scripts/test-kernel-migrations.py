@@ -131,12 +131,12 @@ def test_v2_to_v3_upgrade_preserves_kernel_data() -> None:
     assert connection.execute("SELECT content FROM notes WHERE id='keep-n1'").fetchone() == ("keep this note",)
     connection.execute(
         "INSERT INTO app_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method,category) "
-        "VALUES('obs1','dedupe1','com.example.app','notification_posted',10,11,'android_notification_listener','message')"
+        "VALUES('obs1','aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','com.example.app','notification_posted',10,11,'android_notification_listener','message')"
     )
     try:
         connection.execute(
             "INSERT INTO app_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method) "
-            "VALUES('obs2','dedupe1','com.example.app','notification_posted',10,12,'android_notification_listener')"
+            "VALUES('obs2','aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','com.example.app','notification_posted',10,12,'android_notification_listener')"
         )
     except sqlite3.IntegrityError:
         pass
