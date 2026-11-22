@@ -136,16 +136,17 @@ mod tests {
     #[test]
     fn c_abi_exposes_versioned_migrations() {
         assert_eq!(locco_abi_version(), 2);
-        assert_eq!(locco_schema_version(), 2);
+        assert_eq!(locco_schema_version(), 3);
         assert!(locco_migration_statement_count(1) > 0);
         assert!(locco_migration_statement_count(2) > 0);
-        assert_eq!(locco_migration_statement_count(3), 0);
+        assert!(locco_migration_statement_count(3) > 0);
+        assert_eq!(locco_migration_statement_count(4), 0);
     }
 
     #[test]
     fn c_abi_copies_sql_into_caller_owned_memory() {
         let mut output = vec![0_u8; 128];
-        let sql = locco_kernel::migrations::migration_statement(2, 0).unwrap();
+        let sql = locco_kernel::migrations::migration_statement(3, 0).unwrap();
         output.resize(sql.len(), 0);
         assert_eq!(locco_migration_statement_len(2, 0), sql.len() as i64);
         // SAFETY: output is a writable Vec whose length equals the required SQL byte length.
