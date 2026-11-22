@@ -88,6 +88,19 @@ jobs:
             /usr/local/lib/android/sdk/system-images
             /usr/local/lib/android/sdk/platform-tools
           key: ${{ runner.os }}-locco-emulator-api35-google-apis-x86_64-v1
+      - name: Enable KVM for Android emulator
+        run: |
+          if [[ ! -e /dev/kvm ]]; then
+            echo "This runner does not expose /dev/kvm; x86_64 Android emulation requires hardware acceleration."
+            exit 1
+          fi
+          sudo chmod 666 /dev/kvm
+          if [[ ! -r /dev/kvm || ! -w /dev/kvm ]]; then
+            echo "Runner still cannot access /dev/kvm after permission update."
+            ls -l /dev/kvm
+            exit 1
+          fi
+          ls -l /dev/kvm
       - name: Boot emulator and run instrumentation tests
         env:
           ANDROID_AVD_HOME: ${{ runner.temp }}/android-avd
