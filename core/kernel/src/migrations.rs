@@ -25,7 +25,7 @@ const V2: &[&str] = &[
 /// Minimal, privacy-preserving Android observation receipts. Notification text,
 /// title, actions, extras and raw Notification payloads are never persisted.
 const V3: &[&str] = &[
-    "CREATE TABLE app_observations (id TEXT PRIMARY KEY NOT NULL, dedupe_key TEXT NOT NULL UNIQUE, source_package TEXT NOT NULL, event_type TEXT NOT NULL, occurred_at INTEGER NOT NULL, received_at INTEGER NOT NULL, acquisition_method TEXT NOT NULL, category TEXT, redacted_fields_json TEXT NOT NULL DEFAULT '[\"notification_text\",\"notification_title\",\"notification_extras\"]')",
+    "CREATE TABLE app_observations (id TEXT PRIMARY KEY NOT NULL CHECK(length(id) BETWEEN 1 AND 128), dedupe_key TEXT NOT NULL UNIQUE CHECK(length(dedupe_key)=64), source_package TEXT NOT NULL CHECK(length(source_package) BETWEEN 3 AND 255), event_type TEXT NOT NULL CHECK(event_type IN ('notification_posted')), occurred_at INTEGER NOT NULL CHECK(occurred_at >= 0), received_at INTEGER NOT NULL CHECK(received_at >= 0), acquisition_method TEXT NOT NULL CHECK(acquisition_method='android_notification_listener'), category TEXT CHECK(category IS NULL OR length(category) <= 80), redacted_fields_json TEXT NOT NULL DEFAULT '[\"notification_text\",\"notification_title\",\"notification_extras\"]')",
     "CREATE INDEX app_observations_received ON app_observations(received_at DESC)",
     "CREATE INDEX app_observations_source_time ON app_observations(source_package, occurred_at DESC)",
 ];
