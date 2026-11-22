@@ -65,11 +65,12 @@ mod tests {
 
     #[test]
     fn schema_versions_are_sequential_and_supported() {
-        assert_eq!(SCHEMA_VERSION, 3);
+        assert_eq!(SCHEMA_VERSION, 4);
         assert!(migration_statement_count(1) > 0);
         assert!(migration_statement_count(2) > 0);
         assert!(migration_statement_count(3) > 0);
-        assert_eq!(migration_statement_count(4), 0);
+        assert!(migration_statement_count(4) > 0);
+        assert_eq!(migration_statement_count(5), 0);
     }
 
     #[test]
@@ -84,6 +85,9 @@ mod tests {
         assert!(migration_statement(3, 0)
             .unwrap()
             .contains("dedupe_key TEXT NOT NULL UNIQUE"));
+        assert!(migration_statement(4, 0)
+            .unwrap()
+            .contains("android_usage_events"));
     }
 
     #[test]
