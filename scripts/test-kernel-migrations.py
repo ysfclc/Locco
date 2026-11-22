@@ -68,6 +68,7 @@ def test_fresh_install() -> None:
         "entity_relations",
         "kernel_events",
         "note_sources",
+        "app_observations",
     }
     assert expected.issubset(names), expected - names
     assert connection.execute(
