@@ -119,8 +119,8 @@ def test_populated_v1_upgrade() -> None:
 
 
 if __name__ == "__main__":
-    assert ffi.locco_schema_version() == 2
-    assert ffi.locco_migration_statement_count(3) == 0
+    assert ffi.locco_schema_version() == 3
+    assert ffi.locco_migration_statement_count(4) == 0
     test_fresh_install()
     test_populated_v1_upgrade()
     print("PASS: Rust ABI migration catalogue; fresh schema; populated v1 -> v2; evidence joins; FK and cascade integrity.")
