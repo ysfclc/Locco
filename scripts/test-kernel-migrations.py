@@ -69,6 +69,7 @@ def test_fresh_install() -> None:
         "kernel_events",
         "note_sources",
         "app_observations",
+        "app_usage_events",
     }
     assert expected.issubset(names), expected - names
     assert connection.execute(
@@ -146,8 +147,8 @@ def test_v2_to_v3_upgrade_preserves_kernel_data() -> None:
 
 
 if __name__ == "__main__":
-    assert ffi.locco_schema_version() == 3
-    assert ffi.locco_migration_statement_count(4) == 0
+    assert ffi.locco_schema_version() == 4
+    assert ffi.locco_migration_statement_count(5) == 0
     test_fresh_install()
     test_populated_v1_upgrade()
     test_v2_to_v3_upgrade_preserves_kernel_data()
