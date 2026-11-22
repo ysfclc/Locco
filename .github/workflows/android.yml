@@ -57,6 +57,14 @@ jobs:
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         with:
           gradle-version: "8.11.1"
+      - name: Assemble debug APK
+        run: gradle -p android --no-daemon assembleDebug
+      - name: Upload debug APK
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: locco-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
       - name: Run Android unit tests
         run: gradle -p android --no-daemon testDebugUnitTest
       - name: Run Android instrumentation tests
@@ -70,11 +78,3 @@ jobs:
           done
           adb shell getprop sys.boot_completed | grep -q 1
           gradle -p android --no-daemon connectedDebugAndroidTest
-      - name: Assemble debug APK
-        run: gradle -p android --no-daemon assembleDebug
-      - name: Upload debug APK
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: locco-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
