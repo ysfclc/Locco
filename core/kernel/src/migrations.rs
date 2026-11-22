@@ -73,7 +73,9 @@ mod tests {
             }
         }
         assert!(migration_statement(2, migration_statement_count(2)).is_none());
-        assert!(migration_statement(3, 0).unwrap().contains("dedupe_key TEXT NOT NULL UNIQUE"));
+        assert!(migration_statement(3, 0)
+            .unwrap()
+            .contains("dedupe_key TEXT NOT NULL UNIQUE"));
     }
 
     #[test]
