@@ -146,10 +146,36 @@ def test_v2_to_v3_upgrade_preserves_kernel_data() -> None:
     assert connection.execute("SELECT count(*) FROM app_observations").fetchone() == (1,)
 
 
+def test_v3_to_v4_usage_events() -> None:
+    connection = sqlite3.connect(":memory:")
+    connection.execute("PRAGMA foreign_keys=ON")
+    for version in range(1, 4):
+        apply(connection, version)
+    apply(connection, 4)
+    key = "b" * 64
+    connection.execute(
+        "INSERT INTO app_usage_events(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method) "
+        "VALUES('usage1',?,'com.example.app','app_foregrounded',10,11,'android_usage_events')",
+        (key,),
+    )
+    try:
+        connection.execute(
+            "INSERT INTO app_usage_events(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method) "
+            "VALUES('usage2',?,'com.example.app','app_foregrounded',10,12,'android_usage_events')",
+            (key,),
+        )
+    except sqlite3.IntegrityError:
+        pass
+    else:
+        raise AssertionError("Duplicate usage event idempotency key was accepted")
+    assert connection.execute("SELECT count(*) FROM app_usage_events").fetchone() == (1,)
+
+
 if __name__ == "__main__":
     assert ffi.locco_schema_version() == 4
     assert ffi.locco_migration_statement_count(5) == 0
     test_fresh_install()
     test_populated_v1_upgrade()
     test_v2_to_v3_upgrade_preserves_kernel_data()
+    test_v3_to_v4_usage_events()
     print("PASS: Rust ABI migration catalogue; fresh schema; populated v1 -> v2; evidence joins; FK and cascade integrity.")
