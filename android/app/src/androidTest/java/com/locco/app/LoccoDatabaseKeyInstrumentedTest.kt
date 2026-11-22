@@ -136,7 +136,7 @@ class LoccoDatabaseKeyInstrumentedTest {
     @Test
     fun notificationObservationIsRedactedDeduplicatedAndStoredEncrypted() {
         val packageSentinel = "com.locco.observer.sentinel"
-        val dedupe = "notification-dedupe-sentinel-01"
+        val dedupe = "a".repeat(64)
         val first = LoccoDatabase.create(context)
         try {
             first.recordNotificationObservation(
