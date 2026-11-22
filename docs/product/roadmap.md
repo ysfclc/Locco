@@ -6,7 +6,7 @@ Product, principles, architecture, FFI, Rust workspace, Android shell, iOS plan,
 ## 1 — Local kernel
 **IN PROGRESS:** native session workspace, pure capture kernel, Kotlin unit tests, local SQLite session persistence and legacy preference import. Rust defines platform-neutral Source, Evidence, Entity, Relationship and Event records.
 
-**Implemented in this slice:** Rust owns schema versions 1–2 and ordered SQLite DDL. ABI v2 exposes a bounded caller-buffer C API and Android JNI adapter. Android SQLiteOpenHelper executes those migrations. Version 2 adds note-to-source provenance links. SQLCipher-backed storage and Android Keystore key wrapping are implemented.
+**Implemented in this slice:** Rust owns schema versions 1–4 and ordered SQLite DDL. ABI v2 exposes a bounded caller-buffer C API and Android JNI adapter. Android SQLiteOpenHelper executes those migrations. Version 2 adds note-to-source provenance links. SQLCipher-backed storage and Android Keystore key wrapping are implemented.
 
 **Acceptance still required:** prove actual session plaintext is absent from DB/WAL/journal while records reopen correctly; implement a safe, recoverable migration for existing plaintext databases; complete source/evidence CRUD, entity relation operations, append-only event APIs, lexical retrieval and verified export/restore. Sensitive-data readiness remains blocked until migration and security review pass.
 
