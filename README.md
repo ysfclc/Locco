@@ -1,6 +1,8 @@
 # Locco
 
-**A local-first, mobile-native intelligence and action environment.**\n\nA defining ambition is to make Android more observable and composable: understand supported activity in selected apps, interpret it locally, surface it inside Locco without opening the source app, and provide safe, verified ways to hand off or interact. See [Android App Observation and Interaction](docs/architecture/android-app-observation.md).
+**A local-first, mobile-native intelligence and action environment.**
+
+A defining ambition is to make Android more observable and composable: understand supported activity in selected apps, interpret it locally, surface it inside Locco without opening the source app, and provide safe, verified ways to hand off or interact. See [Android App Observation and Interaction](docs/architecture/android-app-observation.md).
 
 Locco acquires information from sources you choose, preserves evidence, builds a useful model of people, places, things and events, supports on-device reasoning, and enables controlled actions. It is not a lead-generation app, business OS, chatbot shell or port of another project.
 
