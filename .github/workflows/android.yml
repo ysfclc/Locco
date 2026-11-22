@@ -93,7 +93,6 @@ jobs:
       - name: Boot emulator and run instrumentation tests
         run: |
           echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n locco-ci -k "system-images;android-35;google_apis;x86_64" -d pixel_2
-          echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n locco-ci -k "system-images;android-35;google_apis;x86_64" -d pixel_2
           "$ANDROID_HOME/emulator/emulator" -avd locco-ci -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot > /tmp/locco-emulator.log 2>&1 &
           adb wait-for-device
           for _ in $(seq 1 60); do
