@@ -180,33 +180,34 @@ Locco must re-evaluate exact source, tests, licences, package IDs and build stat
 
 ## 7. First engineering proof and acceptance
 
-### 7.1 Implemented prototype (not yet device-verified)
+### 7.1 Implemented prototype (device verification pending)
 
 The first Locco-owned observation adapter is now present in the Android shell:
 
 - A system-bound `NotificationListenerService` receives notification lifecycle callbacks while Locco is not foregrounded.
-- The user manually allowlists Android package names in the Observer screen and must separately grant Android's notification-listener permission.
+- The Observer screen discovers launchable installed apps through Android's package visibility query and shows each app's display name, package name and installed version.
+- The user explicitly enables observation per app with a switch; the selected package allowlist is persisted locally. No app is observed by default.
+- Android's notification-listener permission remains a separate, explicit system setting.
 - The adapter copies only package name, post timestamp and standard notification category. It never reads notification title, text, actions or extras.
 - A SHA-256 digest of the notification identity is used as a unique idempotency key; the raw notification key is not persisted.
 - Rust migration schema v3 adds an indexed `app_observations` ledger table with acquisition method, source package, event/receive timestamps and explicit redaction metadata.
-- The event is stored through the SQLCipher database and displayed in Locco's Observer feed.
+- The event is stored through the SQLCipher database and displayed in Locco's Observer feed. The feed refreshes when the Observer destination is opened.
 - Instrumentation coverage verifies encrypted-at-rest observation metadata, reopen behavior and duplicate suppression.
 
-This is an initial system-signal adapter, not semantic understanding of the source app. It proves only that Android exposed a notification event for an explicitly selected package.
+This is an initial system-signal adapter, not semantic understanding of the source app. It proves only that Android exposed a notification event for an explicitly selected package. App discovery and version display are not evidence that a source integration is active.
 
 ### 7.2 Remaining acceptance work
 
 The first implementation milestone is not an attractive dashboard. It is an end-to-end native observation slice.
 
-1. Port/rebuild the App Observer Lab concept as a Locco-owned diagnostic/source subsystem after auditing its source.
-2. Detect a small allowlisted set of apps and report versions and supported capabilities.
-3. Receive at least one real Android system signal (usage event and/or notification) while Locco is not foregrounded.
-4. Persist the signal through Locco's encrypted evidence store.
-5. Convert it into a typed event with source, method, timestamps, permission, confidence and freshness.
-6. Show the interpreted event in Locco's native workspace without opening the source app.
-7. Demonstrate a safe supported handoff (open app/deep link or share) and verify the resulting foreground/package or expected callback.
-8. Test process death/restart, duplicate delivery, permission revocation, malformed input, sensitive-data redaction and source app update.
-9. Record battery, memory, latency and missed-event limitations on the target Android device.
+1. Verify app discovery and package/version display across supported Android versions.
+2. Receive at least one real Android system signal while Locco is not foregrounded.
+3. Persist the signal through Locco's encrypted local ledger.
+4. Convert it into a typed event with source, method, timestamps, permission, confidence and freshness.
+5. Show the interpreted event in Locco's native workspace without opening the source app.
+6. Demonstrate a safe supported handoff (open app/deep link or share) and verify the resulting foreground/package or expected callback.
+7. Test process death/restart, duplicate delivery, permission revocation, malformed input, sensitive-data redaction and source app update.
+8. Record battery, memory, latency and missed-event limitations on the target Android device.
 
 A separate controlled proof must show pre-TLS outbound and post-TLS inbound visibility in an owned app. It must not be conflated with the system-observation slice or claimed as working against Uber, Bolt or any other third-party app until separately proven and authorised.
 
