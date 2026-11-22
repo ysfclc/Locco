@@ -123,6 +123,33 @@ internal class LoccoDatabase private constructor(
         )
     }
 
+    /** Persist package lifecycle transitions without activity or screen details. */
+    fun recordUsageObservation(id: String, dedupeKey: String, sourcePackage: String, eventType: String, occurredAt: Long, receivedAt: Long) {
+        require(eventType == "app_foregrounded" || eventType == "app_backgrounded")
+        writableDatabase.execSQL(
+            "INSERT OR IGNORE INTO app_usage_events(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method) VALUES(?,?,?,?,?,?,?)",
+            arrayOf(id, dedupeKey, sourcePackage, eventType, occurredAt, receivedAt, "android_usage_events")
+        )
+    }
+
+    fun readUsageObservations(limit: Int = 100): List<AppObservation> {
+        val result = mutableListOf<AppObservation>()
+        readableDatabase.rawQuery(
+            "SELECT id,source_package,event_type,occurred_at,received_at,acquisition_method FROM app_usage_events ORDER BY received_at DESC LIMIT ?",
+            arrayOf(limit.coerceIn(1, 500).toString())
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                result += AppObservation(
+                    id = cursor.getString(0), sourcePackage = cursor.getString(1),
+                    eventType = cursor.getString(2), occurredAt = cursor.getLong(3),
+                    receivedAt = cursor.getLong(4), acquisitionMethod = cursor.getString(5),
+                    category = null, redactedFields = "[]"
+                )
+            }
+        }
+        return result
+    }
+
     fun readObservations(limit: Int = 100): List<AppObservation> {
         val result = mutableListOf<AppObservation>()
         readableDatabase.rawQuery(
