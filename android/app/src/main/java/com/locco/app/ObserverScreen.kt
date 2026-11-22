@@ -53,7 +53,7 @@ internal fun ObserverScreen() {
             .onSuccess { db ->
                 try {
                     if (hasUsageAccess) UsageStatsObserver.collect(context, observedPackages, db)
-                    events = (db.readObservations() + db.readUsageObservations()).sortedByDescending { it.receivedAt }.take(100)
+                    events = (db.readObservations() + db.readUsageObservations()).sortedByDescending { it.occurredAt }.take(100)
                     error = null
                 } catch (failure: Throwable) {
                     error = failure.message ?: "Could not read local observations."
