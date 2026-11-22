@@ -17,7 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     permissions:
       contents: read
     steps:
@@ -72,10 +72,9 @@ jobs:
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
-            ${{ env.ANDROID_HOME }}/emulator
-            ${{ env.ANDROID_HOME }}/system-images
-            ${{ env.ANDROID_HOME }}/platform-tools
-            ~/.android/avd
+            /usr/local/lib/android/sdk/emulator
+            /usr/local/lib/android/sdk/system-images
+            /usr/local/lib/android/sdk/platform-tools
           key: ${{ runner.os }}-locco-emulator-api35-google-apis-x86_64-v1
       - name: Run Android instrumentation tests
         run: |
@@ -85,14 +84,24 @@ jobs:
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
-            ${{ env.ANDROID_HOME }}/emulator
-            ${{ env.ANDROID_HOME }}/system-images
-            ${{ env.ANDROID_HOME }}/platform-tools
-            ~/.android/avd
+            /usr/local/lib/android/sdk/emulator
+            /usr/local/lib/android/sdk/system-images
+            /usr/local/lib/android/sdk/platform-tools
           key: ${{ runner.os }}-locco-emulator-api35-google-apis-x86_64-v1
       - name: Boot emulator and run instrumentation tests
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/android-avd
         run: |
-          echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n locco-ci -k "system-images;android-35;google_apis;x86_64" -d pixel_2
+          set -euo pipefail
+          mkdir -p "$ANDROID_AVD_HOME"
+          printf 'no\n' | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd --force -n locco-ci -k "system-images;android-35;google_apis;x86_64" -d pixel_2
+          echo "===== Available AVDs ====="
+          "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" list avd
+          if [[ ! -s "$ANDROID_AVD_HOME/locco-ci.ini" ]]; then
+            echo "Expected AVD config not found: $ANDROID_AVD_HOME/locco-ci.ini"
+            find "$ANDROID_AVD_HOME" -maxdepth 3 -type f -print || true
+            exit 1
+          fi
           "$ANDROID_HOME/emulator/emulator" -avd locco-ci -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -wipe-data -memory 2048 -cores 2 -verbose > /tmp/locco-emulator.log 2>&1 &
           dump_emulator_diagnostics() {
             echo '===== ADB devices ====='
@@ -100,7 +109,7 @@ jobs:
             echo '===== Emulator boot log ====='
             tail -n 500 /tmp/locco-emulator.log || true
             echo '===== Android logcat ====='
-            adb logcat -d | tail -n 300 || true
+            timeout 15s adb logcat -d 2>&1 | tail -n 300 || true
           }
           timeout 3m adb wait-for-device || {
             dump_emulator_diagnostics
@@ -116,7 +125,7 @@ jobs:
             exit 1
           fi
           timeout 15m gradle -p android --no-daemon connectedDebugAndroidTest || {
-            adb logcat -d > /tmp/locco-logcat.txt || true
+            timeout 15s adb logcat -d > /tmp/locco-logcat.txt 2>&1 || true
             echo '===== Emulator boot log ====='
             cat /tmp/locco-emulator.log || true
             echo '===== Android logcat (last 300 lines) ====='
