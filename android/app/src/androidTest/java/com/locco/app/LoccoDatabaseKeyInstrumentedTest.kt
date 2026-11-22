@@ -175,6 +175,41 @@ class LoccoDatabaseKeyInstrumentedTest {
         }
     }
 
+    @Test
+    fun usageLifecycleEventsAreDeduplicatedAndSurviveReopen() {
+        val first = LoccoDatabase.create(context)
+        try {
+            first.recordUsageObservation(
+                id = "usage-1",
+                dedupeKey = "b".repeat(64),
+                sourcePackage = "com.locco.usage.fixture",
+                eventType = "app_foregrounded",
+                occurredAt = 1_800_000_000_100L,
+                receivedAt = 1_800_000_000_200L
+            )
+            first.recordUsageObservation(
+                id = "usage-2",
+                dedupeKey = "b".repeat(64),
+                sourcePackage = "com.locco.usage.fixture",
+                eventType = "app_foregrounded",
+                occurredAt = 1_800_000_000_100L,
+                receivedAt = 1_800_000_000_300L
+            )
+            assertEquals(1, first.readUsageObservations().size)
+            assertEquals("android_usage_events", first.readUsageObservations().single().acquisitionMethod)
+        } finally {
+            first.close()
+        }
+        val reopened = LoccoDatabase.create(context)
+        try {
+            val event = reopened.readUsageObservations().single()
+            assertEquals("app_foregrounded", event.eventType)
+            assertEquals("com.locco.usage.fixture", event.sourcePackage)
+        } finally {
+            reopened.close()
+        }
+    }
+
     private fun containsBytes(haystack: ByteArray, needle: ByteArray): Boolean {
         if (needle.isEmpty() || haystack.size < needle.size) return false
         return (0..haystack.size - needle.size).any { start ->
