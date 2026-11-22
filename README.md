@@ -1,6 +1,6 @@
 # Locco
 
-**A local-first, mobile-native intelligence and action environment.**
+**A local-first, mobile-native intelligence and action environment.**\n\nA defining ambition is to make Android more observable and composable: understand supported activity in selected apps, interpret it locally, surface it inside Locco without opening the source app, and provide safe, verified ways to hand off or interact. See [Android App Observation and Interaction](docs/architecture/android-app-observation.md).
 
 Locco acquires information from sources you choose, preserves evidence, builds a useful model of people, places, things and events, supports on-device reasoning, and enables controlled actions. It is not a lead-generation app, business OS, chatbot shell or port of another project.
 
@@ -14,7 +14,7 @@ Acquire → preserve → understand → connect → reason → decide → act �
 |---|---|---|
 | 0 Foundation | Product, architecture, agents, security, CI, empty shells | Rust 3 ABIs + placeholder APK |
 | 1 Local kernel | DB, evidence ledger, entity graph, migrations, export | deterministic and integrity tests |
-| 2 Acquisition | native capture/import and source adapters | provenance, hostile-input tests |
+| 2 Acquisition + Android Observation | background app signals, capability registry, native capture/import and source adapters | real background signal → typed event → Locco, provenance, revocation and reliability tests |
 | 3 Local intelligence | on-device runtime, context compiler, retrieval | device latency/RAM and golden set |
 | 4 Workspace | native search, entity/evidence views, review | accessibility and state restoration |
 | 5 Capabilities | approvals, execution, verification | threat review and end-to-end proof |
