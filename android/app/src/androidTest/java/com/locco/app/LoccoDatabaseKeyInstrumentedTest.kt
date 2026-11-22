@@ -112,7 +112,7 @@ class LoccoDatabaseKeyInstrumentedTest {
         assertTrue(database.exists())
         assertFalse(
             database.readBytes().take(16).toByteArray()
-                .contentEquals("SQLite format 3\\u0000".toByteArray(Charsets.US_ASCII))
+                .contentEquals("SQLite format 3\u0000".toByteArray(Charsets.US_ASCII))
         )
         val artifacts = listOf(
             database,
