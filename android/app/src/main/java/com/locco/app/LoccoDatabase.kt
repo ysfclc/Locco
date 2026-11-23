@@ -172,6 +172,67 @@ internal class LoccoDatabase private constructor(
         return result
     }
 
+    /** Persist a canonical source. Duplicate IDs fail rather than silently overwrite provenance. */
+    fun insertSource(source: SourceEntry) {
+        writableDatabase.execSQL(
+            "INSERT INTO sources(id,kind,uri,title,captured_at) VALUES(?,?,?,?,?)",
+            arrayOf(source.id, source.kind, source.locator, source.title, source.capturedAt)
+        )
+    }
+
+    /** Persist immutable evidence. The foreign key rejects evidence without a known source. */
+    fun insertEvidence(evidence: EvidenceEntry) {
+        writableDatabase.execSQL(
+            "INSERT INTO evidence(id,source_id,excerpt,content_hash,captured_at) VALUES(?,?,?,?,?)",
+            arrayOf(evidence.id, evidence.sourceId, evidence.excerpt, evidence.contentHash, evidence.capturedAt)
+        )
+    }
+
+    fun readSources(limit: Int = 100): List<SourceEntry> {
+        val result = mutableListOf<SourceEntry>()
+        readableDatabase.rawQuery(
+            "SELECT id,kind,uri,title,captured_at FROM sources ORDER BY captured_at DESC LIMIT ?",
+            arrayOf(limit.coerceIn(1, 500).toString())
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                result += SourceEntry(
+                    id = cursor.getString(0),
+                    kind = cursor.getString(1),
+                    locator = if (cursor.isNull(2)) null else cursor.getString(2),
+                    title = if (cursor.isNull(3)) null else cursor.getString(3),
+                    capturedAt = cursor.getLong(4)
+                )
+            }
+        }
+        return result
+    }
+
+    fun readEvidenceForSource(sourceId: String, limit: Int = 100): List<EvidenceEntry> {
+        require(sourceId.isNotBlank()) { "Source ID is required" }
+        val result = mutableListOf<EvidenceEntry>()
+        readableDatabase.rawQuery(
+            "SELECT id,source_id,excerpt,content_hash,captured_at FROM evidence WHERE source_id=? ORDER BY captured_at DESC LIMIT ?",
+            arrayOf(sourceId, limit.coerceIn(1, 500).toString())
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                result += EvidenceEntry(
+                    id = cursor.getString(0),
+                    sourceId = cursor.getString(1),
+                    excerpt = if (cursor.isNull(2)) null else cursor.getString(2),
+                    contentHash = if (cursor.isNull(3)) null else cursor.getString(3),
+                    capturedAt = cursor.getLong(4)
+                )
+            }
+        }
+        return result
+    }
+
+    /** Source deletion intentionally cascades to its evidence and note-source links. */
+    fun deleteSource(sourceId: String): Boolean {
+        require(sourceId.isNotBlank()) { "Source ID is required" }
+        return writableDatabase.delete("sources", "id=?", arrayOf(sourceId)) > 0
+    }
+
     private fun importLegacyPrefs(db: SQLiteDatabase, context: Context) {
         val prefs = context.getSharedPreferences("locco_core_v1", Context.MODE_PRIVATE)
         val json = prefs.getString("sessions", "[]") ?: "[]"
