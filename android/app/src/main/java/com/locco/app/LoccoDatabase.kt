@@ -211,7 +211,7 @@ internal class LoccoDatabase private constructor(
     fun readSources(limit: Int = 100): List<SourceEntry> {
         val result = mutableListOf<SourceEntry>()
         readableDatabase.rawQuery(
-            "SELECT id,kind,uri,title,captured_at FROM sources ORDER BY captured_at DESC LIMIT ?",
+            "SELECT id,kind,uri,title,captured_at FROM sources ORDER BY captured_at DESC,id ASC LIMIT ?",
             arrayOf(limit.coerceIn(1, 500).toString())
         ).use { cursor ->
             while (cursor.moveToNext()) {
@@ -231,7 +231,7 @@ internal class LoccoDatabase private constructor(
         require(sourceId.isNotBlank()) { "Source ID is required" }
         val result = mutableListOf<EvidenceEntry>()
         readableDatabase.rawQuery(
-            "SELECT id,source_id,excerpt,content_hash,captured_at FROM evidence WHERE source_id=? ORDER BY captured_at DESC LIMIT ?",
+            "SELECT id,source_id,excerpt,content_hash,captured_at FROM evidence WHERE source_id=? ORDER BY captured_at DESC,id ASC LIMIT ?",
             arrayOf(sourceId, limit.coerceIn(1, 500).toString())
         ).use { cursor ->
             while (cursor.moveToNext()) {
