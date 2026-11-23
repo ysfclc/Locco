@@ -210,6 +210,68 @@ class LoccoDatabaseKeyInstrumentedTest {
         }
     }
 
+    @Test
+    fun sourcesAndEvidencePersistAcrossReopenAndCascadeOnSourceDelete() {
+        val source = SourceEntry(
+            id = "source-evidence-roundtrip",
+            kind = "web_page",
+            locator = "https://example.test/article",
+            title = "Fixture article",
+            capturedAt = 1_800_000_000_000L
+        )
+        val excerptEvidence = EvidenceEntry(
+            id = "evidence-excerpt",
+            sourceId = source.id,
+            excerpt = "A preserved factual excerpt",
+            contentHash = null,
+            capturedAt = 1_800_000_000_100L
+        )
+        val hashEvidence = EvidenceEntry(
+            id = "evidence-hash",
+            sourceId = source.id,
+            excerpt = null,
+            contentHash = "sha256:" + "c".repeat(64),
+            capturedAt = 1_800_000_000_200L
+        )
+
+        val first = LoccoDatabase.create(context)
+        first.insertSource(source)
+        first.insertEvidence(excerptEvidence)
+        first.insertEvidence(hashEvidence)
+        assertEquals(listOf(source), first.readSources())
+        assertEquals(listOf(hashEvidence, excerptEvidence), first.readEvidenceForSource(source.id))
+        first.close()
+
+        val reopened = LoccoDatabase.create(context)
+        try {
+            assertEquals(listOf(source), reopened.readSources())
+            assertEquals(listOf(hashEvidence, excerptEvidence), reopened.readEvidenceForSource(source.id))
+            assertTrue(reopened.deleteSource(source.id))
+            assertTrue(reopened.readSources().isEmpty())
+            assertTrue(reopened.readEvidenceForSource(source.id).isEmpty())
+            assertFalse(reopened.deleteSource(source.id))
+        } finally {
+            reopened.close()
+        }
+    }
+
+    @Test
+    fun evidenceRequiresPayloadAndAnExistingSource() {
+        assertThrows(IllegalArgumentException::class.java) {
+            EvidenceEntry("empty-evidence", "source-missing", null, null, 1L)
+        }
+        val db = LoccoDatabase.create(context)
+        try {
+            assertThrows(RuntimeException::class.java) {
+                db.insertEvidence(
+                    EvidenceEntry("orphan-evidence", "missing-source", "excerpt", null, 1L)
+                )
+            }
+        } finally {
+            db.close()
+        }
+    }
+
     private fun containsBytes(haystack: ByteArray, needle: ByteArray): Boolean {
         if (needle.isEmpty() || haystack.size < needle.size) return false
         return (0..haystack.size - needle.size).any { start ->
