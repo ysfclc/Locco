@@ -195,6 +195,7 @@ The first Locco-owned observation adapter is now present in the Android shell:
 - Instrumentation coverage verifies encrypted-at-rest observation metadata, reopen behavior and duplicate suppression.
 - Rust migration schema v4 adds a separate `app_usage_events` ledger for package-level foreground/background transitions.
 - When Usage Access is granted, Observer refresh queries Android `UsageEvents` for the selected package allowlist (last 24 hours), persists deduplicated transitions, and merges them into the local feed. This is history-on-refresh, not a continuous background monitor; no screen contents or in-app actions are exposed.
+- Android Q+ activity-level resume/pause callbacks are reduced into package-level foreground/background boundaries using an in-memory active-activity set. This avoids treating an internal activity switch as the app leaving the foreground. Legacy package-level events are used only when modern activity events are absent for that package; activity class names are not persisted.
 
 This is an initial system-signal adapter, not semantic understanding of the source app. It proves only that Android exposed a notification event for an explicitly selected package. App discovery and version display are not evidence that a source integration is active.
 
