@@ -13,6 +13,8 @@ internal data class SourceEntry(
     init {
         require(validRecordId(id)) { "Invalid source ID" }
         require(validLabel(kind, 80)) { "Invalid source kind" }
+        require(locator == null || validOptionalField(locator, 2048)) { "Invalid source locator" }
+        require(title == null || validOptionalField(title, 240)) { "Invalid source title" }
         require(capturedAt >= 0) { "Source timestamp must be non-negative" }
     }
 }
@@ -31,6 +33,8 @@ internal data class EvidenceEntry(
         require(!excerpt.isNullOrEmpty() || !contentHash.isNullOrEmpty()) {
             "Evidence requires a non-empty excerpt or content hash"
         }
+        require(excerpt == null || validEvidenceExcerpt(excerpt)) { "Invalid or oversized evidence excerpt" }
+        require(contentHash == null || validOptionalField(contentHash, 128)) { "Invalid evidence content hash" }
         require(capturedAt >= 0) { "Evidence timestamp must be non-negative" }
     }
 }
@@ -47,6 +51,17 @@ private fun validLabel(value: String, maxBytes: Int): Boolean =
         value.trim() == value &&
         value.none(Char::isISOControl)
 
+private fun validOptionalField(value: String, maxBytes: Int): Boolean =
+    value.isNotEmpty() &&
+        value.toByteArray(StandardCharsets.UTF_8).size <= maxBytes &&
+        value.none(Char::isISOControl)
+
+private fun validEvidenceExcerpt(value: String): Boolean =
+    value.toByteArray(StandardCharsets.UTF_8).size <= CaptureKernel.MAX_CONTENT_BYTES &&
+        value.none { ch ->
+            ch == '\u0000' || (Character.isISOControl(ch) && ch != '\n' && ch != '\r' && ch != '\t')
+        }
+
 /** Stable key for walking the global evidence timeline without OFFSET drift. */
 internal data class TimelineCursor(val capturedAt: Long, val evidenceId: String) {
     init {
@@ -55,13 +70,8 @@ internal data class TimelineCursor(val capturedAt: Long, val evidenceId: String)
     }
 }
 
-
 /** Evidence joined with its provenance for timeline display and downstream processing. */
-internal data class TimelineEntry(
-    val evidence: EvidenceEntry,
-    val source: SourceEntry
-)
-
+internal data class TimelineEntry(val evidence: EvidenceEntry, val source: SourceEntry)
 
 /** One bounded timeline page; nextCursor is null when the page is terminal. */
 internal data class TimelinePage(val entries: List<TimelineEntry>, val nextCursor: TimelineCursor?)
