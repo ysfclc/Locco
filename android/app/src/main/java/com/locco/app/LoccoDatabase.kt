@@ -172,6 +172,26 @@ internal class LoccoDatabase private constructor(
         return result
     }
 
+    /** Insert a source and its first evidence as one indivisible capture operation. */
+    fun storeSourceWithEvidence(source: SourceEntry, evidence: EvidenceEntry) {
+        require(evidence.sourceId == source.id) { "Evidence must reference the supplied source" }
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            db.execSQL(
+                "INSERT INTO sources(id,kind,uri,title,captured_at) VALUES(?,?,?,?,?)",
+                arrayOf(source.id, source.kind, source.locator, source.title, source.capturedAt)
+            )
+            db.execSQL(
+                "INSERT INTO evidence(id,source_id,excerpt,content_hash,captured_at) VALUES(?,?,?,?,?)",
+                arrayOf(evidence.id, evidence.sourceId, evidence.excerpt, evidence.contentHash, evidence.capturedAt)
+            )
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     /** Persist a canonical source. Duplicate IDs fail rather than silently overwrite provenance. */
     fun insertSource(source: SourceEntry) {
         writableDatabase.execSQL(
