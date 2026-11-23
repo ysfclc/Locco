@@ -49,13 +49,18 @@ internal object CaptureKernel {
         require(candidate.toByteArray(StandardCharsets.UTF_8).size <= MAX_LOCATOR_BYTES) { "Source URL is longer than 2 KiB." }
         require(candidate.none(Char::isWhitespace)) { "Source URL cannot contain whitespace." }
         val parsed = runCatching { URI(candidate) }.getOrNull()
-        require(
-            parsed != null &&
-                (parsed.scheme.equals("http", true) || parsed.scheme.equals("https", true)) &&
-                !parsed.host.isNullOrBlank() &&
-                parsed.rawUserInfo == null
-        ) { "Source URL must be a valid http or https URL without embedded credentials." }
-        return parsed!!.toASCIIString()
+            ?: throw IllegalArgumentException("Source URL must be a valid http or https URL without embedded credentials.")
+        val originalScheme = parsed.scheme
+            ?: throw IllegalArgumentException("Source URL must be a valid http or https URL without embedded credentials.")
+        val canonicalScheme = when (originalScheme.lowercase()) {
+            "http" -> "http"
+            "https" -> "https"
+            else -> throw IllegalArgumentException("Source URL must be a valid http or https URL without embedded credentials.")
+        }
+        require(!parsed.host.isNullOrBlank() && parsed.rawUserInfo == null) {
+            "Source URL must be a valid http or https URL without embedded credentials."
+        }
+        return URI(canonicalScheme + candidate.substring(originalScheme.length)).toASCIIString()
     }
 
     private fun utf8Prefix(value: String, maxBytes: Int): String {

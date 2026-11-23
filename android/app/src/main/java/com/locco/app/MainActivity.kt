@@ -28,7 +28,7 @@ internal data class Note(val id: String, val text: String, val time: Long)
 internal data class Session(val id: String, val title: String, val time: Long, val notes: List<Note>)
 
 internal data class SharedCapture(val token: String, val text: String, val title: String?, val error: String? = null)
-private enum class LoccoTab { Capture, Timeline, Observe }
+private enum class LoccoTab { Capture, Timeline, Library, Observe }
 
 class MainActivity : ComponentActivity() {
     private var incomingCapture by mutableStateOf<SharedCapture?>(null)
@@ -82,6 +82,8 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
 
     var timeline by remember { mutableStateOf<List<TimelineEntry>>(emptyList()) }
     var nextCursor by remember { mutableStateOf<TimelineCursor?>(null) }
+    var legacySessions by remember { mutableStateOf<List<Session>>(emptyList()) }
+    var legacyNotesError by remember { mutableStateOf<String?>(null) }
     var isTimelineLoading by remember { mutableStateOf(false) }
     var timelineError by remember { mutableStateOf<String?>(null) }
     var storageError by remember { mutableStateOf(databaseResult.exceptionOrNull()?.message) }
@@ -197,7 +199,17 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
         }
     }
 
-    LaunchedEffect(database) { reloadTimeline() }
+    LaunchedEffect(database) {
+        reloadTimeline()
+        val db = database ?: return@LaunchedEffect
+        val legacyResult = withContext(Dispatchers.IO) { runCatching { db.readSessions() } }
+        legacyResult.onSuccess {
+            legacySessions = it
+            legacyNotesError = null
+        }.onFailure {
+            legacyNotesError = it.message ?: "Locco could not read older saved notes."
+        }
+    }
 
     MaterialTheme(
         colorScheme = darkColorScheme(
@@ -217,6 +229,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
                         when (selectedTab) {
                             LoccoTab.Capture -> "Capture"
                             LoccoTab.Timeline -> "Timeline"
+                            LoccoTab.Library -> "Notes"
                             LoccoTab.Observe -> "Observer"
                         },
                         color = Color.White, style = MaterialTheme.typography.titleMedium
@@ -251,6 +264,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
                             onRefresh = ::reloadTimeline,
                             onLoadOlder = ::loadOlder
                         )
+                        LoccoTab.Library -> LegacyLibraryScreen(legacySessions, legacyNotesError)
                         LoccoTab.Observe -> ObserverScreen()
                     }
                 }
@@ -258,6 +272,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
                     listOf(
                         LoccoTab.Capture to "Capture",
                         LoccoTab.Timeline to "Timeline",
+                        LoccoTab.Library to "Notes",
                         LoccoTab.Observe to "Observe"
                     ).forEach { (tab, label) ->
                         NavigationBarItem(
@@ -400,6 +415,49 @@ private fun TimelineScreen(
                     } else if (entries.isNotEmpty()) {
                         Text("You’re up to date.", color = Color.Gray, style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.fillMaxWidth().padding(12.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun LegacyLibraryScreen(sessions: List<Session>, error: String?) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 8.dp)) {
+        Text("Earlier notes", color = Color.White, style = MaterialTheme.typography.headlineSmall)
+        Text(
+            "Read-only view of notes saved by the previous capture screen.",
+            color = Color.Gray,
+            style = MaterialTheme.typography.bodySmall
+        )
+        if (error != null) {
+            Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+        if (sessions.isEmpty()) {
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("No earlier sessions found.", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(
+                Modifier.weight(1f).fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(vertical = 12.dp)
+            ) {
+                items(sessions, key = { it.id }) { session ->
+                    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color(0xFF171F2C))) {
+                        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(session.title, color = Color.White, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                "${session.notes.size} notes · ${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(session.time))}",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                            session.notes.forEach { note ->
+                                Text(note.text, color = Color(0xFFE5EAF2), style = MaterialTheme.typography.bodyMedium)
+                            }
+                        }
                     }
                 }
             }
