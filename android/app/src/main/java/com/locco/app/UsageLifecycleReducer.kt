@@ -16,23 +16,26 @@ internal data class UsageLifecycleTransition(
 )
 
 /**
- * Converts activity-level UsageEvents into package-level foreground/background transitions.
+ * Converts UsageEvents into package-level foreground/background transitions.
  *
- * Android Q+ reports activity resume/pause events. Mapping each pause directly to an app
- * background event is incorrect when an app moves between its own activities. We therefore
- * track the active activity set and emit only package visibility boundary changes. Older
- * package-level events are used only when no activity-level events exist for that package.
+ * On Android Q+, activity resume/pause records include an activity class name. The deprecated
+ * MOVE_TO_FOREGROUND/BACKGROUND constants share event-type values with the modern activity
+ * constants, so event type alone cannot distinguish the formats. A nonblank activity class name
+ * is the discriminator: when present, reduce activity boundaries; otherwise use the legacy
+ * package-level interpretation. Class names remain transient and are never persisted.
  */
 internal object UsageLifecycleReducer {
     fun reduce(records: List<UsageEventRecord>): List<UsageLifecycleTransition> {
         val result = mutableListOf<UsageLifecycleTransition>()
         records.groupBy { it.packageName }.forEach { (packageName, packageRecords) ->
-            val modern = packageRecords.filter {
-                it.eventType == UsageEvents.Event.ACTIVITY_RESUMED ||
-                    it.eventType == UsageEvents.Event.ACTIVITY_PAUSED
+            val activityEvents = packageRecords.filter { record ->
+                (record.eventType == UsageEvents.Event.ACTIVITY_RESUMED ||
+                    record.eventType == UsageEvents.Event.ACTIVITY_PAUSED) &&
+                    !record.activityClassName.isNullOrBlank()
             }
-            if (modern.isNotEmpty()) {
-                reduceActivityEvents(packageName, modern, result)
+
+            if (activityEvents.isNotEmpty()) {
+                reduceActivityEvents(packageName, activityEvents, result)
             } else {
                 packageRecords
                     .filter {
@@ -64,8 +67,8 @@ internal object UsageLifecycleReducer {
         val activeActivities = mutableSetOf<String>()
         records.groupBy { it.timestamp }.toSortedMap().forEach { (timestamp, atTime) ->
             val wasForegrounded = activeActivities.isNotEmpty()
-            atTime.forEach { record ->
-                val activity = record.activityClassName?.takeIf { it.isNotBlank() } ?: return@forEach
+            atTime.forEach recordLoop@{ record ->
+                val activity = record.activityClassName?.takeIf { it.isNotBlank() } ?: return@recordLoop
                 when (record.eventType) {
                     UsageEvents.Event.ACTIVITY_RESUMED -> activeActivities.add(activity)
                     UsageEvents.Event.ACTIVITY_PAUSED -> activeActivities.remove(activity)
