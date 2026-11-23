@@ -212,7 +212,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
                 captureTitle = ""
                 captureLocator = ""
                 captureKind = "manual_text"
-                captureNotice = "Saved in session "${nextSession.title}" and linked to source evidence."
+                captureNotice = "Saved in session \"${nextSession.title}\" and linked to source evidence."
                 selectedTab = LoccoTab.Capture
                 val pageResult = withContext(Dispatchers.IO) { runCatching { db.readTimelinePage(limit = 40) } }
                 pageResult.onSuccess { page ->
@@ -336,7 +336,7 @@ private fun CaptureScreen(
     locator: String,
     onLocatorChange: (String) -> Unit,
     sourceKind: String,
-    notice: String?
+    notice: String?,
     error: String?,
     isSaving: Boolean,
     onSave: () -> Unit,
