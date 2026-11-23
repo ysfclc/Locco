@@ -46,3 +46,22 @@ private fun validLabel(value: String, maxBytes: Int): Boolean =
         value.toByteArray(StandardCharsets.UTF_8).size <= maxBytes &&
         value.trim() == value &&
         value.none(Char::isISOControl)
+
+/** Stable key for walking the global evidence timeline without OFFSET drift. */
+internal data class TimelineCursor(val capturedAt: Long, val evidenceId: String) {
+    init {
+        require(capturedAt >= 0) { "Timeline cursor timestamp must be non-negative" }
+        require(validRecordId(evidenceId)) { "Invalid timeline cursor evidence ID" }
+    }
+}
+
+
+/** Evidence joined with its provenance for timeline display and downstream processing. */
+internal data class TimelineEntry(
+    val evidence: EvidenceEntry,
+    val source: SourceEntry
+)
+
+
+/** One bounded timeline page; nextCursor is null when the page is terminal. */
+internal data class TimelinePage(val entries: List<TimelineEntry>, val nextCursor: TimelineCursor?)
