@@ -272,6 +272,56 @@ class LoccoDatabaseKeyInstrumentedTest {
         } finally { db.close() }
     }
 
+    @Test
+    fun sessionNoteCapturePersistsSessionEvidenceAndSourceLinkAcrossReopen() {
+        val sentinel = "LOCCO_SESSION_CAPTURE_39A2"
+        val emptySession = Session("session-capture-linked", "New session", 100L, emptyList())
+        val capturedSession = SessionKernel.capture(emptySession, sentinel, 200L, "session-note-linked", emptySession.id)!!
+        val note = capturedSession.notes.single()
+        val prepared = CaptureKernel.prepare(
+            text = sentinel, title = "Session source", locator = "https://example.test/session",
+            capturedAt = note.time, sourceId = "session-source-linked", evidenceId = "session-evidence-linked"
+        )!!
+
+        val first = LoccoDatabase.create(context)
+        try {
+            first.insertSession(emptySession)
+            first.storeSessionNoteWithEvidence(capturedSession, note, prepared.source, prepared.evidence)
+            assertEquals(listOf(capturedSession), first.readSessions())
+            assertEquals(listOf(prepared.source), first.readSourcesForNote(note.id))
+            assertEquals(listOf(prepared.evidence), first.readEvidenceForSource(prepared.source.id))
+        } finally { first.close() }
+
+        assertFalse(containsBytes(database.readBytes(), sentinel.toByteArray(Charsets.UTF_8)))
+        val reopened = LoccoDatabase.create(context)
+        try {
+            assertEquals(listOf(capturedSession), reopened.readSessions())
+            assertEquals(listOf(prepared.source), reopened.readSourcesForNote(note.id))
+            assertEquals(listOf(prepared.evidence), reopened.readEvidenceForSource(prepared.source.id))
+        } finally { reopened.close() }
+    }
+
+    @Test
+    fun sessionNoteCaptureRollsBackAllRecordsWhenEvidenceInsertFails() {
+        val db = LoccoDatabase.create(context)
+        try {
+            val existingSource = SourceEntry("rollback-existing-source", "manual_text", null, "Existing", 1L)
+            db.insertSource(existingSource)
+            db.insertEvidence(EvidenceEntry("rollback-duplicate-evidence", existingSource.id, "existing", null, 2L))
+            val emptySession = Session("rollback-new-session", "New session", 3L, emptyList())
+            val nextSession = SessionKernel.capture(emptySession, "New note", 4L, "rollback-new-note", emptySession.id)!!
+            val note = nextSession.notes.single()
+            val attemptedSource = SourceEntry("rollback-new-source", "manual_text", null, "New", 4L)
+            val attemptedEvidence = EvidenceEntry("rollback-duplicate-evidence", attemptedSource.id, "New note", null, 4L)
+            assertThrows(RuntimeException::class.java) {
+                db.storeSessionNoteWithEvidence(nextSession, note, attemptedSource, attemptedEvidence)
+            }
+            assertTrue(db.readSessions().none { it.id == emptySession.id })
+            assertTrue(db.readSources().none { it.id == attemptedSource.id })
+            assertTrue(db.readSourcesForNote(note.id).isEmpty())
+            assertEquals(1, db.readEvidenceForSource(existingSource.id).size)
+        } finally { db.close() }
+    }
     private fun containsBytes(haystack: ByteArray, needle: ByteArray): Boolean {
         if (needle.isEmpty() || haystack.size < needle.size) return false
         return (0..haystack.size - needle.size).any { start ->

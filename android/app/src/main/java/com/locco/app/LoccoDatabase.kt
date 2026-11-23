@@ -108,6 +108,37 @@ internal class LoccoDatabase private constructor(
         }
     }
 
+    /** Create an empty session without replacing any existing user's notes. */
+    fun insertSession(session: Session) {
+        require(session.notes.isEmpty()) { "New session must not contain notes" }
+        writableDatabase.execSQL("INSERT INTO sessions(id,title,created_at) VALUES(?,?,?)",
+            arrayOf(session.id, session.title, session.time))
+    }
+
+    /** Atomically append a session note and attach its source, evidence and provenance link. */
+    fun storeSessionNoteWithEvidence(session: Session, note: Note, source: SourceEntry, evidence: EvidenceEntry) {
+        require(session.notes.any { it == note }) { "The note must belong to the supplied session" }
+        require(evidence.sourceId == source.id) { "Evidence must reference the supplied source" }
+        require(note.text.isNotBlank()) { "Session note cannot be blank" }
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            db.execSQL("INSERT OR IGNORE INTO sessions(id,title,created_at) VALUES(?,?,?)",
+                arrayOf(session.id, session.title, session.time))
+            db.execSQL("UPDATE sessions SET title=? WHERE id=?", arrayOf(session.title, session.id))
+            db.execSQL("INSERT INTO notes(id,session_id,content,created_at) VALUES(?,?,?,?)",
+                arrayOf(note.id, session.id, note.text, note.time))
+            db.execSQL("INSERT INTO sources(id,kind,uri,title,captured_at) VALUES(?,?,?,?,?)",
+                arrayOf(source.id, source.kind, source.locator, source.title, source.capturedAt))
+            db.execSQL("INSERT INTO evidence(id,source_id,excerpt,content_hash,captured_at) VALUES(?,?,?,?,?)",
+                arrayOf(evidence.id, evidence.sourceId, evidence.excerpt, evidence.contentHash, evidence.capturedAt))
+            db.execSQL("INSERT INTO note_sources(note_id,source_id,excerpt,attached_at) VALUES(?,?,?,?)",
+                arrayOf(note.id, source.id, note.text, evidence.capturedAt))
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
     /** Stores only a redacted system receipt; notification title/text/extras never cross this boundary. */
     fun recordNotificationObservation(
         id: String,
@@ -247,6 +278,27 @@ internal class LoccoDatabase private constructor(
         return result
     }
 
+    /** Read source provenance attached to one session note. */
+    fun readSourcesForNote(noteId: String): List<SourceEntry> {
+        require(noteId.isNotBlank()) { "Note ID is required" }
+        val result = mutableListOf<SourceEntry>()
+        readableDatabase.rawQuery(
+            "SELECT s.id,s.kind,s.uri,s.title,s.captured_at FROM sources s " +
+                "INNER JOIN note_sources ns ON ns.source_id=s.id WHERE ns.note_id=? " +
+                "ORDER BY ns.attached_at DESC,s.id ASC",
+            arrayOf(noteId)
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                result += SourceEntry(
+                    id = cursor.getString(0), kind = cursor.getString(1),
+                    locator = if (cursor.isNull(2)) null else cursor.getString(2),
+                    title = if (cursor.isNull(3)) null else cursor.getString(3),
+                    capturedAt = cursor.getLong(4)
+                )
+            }
+        }
+        return result
+    }
     /** Read the global evidence stream in stable descending-time/ascending-ID order. */
     fun readTimelinePage(limit: Int = 100, cursor: TimelineCursor? = null): TimelinePage {
         val pageLimit = limit.coerceIn(1, 500)
