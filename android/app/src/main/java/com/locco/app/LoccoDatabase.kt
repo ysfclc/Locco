@@ -120,6 +120,7 @@ internal class LoccoDatabase private constructor(
         require(session.notes.any { it == note }) { "The note must belong to the supplied session" }
         require(evidence.sourceId == source.id) { "Evidence must reference the supplied source" }
         require(note.text.isNotBlank()) { "Session note cannot be blank" }
+        require(evidence.excerpt == note.text) { "Session note must match its linked evidence excerpt" }
         val db = writableDatabase
         db.beginTransaction()
         try {

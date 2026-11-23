@@ -333,6 +333,22 @@ class LoccoDatabaseKeyInstrumentedTest {
             assertEquals(listOf("note-a", "note-z2"), db.readSessions().first().notes.map { it.id })
         } finally { db.close() }
     }
+    @Test
+    fun sessionEvidenceExcerptMustMatchTheNote() {
+        val db = LoccoDatabase.create(context)
+        try {
+            val session = Session("session-mismatch", "Session", 1L, listOf(Note("note-mismatch", "Actual note", 2L)))
+            val note = session.notes.single()
+            val source = SourceEntry("source-mismatch", "manual_text", null, "Source", 2L)
+            val evidence = EvidenceEntry("evidence-mismatch", source.id, "Different text", null, 2L)
+            assertThrows(IllegalArgumentException::class.java) {
+                db.storeSessionNoteWithEvidence(session, note, source, evidence)
+            }
+            assertTrue(db.readSessions().isEmpty())
+            assertTrue(db.readSources().isEmpty())
+            assertTrue(db.readSourcesForNote(note.id).isEmpty())
+        } finally { db.close() }
+    }
     private fun containsBytes(haystack: ByteArray, needle: ByteArray): Boolean {
         if (needle.isEmpty() || haystack.size < needle.size) return false
         return (0..haystack.size - needle.size).any { start ->
