@@ -37,7 +37,7 @@ const V4: &[&str] = &[
 ];
 
 const V5: &[&str] = &[
-    "CREATE TABLE evidence (id TEXT PRIMARY KEY NOT NULL CHECK(length(id) BETWEEN 1 AND 128), source_id TEXT NOT NULL REFERENCES sources(id) ON DELETE CASCADE, excerpt TEXT, content_hash TEXT, captured_at INTEGER NOT NULL CHECK(captured_at >= 0), CHECK((excerpt IS NOT NULL AND length(excerpt) > 0) OR (content_hash IS NOT NULL AND length(content_hash) > 0))",
+    "CREATE TABLE evidence (id TEXT PRIMARY KEY NOT NULL CHECK(length(id) BETWEEN 1 AND 128), source_id TEXT NOT NULL REFERENCES sources(id) ON DELETE CASCADE, excerpt TEXT, content_hash TEXT, captured_at INTEGER NOT NULL CHECK(captured_at >= 0), CHECK((excerpt IS NOT NULL AND length(excerpt) > 0) OR (content_hash IS NOT NULL AND length(content_hash) > 0)))",
     "CREATE INDEX evidence_source_time ON evidence(source_id, captured_at DESC)",
 ];
 
