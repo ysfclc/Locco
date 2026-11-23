@@ -272,6 +272,28 @@ class LoccoDatabaseKeyInstrumentedTest {
         }
     }
 
+    @Test
+    fun sourceAndFirstEvidenceAreCommittedAtomically() {
+        val db = LoccoDatabase.create(context)
+        try {
+            val original = SourceEntry("source-original", "web_page", null, null, 1L)
+            db.insertSource(original)
+            db.insertEvidence(EvidenceEntry("evidence-unique", original.id, "existing", null, 2L))
+
+            val attemptedSource = SourceEntry("source-should-rollback", "web_page", null, null, 3L)
+            val conflictingEvidence = EvidenceEntry(
+                "evidence-unique", attemptedSource.id, "conflict", null, 4L
+            )
+            assertThrows(RuntimeException::class.java) {
+                db.storeSourceWithEvidence(attemptedSource, conflictingEvidence)
+            }
+            assertTrue(db.readSources().none { it.id == attemptedSource.id })
+            assertEquals(1, db.readEvidenceForSource(original.id).size)
+        } finally {
+            db.close()
+        }
+    }
+
     private fun containsBytes(haystack: ByteArray, needle: ByteArray): Boolean {
         if (needle.isEmpty() || haystack.size < needle.size) return false
         return (0..haystack.size - needle.size).any { start ->
