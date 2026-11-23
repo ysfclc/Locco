@@ -247,6 +247,46 @@ internal class LoccoDatabase private constructor(
         return result
     }
 
+    /** Read the global evidence stream in stable descending-time/ascending-ID order. */
+    fun readTimelinePage(limit: Int = 100, cursor: TimelineCursor? = null): TimelinePage {
+        val pageLimit = limit.coerceIn(1, 500)
+        val result = mutableListOf<TimelineEntry>()
+        val sql = buildString {
+            append("SELECT e.id,e.source_id,e.excerpt,e.content_hash,e.captured_at,")
+            append("s.kind,s.uri,s.title,s.captured_at ")
+            append("FROM evidence e INNER JOIN sources s ON s.id=e.source_id ")
+            if (cursor != null) append("WHERE (e.captured_at < ? OR (e.captured_at = ? AND e.id > ?)) ")
+            append("ORDER BY e.captured_at DESC,e.id ASC LIMIT ?")
+        }
+        val args = if (cursor == null) arrayOf((pageLimit + 1).toString()) else arrayOf(
+            cursor.capturedAt.toString(), cursor.capturedAt.toString(), cursor.evidenceId,
+            (pageLimit + 1).toString()
+        )
+        readableDatabase.rawQuery(sql, args).use { rows ->
+            while (rows.moveToNext()) {
+                result += TimelineEntry(
+                    evidence = EvidenceEntry(
+                        id = rows.getString(0), sourceId = rows.getString(1),
+                        excerpt = if (rows.isNull(2)) null else rows.getString(2),
+                        contentHash = if (rows.isNull(3)) null else rows.getString(3),
+                        capturedAt = rows.getLong(4)
+                    ),
+                    source = SourceEntry(
+                        id = rows.getString(1), kind = rows.getString(5),
+                        locator = if (rows.isNull(6)) null else rows.getString(6),
+                        title = if (rows.isNull(7)) null else rows.getString(7),
+                        capturedAt = rows.getLong(8)
+                    )
+                )
+            }
+        }
+        val hasMore = result.size > pageLimit
+        val page = if (hasMore) result.take(pageLimit) else result
+        val next = if (hasMore) page.lastOrNull()?.let { TimelineCursor(it.evidence.capturedAt, it.evidence.id) } else null
+        return TimelinePage(page, next)
+    }
+
+
     /** Source deletion intentionally cascades to its evidence and note-source links. */
     fun deleteSource(sourceId: String): Boolean {
         require(sourceId.isNotBlank()) { "Source ID is required" }
