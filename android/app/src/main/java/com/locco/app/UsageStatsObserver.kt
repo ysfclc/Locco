@@ -31,33 +31,37 @@ internal object UsageStatsObserver {
         val begin = end - HISTORY_WINDOW_MS
         val usageEvents = manager.queryEvents(begin, end) ?: return 0
         val event = UsageEvents.Event()
-        var insertedCandidates = 0
+        val records = mutableListOf<UsageEventRecord>()
 
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event)
             val packageName = event.packageName ?: continue
             if (packageName !in allowlist) continue
-            val mappedType = when (event.eventType) {
-                UsageEvents.Event.MOVE_TO_FOREGROUND -> "app_foregrounded"
-                UsageEvents.Event.MOVE_TO_BACKGROUND -> "app_backgrounded"
-                UsageEvents.Event.ACTIVITY_RESUMED -> "app_foregrounded"
-                UsageEvents.Event.ACTIVITY_PAUSED -> "app_backgrounded"
-                else -> continue
-            }
             val timestamp = event.timeStamp
             if (timestamp <= 0L) continue
-            val dedupeKey = sha256("$packageName|$mappedType|$timestamp")
+            records += UsageEventRecord(
+                packageName = packageName,
+                eventType = event.eventType,
+                timestamp = timestamp,
+                activityClassName = event.className
+            )
+        }
+
+        val transitions = UsageLifecycleReducer.reduce(records)
+        transitions.forEach { transition ->
+            val dedupeKey = sha256(
+                "${transition.packageName}|${transition.eventType}|${transition.timestamp}"
+            )
             database.recordUsageObservation(
                 id = UUID.randomUUID().toString(),
                 dedupeKey = dedupeKey,
-                sourcePackage = packageName,
-                eventType = mappedType,
-                occurredAt = timestamp,
+                sourcePackage = transition.packageName,
+                eventType = transition.eventType,
+                occurredAt = transition.timestamp,
                 receivedAt = end
             )
-            insertedCandidates++
         }
-        return insertedCandidates
+        return transitions.size
     }
 
     private fun sha256(value: String): String =
