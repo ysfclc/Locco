@@ -70,6 +70,7 @@ def test_fresh_install() -> None:
         "note_sources",
         "app_observations",
         "app_usage_events",
+        "evidence",
     }
     assert expected.issubset(names), expected - names
     assert connection.execute(
@@ -171,11 +172,38 @@ def test_v3_to_v4_usage_events() -> None:
     assert connection.execute("SELECT count(*) FROM app_usage_events").fetchone() == (1,)
 
 
+def test_v4_to_v5_evidence_records() -> None:
+    connection = sqlite3.connect(":memory:")
+    connection.execute("PRAGMA foreign_keys=ON")
+    for version in range(1, 5):
+        apply(connection, version)
+    connection.execute("INSERT INTO sources(id,kind,captured_at) VALUES('src-e1','web',5)")
+    apply(connection, 5)
+    connection.execute(
+        "INSERT INTO evidence(id,source_id,excerpt,content_hash,captured_at) VALUES('ev1','src-e1','quote',NULL,6)"
+    )
+    connection.execute(
+        "INSERT INTO evidence(id,source_id,excerpt,content_hash,captured_at) VALUES('ev2','src-e1',NULL,'sha256:abc',7)"
+    )
+    assert connection.execute("SELECT count(*) FROM evidence WHERE source_id='src-e1'").fetchone() == (2,)
+    try:
+        connection.execute(
+            "INSERT INTO evidence(id,source_id,excerpt,content_hash,captured_at) VALUES('ev3','missing',NULL,'sha256:def',8)"
+        )
+    except sqlite3.IntegrityError:
+        pass
+    else:
+        raise AssertionError("Evidence accepted a missing source")
+    connection.execute("DELETE FROM sources WHERE id='src-e1'")
+    assert connection.execute("SELECT count(*) FROM evidence").fetchone() == (0,)
+
+
 if __name__ == "__main__":
-    assert ffi.locco_schema_version() == 4
-    assert ffi.locco_migration_statement_count(5) == 0
+    assert ffi.locco_schema_version() == 5
+    assert ffi.locco_migration_statement_count(6) == 0
     test_fresh_install()
     test_populated_v1_upgrade()
     test_v2_to_v3_upgrade_preserves_kernel_data()
     test_v3_to_v4_usage_events()
-    print("PASS: Rust ABI migration catalogue; fresh schema; populated v1 -> v2; evidence joins; FK and cascade integrity.")
+    test_v4_to_v5_evidence_records()
+    print("PASS: Rust ABI migration catalogue through v5; evidence payload constraints, source FK and cascade integrity.")
