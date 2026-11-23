@@ -256,6 +256,36 @@ class LoccoDatabaseKeyInstrumentedTest {
     }
 
     @Test
+    fun timelineCursorPagesStableOrderAndJoinedSourceMetadataWithoutDuplicates() {
+        val db = LoccoDatabase.create(context)
+        try {
+            val sourceA = SourceEntry("timeline-source-a", "web_page", "https://a.test", "Source A", 10L)
+            val sourceB = SourceEntry("timeline-source-b", "document", null, "Source B", 11L)
+            db.insertSource(sourceA)
+            db.insertSource(sourceB)
+            db.insertEvidence(EvidenceEntry("timeline-01", sourceA.id, "newest", null, 100L))
+            db.insertEvidence(EvidenceEntry("timeline-02a", sourceB.id, "same-time A", null, 90L))
+            db.insertEvidence(EvidenceEntry("timeline-02b", sourceA.id, "same-time B", null, 90L))
+            db.insertEvidence(EvidenceEntry("timeline-03", sourceB.id, "oldest", null, 80L))
+
+            val first = db.readTimelinePage(limit = 2)
+            assertEquals(listOf("timeline-01", "timeline-02a"), first.entries.map { it.evidence.id })
+            assertEquals(sourceA, first.entries.first().source)
+            assertEquals(sourceB, first.entries[1].source)
+            assertEquals(TimelineCursor(90L, "timeline-02a"), first.nextCursor)
+
+
+            val second = db.readTimelinePage(limit = 2, cursor = first.nextCursor)
+            assertEquals(listOf("timeline-02b", "timeline-03"), second.entries.map { it.evidence.id })
+            assertEquals(null, second.nextCursor)
+            assertEquals(4, (first.entries + second.entries).map { it.evidence.id }.distinct().size)
+        } finally {
+            db.close()
+        }
+    }
+
+
+    @Test
     fun evidenceRequiresPayloadAndAnExistingSource() {
         assertThrows(IllegalArgumentException::class.java) {
             EvidenceEntry("empty-evidence", "source-missing", null, null, 1L)
