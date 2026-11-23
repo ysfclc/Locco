@@ -39,15 +39,13 @@ class UsageLifecycleReducerTest {
         )
 
         assertEquals(
-            listOf(
-                UsageLifecycleTransition("com.example.app", "app_foregrounded", 10L)
-            ),
+            listOf(UsageLifecycleTransition("com.example.app", "app_foregrounded", 10L)),
             result
         )
     }
 
     @Test
-    fun packageLevelEventsRemainSupportedWhenActivityEventsAreAbsent() {
+    fun packageLevelEventsRemainSupportedWhenActivityClassNamesAreAbsent() {
         val result = UsageLifecycleReducer.reduce(
             listOf(
                 event("com.example.app", UsageEvents.Event.MOVE_TO_BACKGROUND, 30L),
@@ -65,7 +63,7 @@ class UsageLifecycleReducerTest {
     }
 
     @Test
-    fun modernActivityEventsTakePrecedenceOverLegacyPackageEvents() {
+    fun validActivityEventsTakePrecedenceOverLegacyPackageLevelEvents() {
         val result = UsageLifecycleReducer.reduce(
             listOf(
                 event("com.example.app", UsageEvents.Event.MOVE_TO_FOREGROUND, 10L),
@@ -85,10 +83,16 @@ class UsageLifecycleReducerTest {
     }
 
     @Test
-    fun malformedActivityEventsWithoutClassNameAreIgnored() {
+    fun classlessActivityTypeUsesLegacyCompatibleInterpretation() {
+        // Android's deprecated MOVE_TO_* constants alias the modern ACTIVITY_* values.
+        // Without an activity class name, these records cannot be distinguished reliably.
         val result = UsageLifecycleReducer.reduce(
             listOf(event("com.example.app", UsageEvents.Event.ACTIVITY_RESUMED, 10L))
         )
-        assertEquals(emptyList<UsageLifecycleTransition>(), result)
+
+        assertEquals(
+            listOf(UsageLifecycleTransition("com.example.app", "app_foregrounded", 10L)),
+            result
+        )
     }
 }
