@@ -322,6 +322,17 @@ class LoccoDatabaseKeyInstrumentedTest {
             assertEquals(1, db.readEvidenceForSource(existingSource.id).size)
         } finally { db.close() }
     }
+    @Test
+    fun sessionsAndNotesUseStableIdOrderingForEqualTimestamps() {
+        val sessionZ = Session("session-z", "Z", 100L, listOf(Note("note-z", "Z note", 200L)))
+        val sessionA = Session("session-a", "A", 100L, listOf(Note("note-z2", "Z2 note", 200L), Note("note-a", "A note", 200L)))
+        val db = LoccoDatabase.create(context)
+        try {
+            db.replaceSessions(listOf(sessionZ, sessionA))
+            assertEquals(listOf("session-a", "session-z"), db.readSessions().map { it.id })
+            assertEquals(listOf("note-a", "note-z2"), db.readSessions().first().notes.map { it.id })
+        } finally { db.close() }
+    }
     private fun containsBytes(haystack: ByteArray, needle: ByteArray): Boolean {
         if (needle.isEmpty() || haystack.size < needle.size) return false
         return (0..haystack.size - needle.size).any { start ->

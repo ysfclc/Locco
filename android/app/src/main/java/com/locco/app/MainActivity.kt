@@ -116,7 +116,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
             sessionError = null
             val result = withContext(Dispatchers.IO) { runCatching { db.insertSession(session) } }
             result.onSuccess {
-                sessions = (sessions + session).sortedByDescending { it.time }
+                sessions = (sessions + session).sortedWith(compareByDescending<Session> { it.time }.thenBy { it.id })
                 activeSessionId = session.id
                 selectedTab = LoccoTab.Capture
                 captureNotice = "Session created. Add your first note below."
@@ -210,7 +210,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
             }
             result.onSuccess {
                 sessions = (sessions.filterNot { it.id == nextSession.id } + nextSession)
-                    .sortedByDescending { it.time }
+                    .sortedWith(compareByDescending<Session> { it.time }.thenBy { it.id })
                 activeSessionId = nextSession.id
                 captureText = ""
                 captureTitle = ""
@@ -287,6 +287,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
                             sourceKind = captureKind,
                             notice = captureNotice,
                             error = captureError ?: storageError,
+                            sessionError = sessionError,
                             isSaving = isSaving,
                             onSave = ::saveCapture,
                             onNewSession = ::createSession,
@@ -342,6 +343,7 @@ private fun CaptureScreen(
     sourceKind: String,
     notice: String?,
     error: String?,
+    sessionError: String?,
     isSaving: Boolean,
     onSave: () -> Unit,
     onNewSession: () -> Unit,
@@ -401,6 +403,7 @@ private fun CaptureScreen(
             label = { Text("Source URL (optional)") }, placeholder = { Text("https://…") }
         )
         if (error != null) Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        if (sessionError != null) Text(sessionError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = onViewTimeline) { Text("Evidence") }
             Spacer(Modifier.weight(1f))

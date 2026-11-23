@@ -60,7 +60,7 @@ internal class LoccoDatabase private constructor(
             null,
             null,
             null,
-            "created_at DESC"
+            "created_at DESC,id ASC"
         ).use { cursor ->
             while (cursor.moveToNext()) {
                 val id = cursor.getString(0)
@@ -72,7 +72,7 @@ internal class LoccoDatabase private constructor(
                     arrayOf(id),
                     null,
                     null,
-                    "created_at ASC"
+                    "created_at ASC,id ASC"
                 ).use { noteCursor ->
                     while (noteCursor.moveToNext()) {
                         notes += Note(noteCursor.getString(0), noteCursor.getString(1), noteCursor.getLong(2))
