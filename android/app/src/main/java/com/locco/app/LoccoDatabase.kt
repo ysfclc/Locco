@@ -132,8 +132,8 @@ internal class LoccoDatabase private constructor(
                 arrayOf(source.id, source.kind, source.locator, source.title, source.capturedAt))
             db.execSQL("INSERT INTO evidence(id,source_id,excerpt,content_hash,captured_at) VALUES(?,?,?,?,?)",
                 arrayOf(evidence.id, evidence.sourceId, evidence.excerpt, evidence.contentHash, evidence.capturedAt))
-            db.execSQL("INSERT INTO note_sources(note_id,source_id,excerpt,attached_at) VALUES(?,?,?,?)",
-                arrayOf(note.id, source.id, note.text, evidence.capturedAt))
+            db.execSQL("INSERT INTO note_sources(note_id,source_id,excerpt,attached_at) VALUES(?,?,NULL,?)",
+                arrayOf(note.id, source.id, evidence.capturedAt))
             db.setTransactionSuccessful()
         } finally {
             db.endTransaction()

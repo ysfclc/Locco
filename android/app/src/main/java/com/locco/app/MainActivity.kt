@@ -167,6 +167,10 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
     fun saveCapture() {
         val db = database
         if (db == null || storageError != null || isSaving) return
+        if (captureText.isBlank()) {
+            captureError = "Add some text before saving."
+            return
+        }
         val capturedAt = System.currentTimeMillis()
         val nextSession = SessionKernel.capture(
             current = activeSession,
@@ -282,7 +286,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
                             onLocatorChange = { captureLocator = it; captureError = null },
                             sourceKind = captureKind,
                             notice = captureNotice,
-                            error = captureError ?: storageError ?: sessionError,
+                            error = captureError ?: storageError,
                             isSaving = isSaving,
                             onSave = ::saveCapture,
                             onNewSession = ::createSession,
