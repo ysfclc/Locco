@@ -3,7 +3,7 @@
 //! Platform adapters execute these statements inside their database transaction.
 //! They must not define or mutate the schema independently.
 
-pub const SCHEMA_VERSION: u32 = 4;
+pub const SCHEMA_VERSION: u32 = 5;
 
 const V1: &[&str] = &[
     "CREATE TABLE sessions (id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL, created_at INTEGER NOT NULL)",
@@ -36,6 +36,12 @@ const V4: &[&str] = &[
     "CREATE INDEX app_usage_events_source_time ON app_usage_events(source_package, occurred_at DESC)",
 ];
 
+const V5: &[&str] = &[
+    "CREATE TABLE evidence (id TEXT PRIMARY KEY NOT NULL CHECK(length(id) BETWEEN 1 AND 128), source_id TEXT NOT NULL REFERENCES sources(id) ON DELETE CASCADE, excerpt TEXT, content_hash TEXT, captured_at INTEGER NOT NULL CHECK(captured_at >= 0), CHECK((excerpt IS NOT NULL AND length(excerpt) > 0) OR (content_hash IS NOT NULL AND length(content_hash) > 0))",
+    "CREATE INDEX evidence_source_time ON evidence(source_id, captured_at DESC)",
+];
+
+
 /// Number of SQL statements in one migration version; zero means unsupported.
 pub fn migration_statement_count(version: u32) -> u32 {
     match version {
@@ -43,6 +49,7 @@ pub fn migration_statement_count(version: u32) -> u32 {
         2 => V2.len() as u32,
         3 => V3.len() as u32,
         4 => V4.len() as u32,
+        5 => V5.len() as u32,
         _ => 0,
     }
 }
@@ -54,6 +61,7 @@ pub fn migration_statement(version: u32, index: u32) -> Option<&'static str> {
         2 => V2,
         3 => V3,
         4 => V4,
+        5 => V5,
         _ => return None,
     };
     statements.get(index as usize).copied()
@@ -65,12 +73,13 @@ mod tests {
 
     #[test]
     fn schema_versions_are_sequential_and_supported() {
-        assert_eq!(SCHEMA_VERSION, 4);
+        assert_eq!(SCHEMA_VERSION, 5);
         assert!(migration_statement_count(1) > 0);
         assert!(migration_statement_count(2) > 0);
         assert!(migration_statement_count(3) > 0);
         assert!(migration_statement_count(4) > 0);
-        assert_eq!(migration_statement_count(5), 0);
+        assert!(migration_statement_count(5) > 0);
+        assert_eq!(migration_statement_count(6), 0);
     }
 
     #[test]
@@ -88,6 +97,7 @@ mod tests {
         assert!(migration_statement(4, 0)
             .unwrap()
             .contains("android_usage_events"));
+        assert!(migration_statement(5, 0).unwrap().contains("REFERENCES sources(id) ON DELETE CASCADE"));
     }
 
     #[test]
