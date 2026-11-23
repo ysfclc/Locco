@@ -41,7 +41,6 @@ const V5: &[&str] = &[
     "CREATE INDEX evidence_source_time ON evidence(source_id, captured_at DESC)",
 ];
 
-
 /// Number of SQL statements in one migration version; zero means unsupported.
 pub fn migration_statement_count(version: u32) -> u32 {
     match version {
@@ -97,7 +96,9 @@ mod tests {
         assert!(migration_statement(4, 0)
             .unwrap()
             .contains("android_usage_events"));
-        assert!(migration_statement(5, 0).unwrap().contains("REFERENCES sources(id) ON DELETE CASCADE"));
+        assert!(migration_statement(5, 0)
+            .unwrap()
+            .contains("REFERENCES sources(id) ON DELETE CASCADE"));
     }
 
     #[test]
