@@ -82,3 +82,47 @@ class CaptureKernelTest {
         assertTrue(title.toByteArray(Charsets.UTF_8).size <= 240)
     }
 }
+
+class SharedCaptureParserTest {
+    private fun parse(
+        action: String? = "android.intent.action.SEND",
+        mimeType: String? = "text/plain",
+        text: CharSequence? = "  Shared text  ",
+        subject: CharSequence? = null,
+        fallbackTitle: CharSequence? = null
+    ) = SharedCaptureParser.parse(action, mimeType, text, subject, fallbackTitle, token = "share-token")
+
+    @Test fun acceptsParameterizedTextPlainAndNormalizesWhitespace() {
+        val result = parse(mimeType = "text/plain; charset=UTF-8")
+        assertEquals("Shared text", result!!.text)
+        assertEquals("share-token", result.token)
+        assertNull(result.error)
+    }
+
+    @Test fun mimeMatchingIsCaseInsensitiveAndSubjectWins() {
+        val result = parse(mimeType = "TEXT/PLAIN; charset=utf-8", subject = "  Subject  ", fallbackTitle = "Chooser")
+        assertEquals("Subject", result!!.title)
+    }
+
+    @Test fun unsupportedActionAndMimeTypesAreIgnored() {
+        assertNull(parse(action = "android.intent.action.VIEW"))
+        assertNull(parse(mimeType = "image/png"))
+        assertNull(parse(mimeType = null))
+    }
+
+    @Test fun emptySharedTextIsIgnored() {
+        assertNull(parse(text = "  \n "))
+        assertNull(parse(text = null))
+    }
+
+    @Test fun oversizedShareIsRejectedWithoutTruncationAndExactLimitIsAccepted() {
+        val oversized = parse(text = "é".repeat(CaptureKernel.MAX_CONTENT_BYTES / 2 + 1))
+        assertNotNull(oversized)
+        assertEquals("", oversized!!.text)
+        assertTrue(oversized.error!!.contains("64 KiB"))
+        val exact = parse(text = "x".repeat(CaptureKernel.MAX_CONTENT_BYTES))
+        assertNotNull(exact)
+        assertEquals(CaptureKernel.MAX_CONTENT_BYTES, exact!!.text.toByteArray(Charsets.UTF_8).size)
+        assertNull(exact.error)
+    }
+}

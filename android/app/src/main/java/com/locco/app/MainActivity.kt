@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
@@ -46,21 +48,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun parseSharedText(intent: Intent?): SharedCapture? {
-        if (intent?.action != Intent.ACTION_SEND || intent.type != "text/plain") return null
-        val value = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()?.trim().orEmpty()
-        if (value.isEmpty()) return null
-        val title = (
-            intent.getCharSequenceExtra(Intent.EXTRA_SUBJECT)
-                ?: intent.getCharSequenceExtra(Intent.EXTRA_TITLE)
-            )?.toString()?.trim()?.takeIf { it.isNotEmpty() }
-
-        if (value.toByteArray(StandardCharsets.UTF_8).size > CaptureKernel.MAX_CONTENT_BYTES) {
-            return SharedCapture(
-                UUID.randomUUID().toString(), "", title,
-                "The shared text is larger than Locco's 64 KiB capture limit."
-            )
-        }
-        return SharedCapture(UUID.randomUUID().toString(), value, title)
+        if (intent == null) return null
+        return SharedCaptureParser.parse(
+            action = intent.action,
+            mimeType = intent.type,
+            sharedText = intent.getCharSequenceExtra(Intent.EXTRA_TEXT),
+            subject = intent.getCharSequenceExtra(Intent.EXTRA_SUBJECT),
+            fallbackTitle = intent.getCharSequenceExtra(Intent.EXTRA_TITLE),
+            token = UUID.randomUUID().toString()
+        )
     }
 }
 
@@ -304,7 +300,10 @@ private fun CaptureScreen(
     onViewTimeline: () -> Unit
 ) {
     Column(
-        Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 8.dp),
+        Modifier.fillMaxSize()
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 18.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Keep what matters.", color = Color.White, style = MaterialTheme.typography.headlineLarge)
@@ -319,7 +318,7 @@ private fun CaptureScreen(
         }
         OutlinedTextField(
             value = text, onValueChange = onTextChange,
-            modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
+            modifier = Modifier.fillMaxWidth(),
             label = { Text("Content") },
             placeholder = { Text("Paste a thought, excerpt, or useful information…") },
             minLines = 6, maxLines = 12
