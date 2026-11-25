@@ -111,7 +111,9 @@ mod tests {
             .contains("REFERENCES sources(id) ON DELETE CASCADE"));
         assert!(migration_statement(6, 0).unwrap().contains("sort_order"));
         assert!(migration_statement(6, 1).unwrap().contains("COUNT(*)"));
-        assert!(migration_statement(6, 2).unwrap().contains("notes_session_sort_order"));
+        assert!(migration_statement(6, 2)
+            .unwrap()
+            .contains("notes_session_sort_order"));
         assert!(migration_statement(6, migration_statement_count(6)).is_none());
     }
 
