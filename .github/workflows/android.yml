@@ -10,14 +10,16 @@ on:
 permissions:
   contents: read
 
+# Isolate each commit so a stalled emulator run cannot block verification of the
+# current source revision behind a branch-wide concurrency lock.
 concurrency:
-  group: android-${{ github.ref }}
+  group: android-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
