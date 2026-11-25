@@ -33,7 +33,6 @@ internal class LoccoDatabase private constructor(
 
     override fun onCreate(db: SQLiteDatabase) {
         migrate(db, 0, NativeBridge.databaseSchemaVersion())
-        importLegacyPrefs(db, context = appContext)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -349,34 +348,88 @@ internal class LoccoDatabase private constructor(
         return writableDatabase.delete("sources", "id=?", arrayOf(sourceId)) > 0
     }
 
-    private fun importLegacyPrefs(db: SQLiteDatabase, context: Context) {
+    /**
+     * Idempotently imports the legacy session preference on every database open.
+     * The plaintext key is removed only after the encrypted rows have been verified.
+     * A failed import or failed preference commit leaves the original JSON available for retry.
+     */
+    private fun importLegacyPrefs(context: Context) {
         val prefs = context.getSharedPreferences("locco_core_v1", Context.MODE_PRIVATE)
-        val json = prefs.getString("sessions", "[]") ?: "[]"
-        runCatching {
-            val arr = JSONArray(json)
-            db.beginTransaction()
-            try {
-                for (i in 0 until arr.length()) {
-                    val session = arr.getJSONObject(i)
+        if (!prefs.contains("sessions")) return
+        val json = prefs.getString("sessions", null)
+            ?: throw IllegalStateException("Legacy Locco sessions are not a readable string; the original data was preserved.")
+
+        val legacySessions = try {
+            val array = JSONArray(json)
+            buildList {
+                for (i in 0 until array.length()) {
+                    val item = array.getJSONObject(i)
+                    val id = item.getString("id")
+                    val notesJson = item.optJSONArray("notes") ?: JSONArray()
+                    val notes = buildList {
+                        for (j in 0 until notesJson.length()) {
+                            val note = notesJson.getJSONObject(j)
+                            add(Note(note.getString("id"), note.getString("text"), note.optLong("time")))
+                        }
+                    }
+                    add(Session(id, item.optString("title", "Session"), item.optLong("time"), notes))
+                }
+            }
+        } catch (failure: Throwable) {
+            throw IllegalStateException(
+                "Locco could not read legacy sessions. The original preference data was preserved.",
+                failure
+            )
+        }
+
+        val sessionIds = legacySessions.map { it.id }
+        val noteIds = legacySessions.flatMap { it.notes }.map { it.id }
+        check(sessionIds.distinct().size == sessionIds.size && noteIds.distinct().size == noteIds.size) {
+            "Legacy Locco sessions contain duplicate IDs; the original preference data was preserved."
+        }
+
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            legacySessions.forEach { session ->
+                db.execSQL(
+                    "INSERT OR IGNORE INTO sessions(id,title,created_at) VALUES(?,?,?)",
+                    arrayOf(session.id, session.title, session.time)
+                )
+                session.notes.forEachIndexed { index, note ->
                     db.execSQL(
-                        "INSERT OR IGNORE INTO sessions(id,title,created_at) VALUES(?,?,?)",
-                        arrayOf(session.getString("id"), session.optString("title", "Session"), session.optLong("time"))
+                        "INSERT OR IGNORE INTO notes(id,session_id,content,created_at,sort_order) VALUES(?,?,?,?,?)",
+                        arrayOf(note.id, session.id, note.text, note.time, index)
                     )
-                    val notes = session.optJSONArray("notes") ?: JSONArray()
-                    for (j in 0 until notes.length()) {
-                        val note = notes.getJSONObject(j)
-                        db.execSQL(
-                            "INSERT OR IGNORE INTO notes(id,session_id,content,created_at,sort_order) VALUES(?,?,?,?,?)",
-                            arrayOf(note.getString("id"), session.getString("id"), note.getString("text"), note.optLong("time"), j)
-                        )
+                }
+            }
+
+            // Verify every legacy record before committing. Existing session titles may have
+            // legitimately changed since an earlier import, so verify identity and note payloads.
+            legacySessions.forEach { session ->
+                db.query("sessions", arrayOf("id"), "id=?", arrayOf(session.id), null, null, null).use { rows ->
+                    check(rows.moveToFirst()) { "Legacy session ${session.id} was not imported." }
+                }
+                session.notes.forEach { note ->
+                    db.query(
+                        "notes", arrayOf("session_id", "content", "created_at"),
+                        "id=?", arrayOf(note.id), null, null, null
+                    ).use { rows ->
+                        check(rows.moveToFirst() &&
+                            rows.getString(0) == session.id &&
+                            rows.getString(1) == note.text &&
+                            rows.getLong(2) == note.time
+                        ) { "Legacy note ${note.id} failed encrypted-store verification." }
                     }
                 }
-                db.setTransactionSuccessful()
-            } finally {
-                db.endTransaction()
             }
-        }.onFailure {
-            // Leave legacy preferences untouched for recovery; the encrypted database remains usable.
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+
+        check(prefs.edit().remove("sessions").commit()) {
+            "Locco imported legacy sessions but could not clear the plaintext preference copy; it will retry safely."
         }
     }
 
@@ -384,10 +437,20 @@ internal class LoccoDatabase private constructor(
         fun create(context: Context): LoccoDatabase {
             System.loadLibrary("sqlcipher")
             val key = LoccoDatabaseKey.obtain(context)
-            return try {
+            val database = try {
                 LoccoDatabase(context.applicationContext, key)
             } finally {
                 key.fill(0)
+            }
+            return try {
+                // Open first to create or unlock the encrypted store. Import then runs on every
+                // app startup so a crash between DB commit and preference cleanup is recoverable.
+                database.writableDatabase
+                database.importLegacyPrefs(context.applicationContext)
+                database
+            } catch (failure: Throwable) {
+                database.close()
+                throw failure
             }
         }
     }
