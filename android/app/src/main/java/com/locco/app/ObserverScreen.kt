@@ -110,7 +110,7 @@ internal fun ObserverScreen() {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                         Text("Activity overview", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                         Text(
-                            refreshedAt?.let { "Last refreshed \${DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(it))}" } ?: "Not synced yet",
+                            refreshedAt?.let { "Last refreshed ${DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(it))}" } ?: "Not synced yet",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -200,7 +200,7 @@ internal fun ObserverScreen() {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Recent activity", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.weight(1f))
-            Text("\${events.size} shown", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("${events.size} shown", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
         if (events.isEmpty()) {
@@ -279,7 +279,7 @@ private fun ActivityCard(event: AppObservation, appName: String) {
                 Text(appName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Text(title, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    "\$method · \${event.category ?: "No category"}",
+                    "\$method · ${event.category ?: "No category"}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
