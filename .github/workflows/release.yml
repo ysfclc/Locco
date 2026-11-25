@@ -28,6 +28,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Require release tag to point to accepted main history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main:refs/remotes/origin/main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" refs/remotes/origin/main; then
+            echo "Release tags must point to a commit already reachable from main." >&2
+            exit 1
+          fi
+
       - name: Cache Cargo registry and build output
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
