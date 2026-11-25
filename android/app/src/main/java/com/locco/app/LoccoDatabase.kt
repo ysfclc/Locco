@@ -363,7 +363,11 @@ internal class LoccoDatabase private constructor(
                 for (i in 0 until array.length()) {
                     val item = array.getJSONObject(i)
                     val id = item.getString("id")
-                    val notesJson = item.optJSONArray("notes") ?: JSONArray()
+                    val notesJson = when {
+                        !item.has("notes") || item.isNull("notes") -> JSONArray()
+                        else -> item.optJSONArray("notes")
+                            ?: throw IllegalArgumentException("Legacy session notes must be an array.")
+                    }
                     val notes = buildList {
                         for (j in 0 until notesJson.length()) {
                             val note = notesJson.getJSONObject(j)
