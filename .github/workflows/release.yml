@@ -3,16 +3,22 @@ name: Protected Android release
 on:
   workflow_dispatch:
   push:
+    branches:
+      - feature/locco-source-evidence-api
     tags:
       - "v*"
 
 permissions:
   contents: read
 
+concurrency:
+  group: locco-release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Build and sign release APK
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/feature/locco-source-evidence-api'
     runs-on: ubuntu-latest
     environment:
       name: android-release
@@ -21,7 +27,7 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - name: Checkout tagged source
+      - name: Checkout source
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Cache Cargo registry and build output
@@ -34,6 +40,7 @@ jobs:
           key: ${{ runner.os }}-rust-1.86-${{ hashFiles('core/Cargo.toml', 'core/**/Cargo.toml', 'core/Cargo.lock', 'rust-toolchain.toml') }}
           restore-keys: |
             ${{ runner.os }}-rust-1.86-
+
       - name: Check signing secrets are present
         id: signing
         env:
@@ -76,10 +83,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+
       - name: Configure Gradle
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         with:
-          gradle-version: "8.11.1"
+          gradle-version: "8.13"
 
       - name: Assemble release APK
         run: gradle -p android --no-daemon assembleRelease
@@ -108,6 +116,7 @@ jobs:
             android/app/build/outputs/apk/release/app-release-unsigned.apk
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose dist/locco-release.apk
           sha256sum dist/locco-release.apk > dist/SHA256SUMS.txt
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs dist/locco-release.apk > dist/SIGNING-CERTIFICATE.txt
 
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
