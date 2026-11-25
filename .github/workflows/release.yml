@@ -41,6 +41,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-rust-1.86-
 
+      - name: Report available Actions secret names (values never printed)
+        env:
+          AVAILABLE_SECRET_NAMES_JSON: ${{ toJSON(secrets) }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+
+          available = json.loads(os.environ["AVAILABLE_SECRET_NAMES_JSON"])
+          print("Actions secret names available to this job (values are not printed):")
+          for name in sorted(available):
+              print(name)
+          PY
+
       - name: Check signing secrets are present
         id: signing
         env:
