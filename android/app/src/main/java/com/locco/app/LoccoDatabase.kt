@@ -357,26 +357,25 @@ internal class LoccoDatabase private constructor(
         val json = prefs.getString("sessions", null)
             ?: throw IllegalStateException("Legacy Locco sessions are not a readable string; the original data was preserved.")
 
-        val legacySessions = try {
+        val legacySessions: List<Session> = try {
             val array = JSONArray(json)
-            buildList {
-                for (i in 0 until array.length()) {
-                    val item = array.getJSONObject(i)
-                    val id = item.getString("id")
-                    val notesJson = when {
-                        !item.has("notes") || item.isNull("notes") -> JSONArray()
-                        else -> item.optJSONArray("notes")
-                            ?: throw IllegalArgumentException("Legacy session notes must be an array.")
-                    }
-                    val notes = buildList {
-                        for (j in 0 until notesJson.length()) {
-                            val note = notesJson.getJSONObject(j)
-                            add(Note(note.getString("id"), note.getString("text"), note.optLong("time")))
-                        }
-                    }
-                    add(Session(id, item.optString("title", "Session"), item.optLong("time"), notes))
+            val parsedSessions = mutableListOf<Session>()
+            for (i in 0 until array.length()) {
+                val item = array.getJSONObject(i)
+                val id = item.getString("id")
+                val notesJson = when {
+                    !item.has("notes") || item.isNull("notes") -> JSONArray()
+                    else -> item.optJSONArray("notes")
+                        ?: throw IllegalArgumentException("Legacy session notes must be an array.")
                 }
+                val parsedNotes = mutableListOf<Note>()
+                for (j in 0 until notesJson.length()) {
+                    val note = notesJson.getJSONObject(j)
+                    parsedNotes.add(Note(note.getString("id"), note.getString("text"), note.optLong("time")))
+                }
+                parsedSessions.add(Session(id, item.optString("title", "Session"), item.optLong("time"), parsedNotes))
             }
+            parsedSessions
         } catch (failure: Exception) {
             throw IllegalStateException(
                 "Locco could not read legacy sessions. The original preference data was preserved.",
@@ -409,8 +408,10 @@ internal class LoccoDatabase private constructor(
             // Verify every legacy record before committing. Existing session titles may have
             // legitimately changed since an earlier import, so verify identity and note payloads.
             legacySessions.forEach { session ->
-                db.query("sessions", arrayOf("id"), "id=?", arrayOf(session.id), null, null, null).use { rows ->
-                    check(rows.moveToFirst()) { "Legacy session ${session.id} was not imported." }
+                db.query("sessions", arrayOf("id", "created_at"), "id=?", arrayOf(session.id), null, null, null).use { rows ->
+                    check(rows.moveToFirst() && rows.getString(0) == session.id && rows.getLong(1) == session.time) {
+                        "Legacy session ${session.id} failed encrypted-store verification."
+                    }
                 }
                 session.notes.forEach { note ->
                     db.query(
