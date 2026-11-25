@@ -93,6 +93,7 @@ jobs:
             ~/.android/avd
           key: ${{ runner.os }}-locco-emulator-api35-google-apis-x86_64-v1
       - name: Boot emulator and run instrumentation tests
+        timeout-minutes: 25
         env:
           ANDROID_AVD_HOME: ${{ runner.temp }}/android-avd
         run: |
@@ -117,7 +118,7 @@ jobs:
           }
           booted=false
           for _ in $(seq 1 60); do
-            if adb shell getprop sys.boot_completed | grep -q 1; then booted=true; break; fi
+            if timeout 15s adb shell getprop sys.boot_completed | grep -q 1; then booted=true; break; fi
             sleep 5
           done
           if [ "$booted" != true ]; then
