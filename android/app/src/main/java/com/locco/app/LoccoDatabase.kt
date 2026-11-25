@@ -25,8 +25,6 @@ internal class LoccoDatabase private constructor(
     null,
     true
 ) {
-    private val appContext = context.applicationContext
-
     override fun onConfigure(db: SQLiteDatabase) {
         db.setForeignKeyConstraintsEnabled(true)
     }
@@ -375,7 +373,7 @@ internal class LoccoDatabase private constructor(
                     add(Session(id, item.optString("title", "Session"), item.optLong("time"), notes))
                 }
             }
-        } catch (failure: Throwable) {
+        } catch (failure: Exception) {
             throw IllegalStateException(
                 "Locco could not read legacy sessions. The original preference data was preserved.",
                 failure
