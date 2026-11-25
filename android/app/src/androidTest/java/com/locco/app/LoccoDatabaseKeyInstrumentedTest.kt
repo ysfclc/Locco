@@ -421,6 +421,13 @@ class LoccoDatabaseKeyInstrumentedTest {
             LoccoDatabase.create(context)
         }
         assertEquals("{not-json", prefs.getString("sessions", null))
+
+        val invalidShape = """[{"id":"legacy-shape","title":"Bad notes","time":1,"notes":"not-an-array"}]"""
+        assertTrue(prefs.edit().putString("sessions", invalidShape).commit())
+        assertThrows(IllegalStateException::class.java) {
+            LoccoDatabase.create(context)
+        }
+        assertEquals(invalidShape, prefs.getString("sessions", null))
     }
 
     private fun containsBytes(haystack: ByteArray, needle: ByteArray): Boolean {
