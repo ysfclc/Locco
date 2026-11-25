@@ -384,6 +384,41 @@ class LoccoDatabaseKeyInstrumentedTest {
             assertTrue(db.readSourcesForNote(note.id).isEmpty())
         } finally { db.close() }
     }
+    @Test
+    fun legacySessionsAreVerifiedInEncryptedStoreBeforePlaintextPreferenceIsRemoved() {
+        val prefs = context.getSharedPreferences("locco_core_v1", Context.MODE_PRIVATE)
+        val legacyJson = """[{"id":"legacy-session-01","title":"Imported session","time":123,"notes":[{"id":"legacy-note-01","text":"legacy private text","time":456}]}]"""
+        assertTrue(prefs.edit().putString("sessions", legacyJson).putString("unrelated", "keep-me").commit())
+
+        val expected = Session(
+            "legacy-session-01", "Imported session", 123L,
+            listOf(Note("legacy-note-01", "legacy private text", 456L))
+        )
+        val first = LoccoDatabase.create(context)
+        try {
+            assertEquals(listOf(expected), first.readSessions())
+        } finally { first.close() }
+
+        assertFalse(prefs.contains("sessions"))
+        assertEquals("keep-me", prefs.getString("unrelated", null))
+
+        val reopened = LoccoDatabase.create(context)
+        try {
+            assertEquals(listOf(expected), reopened.readSessions())
+        } finally { reopened.close() }
+    }
+
+    @Test
+    fun malformedLegacySessionsFailClosedAndPreserveOriginalPreference() {
+        val prefs = context.getSharedPreferences("locco_core_v1", Context.MODE_PRIVATE)
+        assertTrue(prefs.edit().putString("sessions", "{not-json").commit())
+
+        assertThrows(IllegalStateException::class.java) {
+            LoccoDatabase.create(context)
+        }
+        assertEquals("{not-json", prefs.getString("sessions", null))
+    }
+
     private fun containsBytes(haystack: ByteArray, needle: ByteArray): Boolean {
         if (needle.isEmpty() || haystack.size < needle.size) return false
         var start = 0
