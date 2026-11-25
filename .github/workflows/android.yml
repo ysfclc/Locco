@@ -92,6 +92,15 @@ jobs:
             ${{ env.ANDROID_HOME }}/platform-tools
             ~/.android/avd
           key: ${{ runner.os }}-locco-emulator-api35-google-apis-x86_64-v1
+      - name: Enable KVM for Android emulator
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm
+            ls -l /dev/kvm
+          else
+            echo "KVM device is unavailable on this runner." >&2
+            exit 1
+          fi
       - name: Boot emulator and run instrumentation tests
         timeout-minutes: 25
         env:
