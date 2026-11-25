@@ -76,6 +76,11 @@ def test_fresh_install() -> None:
     assert connection.execute(
         "SELECT name FROM sqlite_master WHERE type='index' AND name='note_sources_source_time'"
     ).fetchone()
+    assert connection.execute(
+        "SELECT name FROM sqlite_master WHERE type='index' AND name='notes_session_sort_order'"
+    ).fetchone()
+    note_columns = {row[1] for row in connection.execute("PRAGMA table_info(notes)")}
+    assert "sort_order" in note_columns
 
 
 def test_populated_v1_upgrade() -> None:
@@ -198,12 +203,55 @@ def test_v4_to_v5_evidence_records() -> None:
     assert connection.execute("SELECT count(*) FROM evidence").fetchone() == (0,)
 
 
+def test_v5_to_v6_note_order() -> None:
+    connection = sqlite3.connect(":memory:")
+    connection.execute("PRAGMA foreign_keys=ON")
+    for version in range(1, 6):
+        apply(connection, version)
+    connection.execute("INSERT INTO sessions VALUES('ordered-s1', 'ordered', 1)")
+    connection.executemany(
+        "INSERT INTO notes VALUES(?,?,?,?)",
+        [
+            ("note-z", "ordered-s1", "same-time Z", 10),
+            ("note-a", "ordered-s1", "same-time A", 10),
+            ("note-old", "ordered-s1", "older", 9),
+        ],
+    )
+
+    apply(connection, 6)
+    rows = connection.execute(
+        "SELECT id,sort_order FROM notes WHERE session_id='ordered-s1' ORDER BY sort_order"
+    ).fetchall()
+    # Existing v5 rows retain their previous deterministic (created_at,id) display order.
+    assert rows == [("note-old", 0), ("note-a", 1), ("note-z", 2)], rows
+
+    connection.execute(
+        "INSERT INTO notes(id,session_id,content,created_at,sort_order) "
+        "SELECT ?,?,?,?,COALESCE(MAX(sort_order),-1)+1 FROM notes WHERE session_id=?",
+        ("note-new", "ordered-s1", "appended", 10, "ordered-s1"),
+    )
+    assert connection.execute(
+        "SELECT id FROM notes WHERE session_id='ordered-s1' ORDER BY sort_order"
+    ).fetchall() == [("note-old",), ("note-a",), ("note-z",), ("note-new",)]
+
+    try:
+        connection.execute(
+            "INSERT INTO notes(id,session_id,content,created_at,sort_order) "
+            "VALUES('duplicate-order','ordered-s1','duplicate',11,1)"
+        )
+    except sqlite3.IntegrityError:
+        pass
+    else:
+        raise AssertionError("Duplicate per-session note order was accepted")
+
+
 if __name__ == "__main__":
-    assert ffi.locco_schema_version() == 5
-    assert ffi.locco_migration_statement_count(6) == 0
+    assert ffi.locco_schema_version() == 6
+    assert ffi.locco_migration_statement_count(7) == 0
     test_fresh_install()
     test_populated_v1_upgrade()
     test_v2_to_v3_upgrade_preserves_kernel_data()
     test_v3_to_v4_usage_events()
     test_v4_to_v5_evidence_records()
-    print("PASS: Rust ABI migration catalogue through v5; evidence payload constraints, source FK and cascade integrity.")
+    test_v5_to_v6_note_order()
+    print("PASS: Rust ABI migration catalogue through v6; evidence integrity, source FK/cascade and stable session-note ordering.")

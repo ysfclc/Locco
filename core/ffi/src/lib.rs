@@ -136,38 +136,39 @@ mod tests {
     #[test]
     fn c_abi_exposes_versioned_migrations() {
         assert_eq!(locco_abi_version(), 2);
-        assert_eq!(locco_schema_version(), 5);
+        assert_eq!(locco_schema_version(), 6);
         assert!(locco_migration_statement_count(1) > 0);
         assert!(locco_migration_statement_count(2) > 0);
         assert!(locco_migration_statement_count(3) > 0);
         assert!(locco_migration_statement_count(4) > 0);
         assert!(locco_migration_statement_count(5) > 0);
-        assert_eq!(locco_migration_statement_count(6), 0);
+        assert!(locco_migration_statement_count(6) > 0);
+        assert_eq!(locco_migration_statement_count(7), 0);
     }
 
     #[test]
     fn c_abi_copies_sql_into_caller_owned_memory() {
         let mut output = vec![0_u8; 128];
-        let sql = locco_kernel::migrations::migration_statement(5, 0).unwrap();
+        let sql = locco_kernel::migrations::migration_statement(6, 0).unwrap();
         output.resize(sql.len(), 0);
-        assert_eq!(locco_migration_statement_len(5, 0), sql.len() as i64);
+        assert_eq!(locco_migration_statement_len(6, 0), sql.len() as i64);
         // SAFETY: output is a writable Vec whose length equals the required SQL byte length.
         unsafe {
             assert_eq!(
-                locco_migration_statement_copy(5, 0, output.as_mut_ptr(), output.len()),
+                locco_migration_statement_copy(6, 0, output.as_mut_ptr(), output.len()),
                 0
             );
             assert_eq!(output, sql.as_bytes());
             assert_eq!(
-                locco_migration_statement_copy(6, 0, output.as_mut_ptr(), output.len()),
+                locco_migration_statement_copy(7, 0, output.as_mut_ptr(), output.len()),
                 -1
             );
             assert_eq!(
-                locco_migration_statement_copy(4, 0, output.as_mut_ptr(), 1),
+                locco_migration_statement_copy(6, 0, output.as_mut_ptr(), 1),
                 -3
             );
             assert_eq!(
-                locco_migration_statement_copy(4, 0, ptr::null_mut(), output.len()),
+                locco_migration_statement_copy(6, 0, ptr::null_mut(), output.len()),
                 -2
             );
         }

@@ -72,7 +72,7 @@ internal class LoccoDatabase private constructor(
                     arrayOf(id),
                     null,
                     null,
-                    "created_at ASC,id ASC"
+                    "sort_order ASC"
                 ).use { noteCursor ->
                     while (noteCursor.moveToNext()) {
                         notes += Note(noteCursor.getString(0), noteCursor.getString(1), noteCursor.getLong(2))
@@ -95,10 +95,10 @@ internal class LoccoDatabase private constructor(
                     "INSERT INTO sessions(id,title,created_at) VALUES(?,?,?)",
                     arrayOf(session.id, session.title, session.time)
                 )
-                session.notes.forEach { note ->
+                session.notes.forEachIndexed { sortOrder, note ->
                     db.execSQL(
-                        "INSERT INTO notes(id,session_id,content,created_at) VALUES(?,?,?,?)",
-                        arrayOf(note.id, session.id, note.text, note.time)
+                        "INSERT INTO notes(id,session_id,content,created_at,sort_order) VALUES(?,?,?,?,?)",
+                        arrayOf(note.id, session.id, note.text, note.time, sortOrder)
                     )
                 }
             }
@@ -127,8 +127,11 @@ internal class LoccoDatabase private constructor(
             db.execSQL("INSERT OR IGNORE INTO sessions(id,title,created_at) VALUES(?,?,?)",
                 arrayOf(session.id, session.title, session.time))
             db.execSQL("UPDATE sessions SET title=? WHERE id=?", arrayOf(session.title, session.id))
-            db.execSQL("INSERT INTO notes(id,session_id,content,created_at) VALUES(?,?,?,?)",
-                arrayOf(note.id, session.id, note.text, note.time))
+            db.execSQL(
+                "INSERT INTO notes(id,session_id,content,created_at,sort_order) " +
+                    "SELECT ?,?,?,?,COALESCE(MAX(sort_order), -1)+1 FROM notes WHERE session_id=?",
+                arrayOf(note.id, session.id, note.text, note.time, session.id)
+            )
             db.execSQL("INSERT INTO sources(id,kind,uri,title,captured_at) VALUES(?,?,?,?,?)",
                 arrayOf(source.id, source.kind, source.locator, source.title, source.capturedAt))
             db.execSQL("INSERT INTO evidence(id,source_id,excerpt,content_hash,captured_at) VALUES(?,?,?,?,?)",
@@ -363,8 +366,8 @@ internal class LoccoDatabase private constructor(
                     for (j in 0 until notes.length()) {
                         val note = notes.getJSONObject(j)
                         db.execSQL(
-                            "INSERT OR IGNORE INTO notes(id,session_id,content,created_at) VALUES(?,?,?,?)",
-                            arrayOf(note.getString("id"), session.getString("id"), note.getString("text"), note.optLong("time"))
+                            "INSERT OR IGNORE INTO notes(id,session_id,content,created_at,sort_order) VALUES(?,?,?,?,?)",
+                            arrayOf(note.getString("id"), session.getString("id"), note.getString("text"), note.optLong("time"), j)
                         )
                     }
                 }

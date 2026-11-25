@@ -302,6 +302,41 @@ class LoccoDatabaseKeyInstrumentedTest {
     }
 
     @Test
+    fun sessionNotesPreserveAppendOrderWhenCaptureTimesMatchAcrossReopen() {
+        val emptySession = Session("session-equal-time", "New session", 100L, emptyList())
+        var current = emptySession
+        val first = LoccoDatabase.create(context)
+        try {
+            first.insertSession(emptySession)
+            listOf("first note", "second note", "third note").forEachIndexed { index, text ->
+                current = SessionKernel.capture(
+                    current, text, 200L, "equal-time-note-$index", emptySession.id
+                )!!
+                val note = current.notes.last()
+                val source = SourceEntry(
+                    "equal-time-source-$index", "manual_text", null, "Source $index", note.time
+                )
+                val evidence = EvidenceEntry(
+                    "equal-time-evidence-$index", source.id, note.text, null, note.time
+                )
+                first.storeSessionNoteWithEvidence(current, note, source, evidence)
+            }
+            assertEquals(
+                listOf("first note", "second note", "third note"),
+                first.readSessions().single().notes.map { it.text }
+            )
+        } finally { first.close() }
+
+        val reopened = LoccoDatabase.create(context)
+        try {
+            assertEquals(
+                listOf("first note", "second note", "third note"),
+                reopened.readSessions().single().notes.map { it.text }
+            )
+        } finally { reopened.close() }
+    }
+
+    @Test
     fun sessionNoteCaptureRollsBackAllRecordsWhenEvidenceInsertFails() {
         val db = LoccoDatabase.create(context)
         try {
@@ -323,14 +358,14 @@ class LoccoDatabaseKeyInstrumentedTest {
         } finally { db.close() }
     }
     @Test
-    fun sessionsAndNotesUseStableIdOrderingForEqualTimestamps() {
+    fun sessionListUsesStableIdOrderingAndNotesPreserveInsertionOrderForEqualTimestamps() {
         val sessionZ = Session("session-z", "Z", 100L, listOf(Note("note-z", "Z note", 200L)))
         val sessionA = Session("session-a", "A", 100L, listOf(Note("note-z2", "Z2 note", 200L), Note("note-a", "A note", 200L)))
         val db = LoccoDatabase.create(context)
         try {
             db.replaceSessions(listOf(sessionZ, sessionA))
             assertEquals(listOf("session-a", "session-z"), db.readSessions().map { it.id })
-            assertEquals(listOf("note-a", "note-z2"), db.readSessions().first().notes.map { it.id })
+            assertEquals(listOf("note-z2", "note-a"), db.readSessions().first().notes.map { it.id })
         } finally { db.close() }
     }
     @Test

@@ -3,7 +3,7 @@
 //! Platform adapters execute these statements inside their database transaction.
 //! They must not define or mutate the schema independently.
 
-pub const SCHEMA_VERSION: u32 = 5;
+pub const SCHEMA_VERSION: u32 = 6;
 
 const V1: &[&str] = &[
     "CREATE TABLE sessions (id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL, created_at INTEGER NOT NULL)",
@@ -41,6 +41,13 @@ const V5: &[&str] = &[
     "CREATE INDEX evidence_source_time ON evidence(source_id, captured_at DESC)",
 ];
 
+/// Explicit per-session order; timestamps alone cannot order captures in the same millisecond.
+const V6: &[&str] = &[
+    "ALTER TABLE notes ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0",
+    "UPDATE notes SET sort_order = (SELECT COUNT(*) FROM notes AS prior WHERE prior.session_id = notes.session_id AND (prior.created_at < notes.created_at OR (prior.created_at = notes.created_at AND prior.id < notes.id)))",
+    "CREATE UNIQUE INDEX notes_session_sort_order ON notes(session_id, sort_order)",
+];
+
 /// Number of SQL statements in one migration version; zero means unsupported.
 pub fn migration_statement_count(version: u32) -> u32 {
     match version {
@@ -49,6 +56,7 @@ pub fn migration_statement_count(version: u32) -> u32 {
         3 => V3.len() as u32,
         4 => V4.len() as u32,
         5 => V5.len() as u32,
+        6 => V6.len() as u32,
         _ => 0,
     }
 }
@@ -61,6 +69,7 @@ pub fn migration_statement(version: u32, index: u32) -> Option<&'static str> {
         3 => V3,
         4 => V4,
         5 => V5,
+        6 => V6,
         _ => return None,
     };
     statements.get(index as usize).copied()
@@ -72,13 +81,14 @@ mod tests {
 
     #[test]
     fn schema_versions_are_sequential_and_supported() {
-        assert_eq!(SCHEMA_VERSION, 5);
+        assert_eq!(SCHEMA_VERSION, 6);
         assert!(migration_statement_count(1) > 0);
         assert!(migration_statement_count(2) > 0);
         assert!(migration_statement_count(3) > 0);
         assert!(migration_statement_count(4) > 0);
         assert!(migration_statement_count(5) > 0);
-        assert_eq!(migration_statement_count(6), 0);
+        assert!(migration_statement_count(6) > 0);
+        assert_eq!(migration_statement_count(7), 0);
     }
 
     #[test]
@@ -99,6 +109,10 @@ mod tests {
         assert!(migration_statement(5, 0)
             .unwrap()
             .contains("REFERENCES sources(id) ON DELETE CASCADE"));
+        assert!(migration_statement(6, 0).unwrap().contains("sort_order"));
+        assert!(migration_statement(6, 1).unwrap().contains("COUNT(*)"));
+        assert!(migration_statement(6, 2).unwrap().contains("notes_session_sort_order"));
+        assert!(migration_statement(6, migration_statement_count(6)).is_none());
     }
 
     #[test]
