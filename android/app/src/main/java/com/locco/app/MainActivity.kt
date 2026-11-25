@@ -264,7 +264,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
                             LoccoTab.Capture -> "Capture"
                             LoccoTab.Timeline -> "Timeline"
                             LoccoTab.Library -> "Notes"
-                            LoccoTab.Observe -> "Observer"
+                            LoccoTab.Observe -> "Activity"
                         },
                         color = Color.White, style = MaterialTheme.typography.titleMedium
                     )
@@ -316,7 +316,7 @@ private fun LoccoCore(sharedCapture: SharedCapture?) {
                         LoccoTab.Capture to "Capture",
                         LoccoTab.Timeline to "Timeline",
                         LoccoTab.Library to "Sessions",
-                        LoccoTab.Observe to "Observe"
+                        LoccoTab.Observe to "Activity"
                     ).forEach { (tab, label) ->
                         NavigationBarItem(
                             selected = selectedTab == tab,

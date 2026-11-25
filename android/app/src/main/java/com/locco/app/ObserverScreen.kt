@@ -121,7 +121,7 @@ internal fun ObserverScreen() {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Metric(selected.size.toString(), "Apps", Modifier.weight(1f))
                     Metric(events.size.toString(), "Events", Modifier.weight(1f))
-                    Metric(imported.toString(), "New sync", Modifier.weight(1f))
+                    Metric(imported.toString(), "Scanned", Modifier.weight(1f))
                 }
                 Text(
                     "App history is imported on refresh. Notification receipts arrive separately when Android allows them.",
@@ -279,7 +279,7 @@ private fun ActivityCard(event: AppObservation, appName: String) {
                 Text(appName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Text(title, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    "\$method · ${event.category ?: "No category"}",
+                    "$method · ${event.category ?: "No category"}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
