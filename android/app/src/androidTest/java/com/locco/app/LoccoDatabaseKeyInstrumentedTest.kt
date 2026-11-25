@@ -439,6 +439,7 @@ class LoccoDatabaseKeyInstrumentedTest {
         File(database.path + "-wal").delete()
         File(database.path + "-shm").delete()
         context.deleteSharedPreferences("locco_database_key_v1")
+        context.deleteSharedPreferences("locco_core_v1")
         runCatching {
             KeyStore.getInstance("AndroidKeyStore").apply { load(null) }.deleteEntry("com.locco.app.database.wrap.v1")
         }
