@@ -1,10 +1,7 @@
 name: Protected Android release
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - feature/locco-source-evidence-api
     tags:
       - "v*"
 
@@ -18,7 +15,6 @@ concurrency:
 jobs:
   release:
     name: Build and sign release APK
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/feature/locco-source-evidence-api'
     runs-on: ubuntu-latest
     environment:
       name: android-release
@@ -27,8 +23,10 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - name: Checkout source
+      - name: Checkout accepted tagged source
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          fetch-depth: 0
 
       - name: Cache Cargo registry and build output
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -40,21 +38,6 @@ jobs:
           key: ${{ runner.os }}-rust-1.86-${{ hashFiles('core/Cargo.toml', 'core/**/Cargo.toml', 'core/Cargo.lock', 'rust-toolchain.toml') }}
           restore-keys: |
             ${{ runner.os }}-rust-1.86-
-
-      - name: Report available Actions secret names (values never printed)
-        env:
-          AVAILABLE_SECRET_NAMES_JSON: ${{ toJSON(secrets) }}
-        shell: bash
-        run: |
-          python - <<'PY'
-          import json
-          import os
-
-          available = json.loads(os.environ["AVAILABLE_SECRET_NAMES_JSON"])
-          print("Actions secret names available to this job (values are not printed):")
-          for name in sorted(available):
-              print(name)
-          PY
 
       - name: Check signing secrets are present
         id: signing
