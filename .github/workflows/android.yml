@@ -2,7 +2,7 @@ name: Android debug APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/locco-source-evidence-api]
     paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
   pull_request:
     paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
