@@ -351,7 +351,7 @@ class LoccoDatabaseKeyInstrumentedTest {
     }
     private fun containsBytes(haystack: ByteArray, needle: ByteArray): Boolean {
         if (needle.isEmpty() || haystack.size < needle.size) return false
-        return (0..haystack.size - needle.size).any { start ->
+        return (0..(haystack.size - needle.size)).any { start ->
             needle.indices.all { offset -> haystack[start + offset] == needle[start + offset] }
         }
     }
