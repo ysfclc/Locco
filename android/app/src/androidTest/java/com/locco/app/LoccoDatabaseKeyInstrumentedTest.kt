@@ -401,11 +401,15 @@ class LoccoDatabaseKeyInstrumentedTest {
 
         assertFalse(prefs.contains("sessions"))
         assertEquals("keep-me", prefs.getString("unrelated", null))
+        assertFalse(containsBytes(database.readBytes(), "legacy private text".toByteArray(Charsets.UTF_8)))
 
+        // Simulate a crash after the encrypted commit but before preference cleanup.
+        assertTrue(prefs.edit().putString("sessions", legacyJson).commit())
         val reopened = LoccoDatabase.create(context)
         try {
             assertEquals(listOf(expected), reopened.readSessions())
         } finally { reopened.close() }
+        assertFalse(prefs.contains("sessions"))
     }
 
     @Test
