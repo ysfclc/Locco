@@ -114,6 +114,7 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign \
             --ks "$KEYSTORE_PATH" \
             --ks-pass env:LOCCO_KEYSTORE_PASSWORD \
+            --key-pass env:LOCCO_KEYSTORE_PASSWORD \
             --out dist/locco-release.apk \
             android/app/build/outputs/apk/release/app-release-unsigned.apk
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose dist/locco-release.apk
