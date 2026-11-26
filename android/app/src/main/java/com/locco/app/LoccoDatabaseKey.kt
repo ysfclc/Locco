@@ -25,21 +25,26 @@ internal object LoccoDatabaseKey {
 
 
     @Synchronized
-    fun obtain(context: Context): ByteArray {
+    fun obtain(context: Context): ByteArray = obtainInternal(context, allowPlaintextMigration = false)
+
+    /**
+     * Only the database-open path may create an envelope for a recognized plaintext SQLite
+     * file. The caller must immediately run the verified v2 migrator before SQLCipher opens it.
+     */
+    @Synchronized
+    fun obtainForDatabaseOpen(context: Context): ByteArray =
+        obtainInternal(context, allowPlaintextMigration = true)
+
+    private fun obtainInternal(context: Context, allowPlaintextMigration: Boolean): ByteArray {
         val app = context.applicationContext
         val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val encoded = prefs.getString(ENVELOPE, null)
         if (encoded != null) return unwrap(encoded)
 
         val database = app.getDatabasePath("locco_kernel.db")
-        // Any pre-existing file without its key envelope is suspect, including a zero-byte
-        // file left behind by an interrupted open/create. Never initialize over it.
-        if (database.exists()) {
-            if (isPlaintextSQLite(database)) {
-                throw IllegalStateException(
-                    "Locco found an existing plaintext database. A verified plaintext-to-encrypted migration is required; the original data was left untouched."
-                )
-            }
+        // Never initialize over an unknown, zero-byte, or otherwise unrecognized file.
+        // A valid SQLite header is eligible only for the explicit migration entry point.
+        if (database.exists() && !(allowPlaintextMigration && isPlaintextSQLite(database))) {
             throw IllegalStateException(
                 "Locco database key is missing. The existing database was preserved and was not replaced."
             )

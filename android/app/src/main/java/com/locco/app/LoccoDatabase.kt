@@ -439,21 +439,24 @@ internal class LoccoDatabase private constructor(
     companion object {
         fun create(context: Context): LoccoDatabase {
             System.loadLibrary("sqlcipher")
-            val key = LoccoDatabaseKey.obtain(context)
-            val database = try {
-                LoccoDatabase(context.applicationContext, key)
+            val app = context.applicationContext
+            val key = LoccoDatabaseKey.obtainForDatabaseOpen(app)
+            try {
+                // Migrate a recognized v2 plaintext database before SQLiteOpenHelper can create
+                // or open the encrypted store. The source is retained until the candidate passes
+                // row digests, foreign-key checks, integrity_check, and encrypted reopen.
+                LegacyPlaintextDatabaseMigrator.migrateIfNeeded(app, key)
+                val database = LoccoDatabase(app, key)
+                return try {
+                    database.writableDatabase
+                    database.importLegacyPrefs(app)
+                    database
+                } catch (failure: Throwable) {
+                    database.close()
+                    throw failure
+                }
             } finally {
                 key.fill(0)
-            }
-            return try {
-                // Open first to create or unlock the encrypted store. Import then runs on every
-                // app startup so a crash between DB commit and preference cleanup is recoverable.
-                database.writableDatabase
-                database.importLegacyPrefs(context.applicationContext)
-                database
-            } catch (failure: Throwable) {
-                database.close()
-                throw failure
             }
         }
     }
