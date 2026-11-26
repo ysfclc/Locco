@@ -150,10 +150,16 @@ internal object LegacyPlaintextDatabaseMigrator {
         ).use { cursor ->
             while (cursor.moveToNext()) actualTables += cursor.getString(0)
         }
-        val expectedTables = legacyTables.map { it.name }.sorted()
+        // Android's framework SQLiteDatabase creates this platform-owned locale
+        // table automatically. It is not application data and is intentionally not
+        // copied into SQLCipher; accept only its exact one-column shape.
+        val hasAndroidMetadata = "android_metadata" in actualTables
+        val expectedTables = (legacyTables.map { it.name } +
+            if (hasAndroidMetadata) listOf("android_metadata") else emptyList()).sorted()
         check(actualTables == expectedTables) {
-            "Locco plaintext database has an unknown table set; original data was preserved."
+            "Locco plaintext database has an unknown table set: $actualTables; original data was preserved."
         }
+        if (hasAndroidMetadata) validateAndroidMetadata(source)
 
         legacyTables.forEach { table ->
             val columns = mutableListOf<String>()
@@ -167,6 +173,26 @@ internal object LegacyPlaintextDatabaseMigrator {
         check(integrityCheck(source)) { "Locco plaintext database failed integrity_check; original data was preserved." }
         check(foreignKeyViolations(source) == 0) {
             "Locco plaintext database contains broken relationships; original data was preserved."
+        }
+    }
+
+    private fun validateAndroidMetadata(source: FrameworkSQLiteDatabase) {
+        val columns = mutableListOf<String>()
+        source.rawQuery("PRAGMA table_info(android_metadata)", null).use { cursor ->
+            while (cursor.moveToNext()) columns += cursor.getString(1)
+        }
+        check(columns == listOf("locale")) {
+            "Locco Android metadata table has an unsupported layout; original data was preserved."
+        }
+        source.rawQuery("SELECT locale FROM android_metadata", null).use { cursor ->
+            check(cursor.count <= 1) {
+                "Locco Android metadata table has an unexpected row count; original data was preserved."
+            }
+            if (cursor.moveToFirst()) {
+                check(!cursor.isNull(0) && cursor.getString(0).isNotBlank()) {
+                    "Locco Android metadata locale is invalid; original data was preserved."
+                }
+            }
         }
     }
 
