@@ -318,9 +318,21 @@ internal object LegacyPlaintextDatabaseMigrator {
     }
 
     private fun requireNoSidecars(file: File) {
-        listOf("-wal", "-shm", "-journal").forEach { suffix ->
+        // WAL/SHM may contain committed frames and are never discarded. A zero-byte
+        // rollback-journal is SQLite's harmless post-close placeholder; a non-empty
+        // journal may be hot and must remain untouched for recovery.
+        listOf("-wal", "-shm").forEach { suffix ->
             check(!File(file.absolutePath + suffix).exists()) {
                 "Locco database sidecar ${file.name}$suffix exists; migration was stopped without changing source data."
+            }
+        }
+        val journal = File(file.absolutePath + "-journal")
+        if (journal.exists()) {
+            check(journal.length() == 0L) {
+                "Locco database sidecar ${file.name}-journal is non-empty; migration was stopped without changing source data."
+            }
+            check(journal.delete()) {
+                "Unable to remove the empty Locco rollback-journal placeholder; source database was preserved."
             }
         }
     }
