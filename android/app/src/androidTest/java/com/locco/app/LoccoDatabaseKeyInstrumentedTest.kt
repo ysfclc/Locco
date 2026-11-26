@@ -1,6 +1,7 @@
 package com.locco.app
 
 import android.content.Context
+import android.util.Base64
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.After
@@ -65,15 +66,26 @@ class LoccoDatabaseKeyInstrumentedTest {
     }
 
     @Test
-    fun missingKeystoreWrappingKeyDoesNotReplaceExistingDatabase() {
-        val key = LoccoDatabaseKey.obtain(context)
-        key.fill(0)
-        database.parentFile?.mkdirs()
-        database.writeBytes(byteArrayOf(1, 2, 3, 4))
-        KeyStore.getInstance("AndroidKeyStore").apply { load(null) }.deleteEntry("com.locco.app.database.wrap.v1")
-        assertThrows(IllegalStateException::class.java) { LoccoDatabaseKey.obtain(context) }
+    fun missingKeystoreWrappingKeyDoesNotReplaceExistingEncryptedDatabase() {
+        val session = Session(
+            "key-loss-session", "Preserve encrypted data", 10L,
+            listOf(Note("key-loss-note", "Do not replace this content", 11L))
+        )
+        val db = LoccoDatabase.create(context)
+        try {
+            db.replaceSessions(listOf(session))
+        } finally {
+            db.close()
+        }
+        val originalDatabase = database.readBytes()
+
+        KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+            .deleteEntry("com.locco.app.database.wrap.v1")
+
+        assertThrows(IllegalStateException::class.java) { LoccoDatabase.create(context) }
         assertTrue(database.exists())
-        assertArrayEquals(byteArrayOf(1, 2, 3, 4), database.readBytes())
+        assertArrayEquals("The encrypted database must remain byte-for-byte unchanged",
+            originalDatabase, database.readBytes())
     }
 
     @Test
@@ -82,6 +94,34 @@ class LoccoDatabaseKeyInstrumentedTest {
             .edit().putString("wrapped_key", "!").commit()
         assertThrows(IllegalStateException::class.java) { LoccoDatabaseKey.obtain(context) }
         assertTrue(!database.exists())
+    }
+
+    @Test
+    fun tamperedKeyEnvelopeDoesNotReplaceExistingEncryptedDatabase() {
+        val session = Session(
+            "tampered-envelope-session", "Preserve encrypted data", 20L,
+            listOf(Note("tampered-envelope-note", "Do not reset this database", 21L))
+        )
+        val db = LoccoDatabase.create(context)
+        try {
+            db.replaceSessions(listOf(session))
+        } finally {
+            db.close()
+        }
+        val originalDatabase = database.readBytes()
+        val prefs = context.getSharedPreferences("locco_database_key_v1", Context.MODE_PRIVATE)
+        val encoded = checkNotNull(prefs.getString("wrapped_key", null))
+        val envelope = Base64.decode(encoded, Base64.NO_WRAP)
+        envelope[envelope.lastIndex] = (envelope.last().toInt() xor 0x01).toByte()
+        assertTrue(prefs.edit()
+            .putString("wrapped_key", Base64.encodeToString(envelope, Base64.NO_WRAP))
+            .commit())
+        envelope.fill(0)
+
+        assertThrows(IllegalStateException::class.java) { LoccoDatabase.create(context) }
+        assertTrue(database.exists())
+        assertArrayEquals("A tampered key envelope must never reset the encrypted database",
+            originalDatabase, database.readBytes())
     }
 
     @Test

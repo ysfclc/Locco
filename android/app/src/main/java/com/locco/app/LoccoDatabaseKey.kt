@@ -82,17 +82,26 @@ internal object LoccoDatabaseKey {
         }
         val iv = envelope.copyOfRange(0, ivSize)
         val ciphertext = envelope.copyOfRange(ivSize, envelope.size)
-        return try {
+        try {
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
             cipher.init(Cipher.DECRYPT_MODE, existingWrappingKey(), GCMParameterSpec(GCM_TAG_BITS, iv))
-            cipher.doFinal(ciphertext).also {
-                check(it.size == KEY_BYTES) { "Locco database key has an invalid length." }
+            val raw = cipher.doFinal(ciphertext)
+            if (raw.size != KEY_BYTES) {
+                raw.fill(0)
+                throw IllegalStateException("Locco database key has an invalid length.")
             }
+            return raw
         } catch (failure: Throwable) {
             throw IllegalStateException(
                 "Locco cannot unlock its database key. Existing database data was preserved.",
                 failure
             )
+        } finally {
+            // The unwrapped key is returned to the caller, but all temporary envelope
+            // and ciphertext buffers are cleared regardless of success or failure.
+            envelope.fill(0)
+            iv.fill(0)
+            ciphertext.fill(0)
         }
     }
 
