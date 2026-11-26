@@ -74,7 +74,12 @@ jobs:
         run: |
           set -euo pipefail
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          # sdkmanager may close stdin as soon as all licences are accepted.
+          # Disable pipefail for this pipeline so yes(1)'s expected SIGPIPE
+          # does not abort the job; sdkmanager's exit status remains decisive.
+          set +o pipefail
           yes | "$SDKMANAGER" --licenses >/dev/null
+          set -o pipefail
           "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
 
