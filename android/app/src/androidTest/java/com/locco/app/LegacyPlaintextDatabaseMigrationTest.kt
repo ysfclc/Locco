@@ -102,6 +102,31 @@ class LegacyPlaintextDatabaseMigrationTest {
         assertFalse(backup.exists())
     }
 
+    @Test
+    fun unknownPlaintextTableIsRejectedWithoutChangingOriginalDatabase() {
+        createLegacyV2Fixture()
+        val legacy = FrameworkSQLiteDatabase.openDatabase(
+            database.absolutePath, null, FrameworkSQLiteDatabase.OPEN_READWRITE
+        )
+        try {
+            legacy.execSQL("CREATE TABLE unexpected_private_data(id TEXT PRIMARY KEY, payload TEXT)")
+            legacy.execSQL("INSERT INTO unexpected_private_data(id, payload) VALUES('keep-me', 'do not discard')")
+        } finally {
+            legacy.close()
+        }
+        val original = database.readBytes()
+
+        assertThrows(IllegalStateException::class.java) {
+            LoccoDatabase.create(context)
+        }
+
+        assertTrue(database.exists())
+        assertTrue("Unknown-table rejection must preserve every original byte",
+            original.contentEquals(database.readBytes()))
+        assertFalse(backup.exists())
+        assertFalse(temp.exists())
+    }
+
     private fun createLegacyV2Fixture() {
         database.parentFile?.mkdirs()
         val legacy = FrameworkSQLiteDatabase.openOrCreateDatabase(database, null)
