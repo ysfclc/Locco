@@ -2,7 +2,7 @@ name: Android debug APK
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/locco-source-evidence-api]
     paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
   pull_request:
     paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
@@ -10,13 +10,16 @@ on:
 permissions:
   contents: read
 
+# Isolate each commit so a stalled emulator run cannot block verification of the
+# current source revision behind a branch-wide concurrency lock.
 concurrency:
-  group: android-${{ github.ref }}
-  cancel-in-progress: true
+  group: android-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
     steps:
@@ -37,19 +40,26 @@ jobs:
         with:
           toolchain: 1.86.0
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
-      - name: Install Android NDK
+      - name: Install Android SDK and NDK
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.2.12479018" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
       - name: Install cargo-ndk
         run: cargo install cargo-ndk --version 4.1.2 --locked
       - name: Build Rust libraries
-        run: cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -o android/app/src/main/jniLibs build --manifest-path core/Cargo.toml --release -p locco-ffi
+        working-directory: core
+        run: cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -o ../android/app/src/main/jniLibs build --release -p locco-ffi
+      - name: Set up Java 17
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: "17"
       - name: Configure Gradle
         uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
         with:
-          gradle-version: "8.9"
+          gradle-version: "8.11.1"
       - name: Assemble debug APK
         run: gradle -p android --no-daemon assembleDebug
       - name: Upload debug APK
@@ -58,3 +68,78 @@ jobs:
           name: locco-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+      - name: Run Android unit tests
+        run: gradle -p android --no-daemon testDebugUnitTest
+      - name: Restore Android emulator cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/emulator
+            ${{ env.ANDROID_HOME }}/system-images
+            ${{ env.ANDROID_HOME }}/platform-tools
+            ~/.android/avd
+          key: ${{ runner.os }}-locco-emulator-api35-google-apis-x86_64-v1
+      - name: Install Android emulator image
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "emulator" "platform-tools" "platforms;android-35" "system-images;android-35;google_apis;x86_64"
+      - name: Save Android emulator cache
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/emulator
+            ${{ env.ANDROID_HOME }}/system-images
+            ${{ env.ANDROID_HOME }}/platform-tools
+            ~/.android/avd
+          key: ${{ runner.os }}-locco-emulator-api35-google-apis-x86_64-v1
+      - name: Enable KVM for Android emulator
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm
+            ls -l /dev/kvm
+          else
+            echo "KVM device is unavailable on this runner." >&2
+            exit 1
+          fi
+      - name: Boot emulator and run instrumentation tests
+        timeout-minutes: 25
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/android-avd
+        run: |
+          mkdir -p "$ANDROID_AVD_HOME"
+          echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd \
+            -n locco-ci \
+            -p "$ANDROID_AVD_HOME/locco-ci.avd" \
+            -k "system-images;android-35;google_apis;x86_64" \
+            -d pixel_2
+          "$ANDROID_HOME/emulator/emulator" -avd locco-ci -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -wipe-data -memory 2048 -cores 2 -verbose > /tmp/locco-emulator.log 2>&1 &
+          dump_emulator_diagnostics() {
+            echo '===== ADB devices ====='
+            adb devices -l || true
+            echo '===== Emulator boot log ====='
+            tail -n 500 /tmp/locco-emulator.log || true
+            echo '===== Android logcat ====='
+            adb logcat -d | tail -n 300 || true
+          }
+          timeout 3m adb wait-for-device || {
+            dump_emulator_diagnostics
+            exit 1
+          }
+          booted=false
+          for _ in $(seq 1 60); do
+            if timeout 15s adb shell getprop sys.boot_completed | grep -q 1; then booted=true; break; fi
+            sleep 5
+          done
+          if [ "$booted" != true ]; then
+            dump_emulator_diagnostics
+            exit 1
+          fi
+          adb shell input keyevent 82 || true
+          timeout 15m gradle -p android --no-daemon connectedDebugAndroidTest || {
+            adb logcat -d > /tmp/locco-logcat.txt || true
+            echo '===== Emulator boot log ====='
+            cat /tmp/locco-emulator.log || true
+            echo '===== Android logcat (last 300 lines) ====='
+            tail -n 300 /tmp/locco-logcat.txt || true
+            exit 1
+          }

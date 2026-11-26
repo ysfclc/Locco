@@ -28,25 +28,29 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             core/target
-          key: ${{ runner.os }}-rust-1.86-${{ hashFiles('core/Cargo.toml', 'core/**/Cargo.toml', 'core/Cargo.lock', 'rust-toolchain.toml') }}
+          key: ${{ runner.os }}-rust-1.88-${{ hashFiles('core/Cargo.toml', 'core/**/Cargo.toml', 'core/Cargo.lock', 'rust-toolchain.toml') }}
           restore-keys: |
-            ${{ runner.os }}-rust-1.86-
+            ${{ runner.os }}-rust-1.88-
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # pinned action
         with:
-          toolchain: 1.86.0
+          toolchain: 1.88.0
 
       - name: Generate dependency lockfile for audit
         run: cargo generate-lockfile --manifest-path core/Cargo.toml
 
       - name: Install cargo-deny and cargo-audit
         run: |
-          cargo install cargo-deny --version 0.18.4 --locked
-          cargo install cargo-audit --version 0.21.2 --locked
+          # Install outside the repository so rust-toolchain.toml does not pin
+          # these policy tools to the application's older MSRV.
+          cd "$RUNNER_TEMP"
+          cargo install cargo-deny --version 0.19.9 --locked --root "$CARGO_HOME/tools"
+          cargo install cargo-audit --version 0.23.0 --locked --root "$CARGO_HOME/tools"
+          echo "$CARGO_HOME/tools/bin" >> "$GITHUB_PATH"
 
       - name: Check dependency policy
         working-directory: core
-        run: cargo deny --config ../deny.toml check
+        run: cargo deny check --config ../deny.toml
 
       - name: Audit Rust dependencies
         run: cargo audit --file core/Cargo.lock

@@ -9,3 +9,7 @@ crate-type = ["cdylib", "staticlib"]
 
 [lints]
 workspace = true
+
+[dependencies]
+locco-kernel = { path = "../kernel", version = "=0.1.0" }
+jni = "=0.21.1"
