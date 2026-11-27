@@ -1,5 +1,6 @@
 package com.locco.app
 
+import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.os.Handler
@@ -8,8 +9,9 @@ import java.security.MessageDigest
 import java.util.UUID
 
 /**
- * Opt-in Android system adapter. It stores package/category/timestamps only.
- * Notification text, title, actions, extras and raw payloads are intentionally ignored.
+ * Opt-in Android system adapter.
+ * Notification content is read only when the user explicitly enables content
+ * capture, and only for packages in the selected-app allowlist.
  */
 class LoccoNotificationObserver : NotificationListenerService() {
     private lateinit var workerThread: HandlerThread
@@ -22,18 +24,25 @@ class LoccoNotificationObserver : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        // Copy only the small metadata fields needed by the worker. Never read notification.extras.
         val packageName = sbn.packageName ?: return
-        val initialAllowlist = getSharedPreferences(OBSERVER_PREFS, MODE_PRIVATE)
-            .getStringSet(OBSERVED_PACKAGES_KEY, emptySet()) ?: emptySet()
+        val prefs = getSharedPreferences(OBSERVER_PREFS, MODE_PRIVATE)
+        val initialAllowlist = prefs.getStringSet(OBSERVED_PACKAGES_KEY, emptySet()) ?: emptySet()
         if (packageName !in initialAllowlist) return
+
         val postedAt = sbn.postTime
         val category = sbn.notification.category?.take(80)
         val notificationKey = sbn.key
+        val captureContent = prefs.getBoolean(CAPTURE_NOTIFICATION_CONTENT_KEY, false)
+        val content = if (captureContent) extractVisibleContent(sbn.notification) else null
+
         worker.post {
-            val latestAllowlist = getSharedPreferences(OBSERVER_PREFS, MODE_PRIVATE)
-                .getStringSet(OBSERVED_PACKAGES_KEY, emptySet()) ?: emptySet()
+            val latestPrefs = getSharedPreferences(OBSERVER_PREFS, MODE_PRIVATE)
+            val latestAllowlist = latestPrefs.getStringSet(OBSERVED_PACKAGES_KEY, emptySet()) ?: emptySet()
             if (packageName !in latestAllowlist) return@post
+            // Re-check the content toggle before persisting a callback already queued.
+            val permittedContent = if (
+                latestPrefs.getBoolean(CAPTURE_NOTIFICATION_CONTENT_KEY, false)
+            ) content else null
             val dedupe = sha256("$packageName|$notificationKey|$postedAt")
             runCatching {
                 val database = LoccoDatabase.create(applicationContext)
@@ -44,13 +53,31 @@ class LoccoNotificationObserver : NotificationListenerService() {
                         sourcePackage = packageName,
                         occurredAt = postedAt,
                         receivedAt = System.currentTimeMillis(),
-                        category = category
+                        category = category,
+                        content = permittedContent
                     )
                 } finally {
                     database.close()
                 }
             }
         }
+    }
+
+    private fun extractVisibleContent(notification: Notification): CapturedNotificationContent? {
+        val extras = notification.extras ?: return null
+        val title = extras.getCharSequence(Notification.EXTRA_TITLE_BIG)?.toString()
+            ?: extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()
+        val bodyParts = buildList {
+            extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString()?.takeIf(String::isNotBlank)?.let(::add)
+            extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()?.takeIf(String::isNotBlank)?.let(::add)
+            extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString()?.takeIf(String::isNotBlank)?.let(::add)
+            extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString()?.takeIf(String::isNotBlank)?.let(::add)
+            extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
+                ?.map(CharSequence::toString)
+                ?.filter(String::isNotBlank)
+                ?.forEach(::add)
+        }.distinct()
+        return NotificationContentCapture.capture(title, bodyParts.joinToString("\n").takeIf { it.isNotBlank() })
     }
 
     override fun onDestroy() {
@@ -66,5 +93,6 @@ class LoccoNotificationObserver : NotificationListenerService() {
     companion object {
         const val OBSERVER_PREFS = "locco_observer_v1"
         const val OBSERVED_PACKAGES_KEY = "observed_packages"
+        const val CAPTURE_NOTIFICATION_CONTENT_KEY = "capture_notification_content"
     }
 }
