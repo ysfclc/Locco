@@ -67,7 +67,9 @@ internal fun ObserverScreen() {
                     val db = LoccoDatabase.create(context.applicationContext)
                     try {
                         val count = if (usage) UsageStatsObserver.collect(context, allowlist, db) else 0
-                        val rows = (db.readObservations() + db.readUsageObservations())
+                        // UsageEvents remain contextual signals; app-open/left transitions are
+                        // deliberately not promoted to first-class user-facing events.
+                        val rows = db.readObservations()
                             .distinctBy { it.id }
                             .sortedWith(compareByDescending<AppObservation> { it.occurredAt }.thenBy { it.id })
                             .take(100)
@@ -101,7 +103,7 @@ internal fun ObserverScreen() {
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            Text("Your app activity", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
+            Text("Captured events", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
             Text(
                 "A private timeline from the apps you choose. Locco records only signals Android makes available.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -126,7 +128,7 @@ internal fun ObserverScreen() {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Metric(selected.size.toString(), "Apps", Modifier.weight(1f))
                     Metric(events.size.toString(), "Events", Modifier.weight(1f))
-                    Metric(imported.toString(), "Scanned", Modifier.weight(1f))
+                    Metric(imported.toString(), "Context", Modifier.weight(1f))
                 }
                 Text(
                     "App history is imported on refresh. Notification receipts arrive separately when Android allows them.",
@@ -139,7 +141,7 @@ internal fun ObserverScreen() {
         Text("Connect Android signals", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
         PermissionCard(
             "App activity",
-            "Foreground/background transitions for selected apps. No screen contents or in-app actions.",
+            "App visibility context for selected apps. These transitions are not shown as standalone events because they do not reveal what happened inside the app.",
             usageAccess,
             if (usageAccess) "Enabled" else "Permission needed",
             if (usageAccess) "Manage" else "Enable"
@@ -244,7 +246,7 @@ internal fun ObserverScreen() {
                     Text(if (selected.isEmpty()) "Choose your first app" else "Your timeline is ready", fontWeight = FontWeight.SemiBold)
                     Text(
                         if (selected.isEmpty()) "Select an app and enable the Android signal you want to collect."
-                        else "Use a selected app, then refresh to import its recent activity. Notification receipts appear when that app posts a notification.",
+                        else "Use a selected app and wait for a notification, or share/capture content explicitly. App visibility transitions are retained as context, not displayed as standalone events.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
