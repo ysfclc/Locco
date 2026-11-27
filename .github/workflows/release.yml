@@ -126,6 +126,10 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose dist/locco-release.apk
           sha256sum dist/locco-release.apk > dist/SHA256SUMS.txt
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs dist/locco-release.apk > dist/SIGNING-CERTIFICATE.txt
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging dist/locco-release.apk > dist/APK-METADATA.txt
+          grep -F "package: name='com.locco.app' versionCode='3' versionName='0.3.0-inspectable-evidence'" dist/APK-METADATA.txt
+          EXPECTED_CERT_SHA256="1c339debcdb995bc7c73fc92e5feb3cfab90528afb122baacb1400633f8cc400"
+          grep -F "Signer #1 certificate SHA-256 digest: $EXPECTED_CERT_SHA256" dist/SIGNING-CERTIFICATE.txt
 
       - name: Generate CycloneDX SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
