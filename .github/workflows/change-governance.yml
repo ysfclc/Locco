@@ -1,0 +1,73 @@
+name: Change governance
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: locco-change-governance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  change-contract:
+    name: change-contract
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    steps:
+      # Bootstrap-safe: validators are introduced in this PR, so check out the
+      # candidate tree. No secrets are supplied to validation scripts; checkout
+      # credentials are not persisted. The candidate is treated as untrusted code.
+      - name: Checkout proposed PR tree
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Test governance validators
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
+
+      - name: Validate agent roles, skills and local links
+        run: python3 scripts/validate_agent_library.py --root .
+
+      - name: Validate mandatory PR evidence
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: python3 scripts/check_change_contract.py
+
+      - name: Verify linked feedback issues exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t ISSUE_NUMBERS < <(python3 scripts/check_change_contract.py --print-issues)
+          if [[ "${#ISSUE_NUMBERS[@]}" -eq 0 ]]; then
+            echo "No linked feedback issue was supplied." >&2
+            exit 1
+          fi
+          for number in "${ISSUE_NUMBERS[@]}"; do
+            record="$(gh api "repos/${GH_REPO}/issues/${number}")"
+            actual="$(jq -r '.number' <<< "${record}")"
+            test "${actual}" = "${number}"
+            if jq -e 'has("pull_request")' <<< "${record}" >/dev/null; then
+              echo "#${number} is a pull request, not a feedback issue." >&2
+              exit 1
+            fi
+            title="$(jq -r '.title' <<< "${record}")"
+            expected="$(printf 'LOC-%04d' "${number}")"
+            case "${title}" in
+              "${expected}:"*) ;;
+              *) echo "Feedback issue #${number} must have title prefix ${expected}." >&2; exit 1 ;;
+            esac
+            echo "Verified feedback record ${expected} (#${number})"
+          done
