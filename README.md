@@ -15,6 +15,10 @@ Acquire → preserve → understand → connect → reason → decide → act �
 
 The complete product definition, evidence-inspection contract, source boundaries, native browser/DOM requirements, Model Hub, general capability system and definition of done are consolidated in [docs/product/locco-product-contract.md](docs/product/locco-product-contract.md).
 
+## Requirement tracking
+
+The current requirement-to-implementation and acceptance matrix is [docs/architecture/requirement-traceability.md](docs/architecture/requirement-traceability.md). It distinguishes implemented, tested, device-verified, partial and unimplemented capabilities.
+
 ## Brainstorm archive
 
 The archive's provenance and known gaps are recorded in [docs/brainstorm/recovery-notes.md](docs/brainstorm/recovery-notes.md). The founding brief is a reconstructed transcription, not a byte-for-byte export of the original brainstorming conversation.
