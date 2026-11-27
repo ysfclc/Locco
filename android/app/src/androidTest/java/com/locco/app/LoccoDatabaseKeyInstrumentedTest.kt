@@ -182,6 +182,43 @@ class LoccoDatabaseKeyInstrumentedTest {
     }
 
     @Test
+    fun optedInNotificationContentPersistsEncryptedAndCanBeInspectedAfterReopen() {
+        val sentinel = "LOCCO_NOTIFICATION_EVIDENCE_FIXTURE_93a1"
+        val content = checkNotNull(NotificationContentCapture.capture("Message received", sentinel))
+        val first = LoccoDatabase.create(context)
+        try {
+            first.recordNotificationObservation(
+                id = "content-observation-1",
+                dedupeKey = "c".repeat(64),
+                sourcePackage = "com.locco.content.fixture",
+                occurredAt = 1_800_000_000_100L,
+                receivedAt = 1_800_000_000_200L,
+                category = "message",
+                content = content
+            )
+            val event = first.readObservations().single()
+            assertEquals("Message received", event.contentTitle)
+            assertEquals(sentinel, event.contentText)
+            assertEquals(content.contentHash, event.contentHash)
+            assertFalse(event.redactedFields.contains("notification_text"))
+        } finally {
+            first.close()
+        }
+
+        assertFalse("Notification content must not leak into the database file",
+            containsBytes(database.readBytes(), sentinel.toByteArray(Charsets.UTF_8)))
+        val reopened = LoccoDatabase.create(context)
+        try {
+            val event = reopened.readObservations().single()
+            assertEquals("Message received", event.contentTitle)
+            assertEquals(sentinel, event.contentText)
+            assertEquals(content.contentHash, event.contentHash)
+        } finally {
+            reopened.close()
+        }
+    }
+
+    @Test
     fun usageLifecycleEventsAreDeduplicatedAndSurviveReopen() {
         val first = LoccoDatabase.create(context)
         try {
