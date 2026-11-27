@@ -232,6 +232,6 @@ The ambition is to make more of Android's capabilities useful and composable, no
 - When enabled, Locco reads the notification title and text fields Android exposes. It does not retain actions, PendingIntents, image payloads, RemoteViews or the raw extras bundle.
 - Captured title and text are bounded (512 and 7,680 UTF-8 bytes). Obvious labelled verification codes, credential-like values and payment-card-like digit sequences are redacted before persistence. These heuristics reduce risk but cannot guarantee detection of every sensitive value; the UI warns the user before enabling content capture.
 - A SHA-256 digest identifies the sanitized captured excerpt. The event inspector distinguishes captured source content from metadata and shows the fields Locco withheld or redacted.
-- UsageEvents rows are also clickable, but the inspector explicitly states that UsageEvents exposes only app visibility transitions—not the screen or taps.
+- UsageEvents remain stored as context but are intentionally excluded from the meaningful event feed. They expose only app visibility transitions—not the screen or taps.
 - This is a real improvement to notification evidence, not universal in-app observation. AccessibilityService-based visible UI capture, meaningful action observation, cross-app correlation and the broader evidence graph remain unimplemented.
 - Existing v1–v6 databases upgrade through additive v7 columns. Older rows are preserved and remain metadata-only.
