@@ -1,7 +1,7 @@
 # Roadmap
 
 ## 0 — Foundation
-Product, principles, architecture, FFI, Rust workspace, Android shell, iOS plan, security, agents, skills, ZIP protocol and CI. Gate: three Rust Android ABIs + APK; docs agree.
+Product, principles, architecture, FFI, Rust workspace, Android shell, iOS plan, security, agents, skills, direct GitHub issue/branch/PR delivery and CI. The legacy ZIP-ingestion workflow is retired. Gate: three Rust Android ABIs + APK; docs agree.
 
 ## 1 — Local kernel
 **IN PROGRESS:** native session workspace, pure capture kernel, Kotlin unit tests, local SQLite session persistence and legacy preference import. Rust defines platform-neutral Source, Evidence, Entity, Relationship and Event records.
