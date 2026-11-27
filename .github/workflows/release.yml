@@ -87,7 +87,8 @@ jobs:
         run: cargo install cargo-ndk --version 4.1.2 --locked
 
       - name: Build native libraries
-        run: cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -o android/app/src/main/jniLibs build --manifest-path core/Cargo.toml --release -p locco-ffi
+        working-directory: core
+        run: cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -o ../android/app/src/main/jniLibs build --release -p locco-ffi
 
       - name: Set up Java 17
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v4.7.1
