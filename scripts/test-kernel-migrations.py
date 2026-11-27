@@ -245,13 +245,49 @@ def test_v5_to_v6_note_order() -> None:
         raise AssertionError("Duplicate per-session note order was accepted")
 
 
+def test_v6_to_v7_notification_content() -> None:
+    connection = sqlite3.connect(":memory:")
+    connection.execute("PRAGMA foreign_keys=ON")
+    for version in range(1, 7):
+        apply(connection, version)
+    connection.execute(
+        "INSERT INTO app_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method) "
+        "VALUES('before-v7',?,'com.example.app','notification_posted',10,11,'android_notification_listener')",
+        ("d" * 64,),
+    )
+
+    apply(connection, 7)
+    assert connection.execute(
+        "SELECT content_title,content_text,content_hash FROM app_observations WHERE id='before-v7'"
+    ).fetchone() == (None, None, None)
+
+    connection.execute(
+        "UPDATE app_observations SET content_title=?,content_text=?,content_hash=? WHERE id='before-v7'",
+        ("New message", "A real notification excerpt", "e" * 64),
+    )
+    assert connection.execute(
+        "SELECT content_title,content_text,content_hash FROM app_observations WHERE id='before-v7'"
+    ).fetchone() == ("New message", "A real notification excerpt", "e" * 64)
+
+    for column, value in [("content_title", "t" * 513), ("content_text", "x" * 7681), ("content_hash", "f" * 63)]:
+        try:
+            connection.execute(
+                f"UPDATE app_observations SET {column}=? WHERE id='before-v7'", (value,)
+            )
+        except sqlite3.IntegrityError:
+            pass
+        else:
+            raise AssertionError(f"v7 accepted invalid {column} length")
+
+
 if __name__ == "__main__":
-    assert ffi.locco_schema_version() == 6
-    assert ffi.locco_migration_statement_count(7) == 0
+    assert ffi.locco_schema_version() == 7
+    assert ffi.locco_migration_statement_count(8) == 0
     test_fresh_install()
     test_populated_v1_upgrade()
     test_v2_to_v3_upgrade_preserves_kernel_data()
     test_v3_to_v4_usage_events()
     test_v4_to_v5_evidence_records()
     test_v5_to_v6_note_order()
-    print("PASS: Rust ABI migration catalogue through v6; evidence integrity, source FK/cascade and stable session-note ordering.")
+    test_v6_to_v7_notification_content()
+    print("PASS: Rust ABI migration catalogue through v7; evidence integrity, source FK/cascade, stable note order and opt-in notification content schema.")
