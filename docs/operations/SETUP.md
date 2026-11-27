@@ -28,7 +28,7 @@ After configuration, open a deliberately incomplete test PR and verify GitHub bl
 
 ## Android release signing
 
-For release signing only: create GitHub Environment `android-release`, require reviewers, and add `ANDROID_RELEASE_KEYSTORE_BASE64`, `ANDROID_RELEASE_STORE_PASSWORD`, `ANDROID_RELEASE_KEY_ALIAS`, and `ANDROID_RELEASE_KEY_PASSWORD` as environment secrets. Never commit signing material. Debug builds do not need release secrets.
+The current protected release workflow reads exactly two secrets from the `android-release` environment: `LOCCO_KEYSTORE_BASE64` and `LOCCO_KEYSTORE_PASSWORD`. These names are already used by the successful v0.2.2 release workflow; do not rename them or create aliases. The workflow decodes the single-key keystore and uses the same password for keystore and key access. Never commit signing material. Debug builds do not need release secrets.
 
 ## Local toolchain
 
@@ -36,4 +36,4 @@ See [local development](local-development.md). Use the pinned Rust/Gradle/JDK/An
 
 ## Optional external ZIP intake
 
-Only use `incoming/phase-*.zip` and `.github/workflows/pipeline.yml` for a contribution genuinely arriving as an external archive that cannot be delivered as Git commits or a PR. This is exceptional. It is not the development path for agents or internal phases. Follow the hostile-input validator; never execute archive scripts or overwrite protected authority/security/CI files.
+External ZIP intake is currently disabled: the legacy `.github/workflows/pipeline.yml` has been retired and must not be referenced as an active workflow. Normal work must arrive as Git commits and pull requests. If a genuine external archive is ever unavoidable, obtain explicit approval and add a separately reviewed, security-tested intake workflow before accepting it.
