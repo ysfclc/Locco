@@ -23,6 +23,6 @@ GitHub is the canonical development interface for Locco. Work directly against t
 
 ## Optional external ZIP intake
 
-The ZIP validator and `pipeline.yml` remain available only for genuinely external contributions that cannot be supplied as Git commits or pull requests. A ZIP is hostile input: inspect its central directory; cap entries, expanded bytes, per-file size and compression ratio; reject absolute/parent paths, drive prefixes, duplicate normalized paths, symlinks, hardlinks and special files; strip VCS metadata; normalize one root; extract only to a fresh temporary directory; and emit a path/size/SHA-256 manifest.
+The legacy ZIP phase pipeline has been retired. The validator may be retained as a defensive library for tests or future review, but there is no active archive-ingestion workflow. If a genuine external archive is ever unavoidable, obtain explicit approval and design a new isolated intake workflow with hostile-input limits before processing it.
 
-Never use ZIP intake for ordinary Locco development. Never execute archive scripts or let an archive replace protected workflows, `.agent`, security docs, principles, ADRs or the validator. Identical archive/base pairs must be idempotent. Provenance includes archive hash/name, run, source ref, actor, UTC timestamp, phase ID and manifest. Never log archive content or secrets.
+Never use ZIP intake for ordinary Locco development. Do not create or invoke a replacement archive workflow without explicit approval and security review. Never execute archive scripts or let an archive replace protected workflows, `.agent`, security docs, principles, ADRs or validators.
