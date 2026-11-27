@@ -96,5 +96,46 @@
     "database encryption choice",
     "device performance budgets",
     "iOS bridge generator"
+  ],
+  "event_inspection": {
+    "unit_of_value": "Inspectable evidence-backed fact, object, event, action or change; not an app-open counter.",
+    "must_expose": [
+      "what happened",
+      "when it happened and when Locco received it",
+      "where it happened and its source",
+      "what was actually captured",
+      "what user action was observed",
+      "what Locco inferred, separately labelled",
+      "what is missing, redacted or inaccessible",
+      "what it connects to",
+      "what happened next and whether that outcome was verified"
+    ],
+    "distinct_layers": [
+      "raw source evidence",
+      "deterministic extraction",
+      "observed user action",
+      "AI interpretation",
+      "verified external outcome"
+    ],
+    "rules": [
+      "every event is clickable and inspectable",
+      "never infer a tap from an app-open event",
+      "preserve source, acquisition method, timestamps, completeness and confidence",
+      "do not fabricate content that Android or the source app does not expose"
+    ]
+  },
+  "archive_provenance": {
+    "keystone_mission_brief": "Reconstructed/normalized transcription; not a byte-for-byte export of the original brainstorming.",
+    "structured_json": "Derived machine-readable interpretation, not raw source.",
+    "missing_source": "The full original user-authored brainstorm was not recoverable in the accessible conversation archive during the 2026-11-27 audit.",
+    "preservation_rule": "Future brainstorm inputs must be archived verbatim with source date/provenance before distillation."
+  },
+  "environments": [
+    "native workspace and evidence library",
+    "universal permission-scoped Android app observation",
+    "first-class native browser and safe DOM observation/Stitching",
+    "extensible Model Hub and local intelligence",
+    "domain-neutral capability composition and verified execution",
+    "global capture and user-mediated handoff"
   ]
 }
