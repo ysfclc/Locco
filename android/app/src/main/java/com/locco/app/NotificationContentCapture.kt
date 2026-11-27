@@ -23,12 +23,12 @@ internal object NotificationContentCapture {
     const val MAX_TEXT_BYTES = 7_680
 
     private val labelledCode = Regex(
-        """(?i)\\b(?:verification|security|one[- ]time|login|authentication|confirmation)\\s+(?:code|otp|pin|passcode)\\s*(?:is|:|-)?\\s*[A-Z0-9-]{4,10}\\b"""
+        """(?i)\b(?:verification|security|one[- ]time|login|authentication|confirmation)\s+(?:code|otp|pin|passcode)\s*(?:is|:|-)?\s*[A-Z0-9-]{4,10}\b"""
     )
     private val labelledSecret = Regex(
-        """(?i)\\b(?:password|passcode|otp|pin)\\s*[:=]\\s*\\S+"""
+        """(?i)\b(?:password|passcode|otp|pin)\s*[:=]\s*\S+"""
     )
-    private val paymentCard = Regex("""(?<!\\d)(?:\\d[ -]?){13,19}(?!\\d)""")
+    private val paymentCard = Regex("""(?<!\d)(?:\d[ -]?){13,19}(?!\d)""")
 
     fun capture(title: String?, text: String?): CapturedNotificationContent? {
         val redacted = linkedSetOf<String>()
@@ -36,7 +36,7 @@ internal object NotificationContentCapture {
         val safeText = redact(normalize(text, MAX_TEXT_BYTES), redacted).ifBlank { null }
         if (safeTitle == null && safeText == null) return null
 
-        val digestInput = listOfNotNull(safeTitle, safeText).joinToString("\\n")
+        val digestInput = listOfNotNull(safeTitle, safeText).joinToString("\n")
         return CapturedNotificationContent(
             title = safeTitle,
             text = safeText,
@@ -48,7 +48,7 @@ internal object NotificationContentCapture {
     private fun normalize(value: String?, maxBytes: Int): String {
         if (value.isNullOrBlank()) return ""
         val cleaned = value
-            .filter { ch -> !Character.isISOControl(ch) || ch == '\\n' || ch == '\\r' || ch == '\\t' }
+            .filter { ch -> !Character.isISOControl(ch) || ch == '\n' || ch == '\r' || ch == '\t' }
             .trim()
         return truncateUtf8(cleaned, maxBytes)
     }
