@@ -30,6 +30,8 @@ After configuration, open a deliberately incomplete test PR and verify GitHub bl
 
 The current protected release workflow reads exactly two secrets from the `android-release` environment: `LOCCO_KEYSTORE_BASE64` and `LOCCO_KEYSTORE_PASSWORD`. These names are already used by the successful v0.2.2 release workflow; do not rename them or create aliases. The workflow decodes the single-key keystore and uses the same password for keystore and key access. Never commit signing material. Debug builds do not need release secrets.
 
+To publish without a browser session, open the repository's **Actions → Protected Android release → Run workflow**, select branch `main`, and enter the semantic tag (for example `v0.3.0`). The workflow creates the tag/release if needed, verifies package/version/signing identity, and uploads the APK, checksum, signing certificate, metadata and SBOM. A tag push also triggers the same release workflow.
+
 ## Local toolchain
 
 See [local development](local-development.md). Use the pinned Rust/Gradle/JDK/Android SDK versions. Run `./scripts/verify-foundation.sh`, `./scripts/build-rust-android.sh` and `./scripts/build-android-debug.sh`; report exactly which commands ran.
