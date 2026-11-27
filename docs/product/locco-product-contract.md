@@ -163,13 +163,15 @@ The original brainstorm identifies these projects as sources of selective ideas,
 
 No donor's current implementation is assumed complete or copied without source, licence, test and security review. Locco remains one independent application.
 
-## 8. Current implementation truth
+## 8. Implementation truth at the 2026-11-27 v0.3.0 main candidate
 
-The release on main at v0.2.2 is a foundation prototype, not the product described above. It includes a native Compose shell, manual text/share capture, sessions, encrypted local persistence, source/evidence records, app allowlisting, notification metadata and UsageEvents history-on-refresh.
+The v0.2.2 release is the foundation baseline. The current main source now includes PR #14, merged as commit 64938d7. The Android version configuration is applicationId com.locco.app, versionCode 3 and versionName 0.3.0-inspectable-evidence.
 
-It does **not** yet implement the complete app-observation system, Accessibility acquisition, cross-app event correlation, entity graph operations, native browser, DOM Stitching, Model Hub, local model runtime, general capability compiler or durable verified action engine.
+Main now includes clickable notification event details, off-by-default notification title/text capture for selected apps, bounded content filtering, content hashes, additive Rust schema v7, encrypted persistence and contextual-only UsageEvents. The legacy ZIP phase pipeline is retired, and product/feedback governance is in the repository.
 
-PR #14 is the first inspectable-observation correction: clickable event details and opt-in notification title/text capture with additive schema v7. Until its CI and upgrade checks pass and it is merged/released, it is proposed code—not part of the current main APK. Even after release, it will not mean that all in-app screens and actions are observable.
+Rust, Android debug, all 25 emulator instrumentation tests, dependency/security policy and governance checks passed on the PR candidate head efa2ae454d5e9e9e5b4882295ed21d09e7b10f0e; the squash merge preserves that source tree. The signed v0.3.0 release build and physical-device verification are still pending at this audit point.
+
+Locco still does **not** implement the complete app-observation system, Accessibility acquisition, cross-app event correlation, operational entity graph, native browser, DOM Stitching, Model Hub, local model runtime, general capability compiler or durable verified action engine. The v0.3.0 candidate is a foundation improvement, not completion of the full product contract.
 
 ## 9. Definition of done
 
