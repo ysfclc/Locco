@@ -11,6 +11,14 @@ Android is primary. Rust is the domain core. iOS is anticipated behind the same 
 ## Product loop
 Acquire → preserve → understand → connect → reason → decide → act → verify → learn.
 
+## Product contract
+
+The complete product definition, evidence-inspection contract, source boundaries, native browser/DOM requirements, Model Hub, general capability system and definition of done are consolidated in [docs/product/locco-product-contract.md](docs/product/locco-product-contract.md).
+
+## Brainstorm archive
+
+The archive's provenance and known gaps are recorded in [docs/brainstorm/recovery-notes.md](docs/brainstorm/recovery-notes.md). The founding brief is a reconstructed transcription, not a byte-for-byte export of the original brainstorming conversation.
+
 ## Delivery map
 | Phase | Outcome | Gate |
 |---|---|---|
