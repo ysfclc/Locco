@@ -13,7 +13,7 @@
 | Durable ID | GitHub record | Subject | Status |
 |---|---|---|---|
 | LOC-0002 | [#2](https://github.com/ysfclc/Locco/issues/2) | Binding product continuity and feedback preservation | Open — governance controls being implemented |
-| LOC-0015 | [#15](https://github.com/ysfclc/Locco/issues/15) | Evidence-backed cross-app activity, inspectable events and consolidated Locco product contract | Open — PR #14 implements the first notification-inspector slice; broader screen/action observation and product environments remain open |
+| LOC-0015 | [#15](https://github.com/ysfclc/Locco/issues/15) | Evidence-backed cross-app activity, inspectable events and consolidated Locco product contract | Open — PR #14 merged as 64938d7; v0.3.0 signed release/device verification pending; broader screen/action observation and product environments remain open |
 
 ## Rules
 

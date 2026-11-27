@@ -6,7 +6,7 @@ on:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: locco-release-${{ github.ref }}
@@ -19,7 +19,7 @@ jobs:
     environment:
       name: android-release
     permissions:
-      contents: read
+      contents: write
       id-token: write
       attestations: write
     steps:
@@ -151,3 +151,26 @@ jobs:
           path: dist/
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish signed APK and verification files to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSETS=(
+            dist/locco-release.apk
+            dist/SHA256SUMS.txt
+            dist/SIGNING-CERTIFICATE.txt
+            dist/APK-METADATA.txt
+            dist/locco-release.cdx.json
+          )
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "${ASSETS[@]}" --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$GITHUB_REF_NAME" "${ASSETS[@]}" \
+              --title "Locco $GITHUB_REF_NAME" \
+              --generate-notes \
+              --verify-tag \
+              --repo "$GITHUB_REPOSITORY"
+          fi

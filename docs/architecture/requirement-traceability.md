@@ -23,19 +23,19 @@ A requirement is not complete because a screen, class or architecture document e
 | LOC-R014 | Security protects credentials, page content, local data, dependencies and external actions | Security workflow, dependency checks, secret scan, signing and encrypted local store exist; full threat controls remain open | Adversarial input, prompt-injection, origin boundary, import fuzz, redaction, approval replay and backup tests | PARTIAL |
 | LOC-R015 | Future iOS shell shares domain contracts without expanding current Android scope | iOS is a documented future path only | Explicit authorization, FFI contract parity and shared golden tests | GATED / NOT STARTED |
 | LOC-R016 | Versioned, bounded, safe Rust/native boundary | ABI v2 exposes ping and Rust-owned schema migrations; durable command/query/event protocol is not implemented | C header compilation, buffer ownership, invalid-input bounds, panic containment, concurrency and event replay | PARTIAL |
-| LOC-R017 | Inspectable events distinguish evidence, action, inference and outcome | Main v0.2.2 has non-clickable lifecycle/metadata cards. PR #14 adds event detail inspector and opt-in notification excerpts with schema v7; not yet part of main | Click every event, inspect source/time/method/content/redactions, verify older rows and encrypted content after update | IN REVIEW |
+| LOC-R017 | Inspectable events distinguish evidence, action, inference and outcome | Main commit 64938d7 includes clickable notification event details and opt-in excerpts with schema v7. UsageEvents remain contextual only. Screen/action observation and cross-app event links are still absent | Click every notification event, inspect source/time/method/content/redactions, verify older rows and encrypted content after update; then add screen/action observation and device proof | PARTIAL |
 | LOC-R018 | Original Locco UX inspired by references without copying | Reference audit and three navigation hypotheses recovered; no comparative native prototypes or final IA | Same task journeys across prototypes, one-hand reach, accessibility, state preservation and user evaluation | NOT IMPLEMENTED |
 | LOC-R019 | User-authorized observation accurately discloses Android/provider limits | Usage and notification sources labelled; no Accessibility adapter yet. Sandbox/TLS boundaries documented | Permission scope, secure/custom-rendered screen limits, revocation, source coverage and no false universal-access claims | PARTIAL |
 | LOC-R020 | Preserve every user correction and extend one existing product | Existing repository, issue and PR workflow; complete feedback register/automation not yet enforced | Trace each bug/idea to issue, decision, regression test, PR, release and upgrade evidence | PARTIAL |
 
-## Proposed event-inspector acceptance
+## v0.3.0 release and device acceptance
 
 PR #14 is not accepted until all of these are true on its exact head:
-- [ ] Rust formatting, tests, Clippy and migration harness pass through schema v7.
-- [ ] Android debug APK assembles and unit tests pass.
-- [ ] Android instrumentation tests pass, including populated v6-to-v7 upgrade and encrypted notification-content round-trip.
-- [ ] Security/policy checks pass.
-- [ ] Signed release build uses the existing signing identity; package remains com.locco.app.
+- [x] Rust formatting, tests, Clippy and migration harness pass through schema v7 on the PR candidate.
+- [x] Android debug APK assembles and unit tests pass on the PR candidate.
+- [x] All 25 Android emulator instrumentation tests pass, including legacy database migration and encrypted notification-content round-trip.
+- [x] Dependency policy, Rust advisory audit, workflow actionlint, foundation verification and secret scanning pass.
+- [ ] Signed v0.3.0 release build verifies package com.locco.app, versionCode 3, versionName 0.3.0-inspectable-evidence and the existing signing certificate fingerprint.
 - [ ] Release APK package/version/signature/digest are inspected.
 - [ ] Physical Redmi Note 12 Pro 5G notification callback, opt-in/off and event-inspector behavior are verified. Until then, device behavior is NOT RUN.
 

@@ -10,6 +10,7 @@
 - docs/brainstorm/raw/BUSYBEE-APP-OBSERVER-DIRECTION.md — a 2026-11-22 donor research synopsis, not original Locco brainstorming and not proof that BusyBee code was ported.
 - Product vision/scope/roadmap and the Android observation architecture.
 - The deep architecture proposal on branch architecture/deep-product-audit, including browser/DOM, model ecosystem, Capability Compiler, UX, storage, execution, security and requirement traceability.
+- The direct GitHub governance proposal on branch docs/direct-github-workflow, including feedback lifecycle, application continuity, regression-first correction, change contracts and agent/skill governance; the applicable governance files were consolidated into PR #14.
 - Recovered prior-conversation user constraints: Locco is the permanent mobile-first Rust-cored product; Android APK is primary; iOS is anticipated; no HTML/web UI; the repository is the source of truth; archive raw brainstorm verbatim plus structured data; and keep one evolving application rather than resetting or replacing it.
 
 ## 2. Recovered product direction
