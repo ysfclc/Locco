@@ -1,6 +1,6 @@
 # Android App Observation and Interaction Architecture
 
-**Status:** product-critical architecture accepted; first notification-metadata prototype implemented, real-device acceptance pending.  
+**Status:** product-critical architecture accepted; metadata receipts, opt-in notification excerpts and a clickable evidence inspector are implemented; Accessibility acquisition and real-device acceptance remain pending.  
 **Origin:** user direction, reinforced by the App Observer and Provider Bridge research in `ysfclc/BusyBee`.  
 **Product owner:** Locco.
 
@@ -188,10 +188,10 @@ The first Locco-owned observation adapter is now present in the Android shell:
 - The Observer screen discovers launchable installed apps through Android's package visibility query and shows each app's display name, package name and installed version.
 - The user explicitly enables observation per app with a switch; the selected package allowlist is persisted locally. No app is observed by default.
 - Android's notification-listener permission remains a separate, explicit system setting.
-- The adapter copies only package name, post timestamp and standard notification category. It never reads notification title, text, actions or extras.
+- By default the adapter stores package, post timestamp and standard category only. A separate, off-by-default user toggle permits bounded title/message excerpts for already selected apps. The adapter never stores actions, PendingIntents, images, RemoteViews or raw notification extras.
 - A SHA-256 digest of the notification identity is used as a unique idempotency key; the raw notification key is not persisted.
-- Rust migration schema v3 adds an indexed `app_observations` ledger table with acquisition method, source package, event/receive timestamps and explicit redaction metadata.
-- The event is stored through the SQLCipher database and displayed in Locco's Observer feed. The feed refreshes when the Observer destination is opened.
+- Rust migration schema v3 adds an indexed `app_observations` ledger table with acquisition method, source package, event/receive timestamps and explicit redaction metadata. Schema v7 adds nullable, bounded title/text/hash columns without rewriting older metadata-only rows.
+- The event is stored through the SQLCipher database and displayed in Locco's Observer feed. Tapping a row opens an inspector with source package, event/receive timestamps, acquisition method, notification category, captured title/text, content hash and redaction metadata. Older events remain metadata-only; their original notification content cannot be reconstructed.
 - Instrumentation coverage verifies encrypted-at-rest observation metadata, reopen behavior and duplicate suppression.
 - Rust migration schema v4 adds a separate `app_usage_events` ledger for package-level foreground/background transitions.
 - When Usage Access is granted, Observer refresh queries Android `UsageEvents` for the selected package allowlist (last 24 hours), persists deduplicated transitions, and merges them into the local feed. This is history-on-refresh, not a continuous background monitor; no screen contents or in-app actions are exposed.
@@ -224,3 +224,14 @@ Use precise statements:
 - "Action handed to official app" rather than "Locco controlled provider action" when using an intent/deep link.
 
 The ambition is to make more of Android's capabilities useful and composable, not to claim impossible universal access. A trustworthy partial integration is better than a false promise of full visibility.
+
+
+### 7.2 Inspectable notification evidence (v0.3.0 implementation)
+
+- Content capture is off by default and is separate from the per-app observation allowlist. It applies only to apps the user has selected and only while Notification Access is granted.
+- When enabled, Locco reads the notification title and text fields Android exposes. It does not retain actions, PendingIntents, image payloads, RemoteViews or the raw extras bundle.
+- Captured title and text are bounded (512 and 7,680 UTF-8 bytes). Obvious labelled verification codes, credential-like values and payment-card-like digit sequences are redacted before persistence. These heuristics reduce risk but cannot guarantee detection of every sensitive value; the UI warns the user before enabling content capture.
+- A SHA-256 digest identifies the sanitized captured excerpt. The event inspector distinguishes captured source content from metadata and shows the fields Locco withheld or redacted.
+- UsageEvents rows are also clickable, but the inspector explicitly states that UsageEvents exposes only app visibility transitions—not the screen or taps.
+- This is a real improvement to notification evidence, not universal in-app observation. AccessibilityService-based visible UI capture, meaningful action observation, cross-app correlation and the broader evidence graph remain unimplemented.
+- Existing v1–v6 databases upgrade through additive v7 columns. Older rows are preserved and remain metadata-only.
