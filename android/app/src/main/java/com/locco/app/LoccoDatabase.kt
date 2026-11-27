@@ -140,18 +140,34 @@ internal class LoccoDatabase private constructor(
             db.endTransaction()
         }
     }
-    /** Stores only a redacted system receipt; notification title/text/extras never cross this boundary. */
+    /** Stores a bounded, user-authorized notification excerpt and its explicit redaction record. */
     fun recordNotificationObservation(
         id: String,
         dedupeKey: String,
         sourcePackage: String,
         occurredAt: Long,
         receivedAt: Long,
-        category: String?
+        category: String?,
+        content: CapturedNotificationContent? = null
     ) {
+        val redactedFields = JSONArray().apply {
+            if (content == null) {
+                put("notification_title")
+                put("notification_text")
+            }
+            put("notification_extras")
+            put("notification_actions")
+            put("notification_images")
+            put("notification_pending_intents")
+            content?.redactedFields?.sorted()?.forEach(::put)
+        }.toString()
         writableDatabase.execSQL(
-            "INSERT OR IGNORE INTO app_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method,category) VALUES(?,?,?,?,?,?,?,?)",
-            arrayOf(id, dedupeKey, sourcePackage, "notification_posted", occurredAt, receivedAt, "android_notification_listener", category)
+            "INSERT OR IGNORE INTO app_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method,category,content_title,content_text,content_hash,redacted_fields_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+            arrayOf(
+                id, dedupeKey, sourcePackage, "notification_posted", occurredAt, receivedAt,
+                "android_notification_listener", category, content?.title, content?.text,
+                content?.contentHash, redactedFields
+            )
         )
     }
 
@@ -185,7 +201,7 @@ internal class LoccoDatabase private constructor(
     fun readObservations(limit: Int = 100): List<AppObservation> {
         val result = mutableListOf<AppObservation>()
         readableDatabase.rawQuery(
-            "SELECT id,source_package,event_type,occurred_at,received_at,acquisition_method,category,redacted_fields_json FROM app_observations ORDER BY received_at DESC LIMIT ?",
+            "SELECT id,source_package,event_type,occurred_at,received_at,acquisition_method,category,redacted_fields_json,content_title,content_text,content_hash FROM app_observations ORDER BY received_at DESC LIMIT ?",
             arrayOf(limit.coerceIn(1, 500).toString())
         ).use { cursor ->
             while (cursor.moveToNext()) {
@@ -197,7 +213,10 @@ internal class LoccoDatabase private constructor(
                     receivedAt = cursor.getLong(4),
                     acquisitionMethod = cursor.getString(5),
                     category = if (cursor.isNull(6)) null else cursor.getString(6),
-                    redactedFields = cursor.getString(7)
+                    redactedFields = cursor.getString(7),
+                    contentTitle = if (cursor.isNull(8)) null else cursor.getString(8),
+                    contentText = if (cursor.isNull(9)) null else cursor.getString(9),
+                    contentHash = if (cursor.isNull(10)) null else cursor.getString(10)
                 )
             }
         }
