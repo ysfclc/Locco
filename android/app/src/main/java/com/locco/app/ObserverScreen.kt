@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
 import android.provider.Settings.Secure
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -33,6 +34,10 @@ internal fun ObserverScreen() {
     }
     var events by remember { mutableStateOf(emptyList<AppObservation>()) }
     var notificationAccess by remember { mutableStateOf(notificationAccessEnabled(context)) }
+    var contentCaptureEnabled by remember {
+        mutableStateOf(prefs.getBoolean(LoccoNotificationObserver.CAPTURE_NOTIFICATION_CONTENT_KEY, false))
+    }
+    var inspectedEvent by remember { mutableStateOf<AppObservation?>(null) }
     var usageAccess by remember { mutableStateOf(UsageStatsObserver.hasAccess(context)) }
     var error by remember { mutableStateOf<String?>(null) }
     var search by remember { mutableStateOf("") }
@@ -143,12 +148,42 @@ internal fun ObserverScreen() {
         }
         PermissionCard(
             "Notification receipts",
-            "App name, time and category only. Notification text, titles, actions and extras are ignored.",
+            "Receive notification events from selected apps when Android delivers them.",
             notificationAccess,
             if (notificationAccess) "Enabled" else "Permission needed",
             if (notificationAccess) "Manage" else "Enable"
         ) {
             context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
+        Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text("Capture notification content", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            if (contentCaptureEnabled) "Enabled for selected apps" else "Metadata only",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = contentCaptureEnabled,
+                        onCheckedChange = { enabled ->
+                            contentCaptureEnabled = enabled
+                            prefs.edit()
+                                .putBoolean(LoccoNotificationObserver.CAPTURE_NOTIFICATION_CONTENT_KEY, enabled)
+                                .apply()
+                        }
+                    )
+                }
+                Text(
+                    "When enabled, Locco stores the title and message excerpt Android exposes for selected apps. " +
+                        "Obvious one-time codes, credential-like values and payment-card-like numbers are filtered, " +
+                        "but no automatic filter is perfect. Captured content stays in encrypted local storage.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -217,9 +252,61 @@ internal fun ObserverScreen() {
                 }
             }
         } else {
-            events.forEach { event -> ActivityCard(event, labels[event.sourcePackage] ?: event.sourcePackage) }
+            events.forEach { event -> ActivityCard(event, labels[event.sourcePackage] ?: event.sourcePackage) { inspectedEvent = event } }
         }
         Spacer(Modifier.height(18.dp))
+    }
+
+    inspectedEvent?.let { event ->
+        val title = when (event.eventType) {
+            "notification_posted" -> "Notification received"
+            "app_foregrounded" -> "App became visible"
+            "app_backgrounded" -> "App left foreground"
+            else -> event.eventType.replace('_', ' ').replaceFirstChar { it.uppercase() }
+        }
+        AlertDialog(
+            onDismissRequest = { inspectedEvent = null },
+            title = { Text(title) },
+            text = {
+                Column(
+                    Modifier.fillMaxWidth().heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    EventDetailLine("Source app", labels[event.sourcePackage] ?: event.sourcePackage)
+                    EventDetailLine("Package", event.sourcePackage)
+                    EventDetailLine("Occurred", DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.MEDIUM).format(Date(event.occurredAt)))
+                    EventDetailLine("Received by Locco", DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.MEDIUM).format(Date(event.receivedAt)))
+                    EventDetailLine("Acquisition method", event.acquisitionMethod)
+                    event.category?.let { EventDetailLine("Notification category", it) }
+                    if (event.eventType == "notification_posted") {
+                        if (event.contentTitle == null && event.contentText == null) {
+                            Text(
+                                "This event contains metadata only. Notification content capture was off when it arrived; Locco cannot reconstruct older notification text.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            Text("Captured notification title", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                            Text(event.contentTitle ?: "No title exposed by Android", style = MaterialTheme.typography.bodyMedium)
+                            Text("Captured notification text", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                            Text(event.contentText ?: "No message text exposed by Android", style = MaterialTheme.typography.bodyMedium)
+                            event.contentHash?.let { EventDetailLine("Captured content SHA-256", it) }
+                        }
+                    } else {
+                        Text(
+                            "Android UsageEvents exposed only an app visibility transition. It did not expose the screen contents or an action you took.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    EventDetailLine("Fields withheld or redacted", event.redactedFields)
+                    EventDetailLine("Event ID", event.id)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { inspectedEvent = null }) { Text("Close") }
+            }
+        )
     }
 }
 
@@ -256,19 +343,22 @@ private fun PermissionCard(
 }
 
 @Composable
-private fun ActivityCard(event: AppObservation, appName: String) {
+private fun ActivityCard(event: AppObservation, appName: String, onClick: () -> Unit) {
     val title = when (event.eventType) {
-        "app_foregrounded" -> "Opened app"
-        "app_backgrounded" -> "Left app"
-        "notification_posted" -> "Notification received"
+        "app_foregrounded" -> "App became visible"
+        "app_backgrounded" -> "App left foreground"
+        "notification_posted" -> if (event.contentText != null || event.contentTitle != null) "Notification received · content captured" else "Notification received · metadata only"
         else -> event.eventType.replace('_', ' ').replaceFirstChar { it.uppercase() }
     }
     val method = when (event.acquisitionMethod) {
-        "android_usage_events" -> "Android app activity"
-        "android_notification_listener" -> "Android notification metadata"
+        "android_usage_events" -> "Android UsageEvents"
+        "android_notification_listener" -> "Android notification listener"
         else -> event.acquisitionMethod.replace('_', ' ')
     }
-    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+    Card(
+        Modifier.fillMaxWidth().clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
         Row(Modifier.fillMaxWidth().padding(13.dp), horizontalArrangement = Arrangement.spacedBy(11.dp)) {
             Surface(Modifier.size(38.dp), color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.medium) {
                 Box(contentAlignment = Alignment.Center) {
@@ -288,8 +378,17 @@ private fun ActivityCard(event: AppObservation, appName: String) {
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Text("Tap to inspect event and captured evidence", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             }
         }
+    }
+}
+
+@Composable
+private fun EventDetailLine(label: String, value: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
