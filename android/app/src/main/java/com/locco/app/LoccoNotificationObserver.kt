@@ -73,9 +73,9 @@ class LoccoNotificationObserver : NotificationListenerService() {
             extras.getCharSequence(Notification.EXTRA_SUB_TEXT)?.toString()?.takeIf(String::isNotBlank)?.let(::add)
             extras.getCharSequence(Notification.EXTRA_SUMMARY_TEXT)?.toString()?.takeIf(String::isNotBlank)?.let(::add)
             extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)
-                ?.map(CharSequence::toString)
+                ?.map { it.toString() }
                 ?.filter(String::isNotBlank)
-                ?.forEach(::add)
+                ?.forEach { add(it) }
         }.distinct()
         return NotificationContentCapture.capture(title, bodyParts.joinToString("\n").takeIf { it.isNotBlank() })
     }
