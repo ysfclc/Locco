@@ -3,7 +3,7 @@
 //! Platform adapters execute these statements inside their database transaction.
 //! They must not define or mutate the schema independently.
 
-pub const SCHEMA_VERSION: u32 = 6;
+pub const SCHEMA_VERSION: u32 = 7;
 
 const V1: &[&str] = &[
     "CREATE TABLE sessions (id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL, created_at INTEGER NOT NULL)",
@@ -22,8 +22,8 @@ const V2: &[&str] = &[
     "CREATE INDEX note_sources_source_time ON note_sources(source_id, attached_at)",
 ];
 
-/// Minimal, privacy-preserving Android observation receipts. Notification text,
-/// title, actions, extras and raw Notification payloads are never persisted.
+/// Minimal v3 Android notification receipts. v7 adds separately opted-in,
+/// bounded title/text columns; actions, extras and raw Notification payloads remain excluded.
 const V3: &[&str] = &[
     "CREATE TABLE app_observations (id TEXT PRIMARY KEY NOT NULL CHECK(length(id) BETWEEN 1 AND 128), dedupe_key TEXT NOT NULL UNIQUE CHECK(length(dedupe_key)=64), source_package TEXT NOT NULL CHECK(length(source_package) BETWEEN 3 AND 255), event_type TEXT NOT NULL CHECK(event_type IN ('notification_posted')), occurred_at INTEGER NOT NULL CHECK(occurred_at >= 0), received_at INTEGER NOT NULL CHECK(received_at >= 0), acquisition_method TEXT NOT NULL CHECK(acquisition_method='android_notification_listener'), category TEXT CHECK(category IS NULL OR length(category) <= 80), redacted_fields_json TEXT NOT NULL DEFAULT '[\"notification_text\",\"notification_title\",\"notification_extras\"]')",
     "CREATE INDEX app_observations_received ON app_observations(received_at DESC)",
@@ -48,6 +48,13 @@ const V6: &[&str] = &[
     "CREATE UNIQUE INDEX notes_session_sort_order ON notes(session_id, sort_order)",
 ];
 
+/// Bounded, explicitly opted-in notification content for inspectable source evidence.
+const V7: &[&str] = &[
+    "ALTER TABLE app_observations ADD COLUMN content_title TEXT CHECK(content_title IS NULL OR length(content_title) <= 512)",
+    "ALTER TABLE app_observations ADD COLUMN content_text TEXT CHECK(content_text IS NULL OR length(content_text) <= 7680)",
+    "ALTER TABLE app_observations ADD COLUMN content_hash TEXT CHECK(content_hash IS NULL OR length(content_hash) = 64)",
+];
+
 /// Number of SQL statements in one migration version; zero means unsupported.
 pub fn migration_statement_count(version: u32) -> u32 {
     match version {
@@ -57,6 +64,7 @@ pub fn migration_statement_count(version: u32) -> u32 {
         4 => V4.len() as u32,
         5 => V5.len() as u32,
         6 => V6.len() as u32,
+        7 => V7.len() as u32,
         _ => 0,
     }
 }
@@ -70,6 +78,7 @@ pub fn migration_statement(version: u32, index: u32) -> Option<&'static str> {
         4 => V4,
         5 => V5,
         6 => V6,
+        7 => V7,
         _ => return None,
     };
     statements.get(index as usize).copied()
@@ -81,14 +90,15 @@ mod tests {
 
     #[test]
     fn schema_versions_are_sequential_and_supported() {
-        assert_eq!(SCHEMA_VERSION, 6);
+        assert_eq!(SCHEMA_VERSION, 7);
         assert!(migration_statement_count(1) > 0);
         assert!(migration_statement_count(2) > 0);
         assert!(migration_statement_count(3) > 0);
         assert!(migration_statement_count(4) > 0);
         assert!(migration_statement_count(5) > 0);
         assert!(migration_statement_count(6) > 0);
-        assert_eq!(migration_statement_count(7), 0);
+        assert!(migration_statement_count(7) > 0);
+        assert_eq!(migration_statement_count(8), 0);
     }
 
     #[test]
@@ -115,6 +125,10 @@ mod tests {
             .unwrap()
             .contains("notes_session_sort_order"));
         assert!(migration_statement(6, migration_statement_count(6)).is_none());
+        assert!(migration_statement(7, 0).unwrap().contains("content_title"));
+        assert!(migration_statement(7, 1).unwrap().contains("content_text"));
+        assert!(migration_statement(7, 2).unwrap().contains("content_hash"));
+        assert!(migration_statement(7, migration_statement_count(7)).is_none());
     }
 
     #[test]

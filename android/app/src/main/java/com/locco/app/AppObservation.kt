@@ -1,6 +1,6 @@
 package com.locco.app
 
-/** A redacted, provenance-bearing receipt from an Android observation adapter. */
+/** A provenance-bearing receipt from an Android observation adapter. */
 internal data class AppObservation(
     val id: String,
     val sourcePackage: String,
@@ -9,5 +9,8 @@ internal data class AppObservation(
     val receivedAt: Long,
     val acquisitionMethod: String,
     val category: String?,
-    val redactedFields: String
+    val redactedFields: String,
+    val contentTitle: String? = null,
+    val contentText: String? = null,
+    val contentHash: String? = null
 )

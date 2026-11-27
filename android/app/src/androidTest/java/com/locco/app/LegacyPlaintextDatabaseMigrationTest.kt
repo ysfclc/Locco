@@ -35,7 +35,7 @@ class LegacyPlaintextDatabaseMigrationTest {
     fun tearDown() = clearState()
 
     @Test
-    fun migratesEveryV2TableIntoVerifiedEncryptedSchemaV6() {
+    fun migratesEveryV2TableIntoVerifiedEncryptedSchemaV7() {
         createLegacyV2Fixture()
         val sourceBytes = database.readBytes()
 
@@ -64,7 +64,7 @@ class LegacyPlaintextDatabaseMigrationTest {
                 database.absolutePath, key, null, CipherSQLiteDatabase.OPEN_READONLY, null
             )
             try {
-                assertEquals(6, encrypted.rawQuery("PRAGMA user_version", null).use {
+                assertEquals(7, encrypted.rawQuery("PRAGMA user_version", null).use {
                     check(it.moveToFirst()); it.getInt(0)
                 })
                 mapOf(

@@ -2,7 +2,7 @@
 
 **A local-first, mobile-native intelligence and action environment.**
 
-A defining ambition is to make Android more observable and composable: understand supported activity in selected apps, interpret it locally, surface it inside Locco without opening the source app, and provide safe, verified ways to hand off or interact. See [Android App Observation and Interaction](docs/architecture/android-app-observation.md).
+A defining ambition is to make Android more observable and composable: capture inspectable evidence from selected apps, understand supported activity locally, connect it to people, places and things, and provide safe, verified ways to hand off or interact. See [Android App Observation and Interaction](docs/architecture/android-app-observation.md).
 
 Locco acquires information from sources you choose, preserves evidence, builds a useful model of people, places, things and events, supports on-device reasoning, and enables controlled actions. It is not a lead-generation app, business OS, chatbot shell or port of another project.
 
@@ -11,12 +11,24 @@ Android is primary. Rust is the domain core. iOS is anticipated behind the same 
 ## Product loop
 Acquire → preserve → understand → connect → reason → decide → act → verify → learn.
 
+## Product contract
+
+The complete product definition, evidence-inspection contract, source boundaries, native browser/DOM requirements, Model Hub, general capability system and definition of done are consolidated in [docs/product/locco-product-contract.md](docs/product/locco-product-contract.md).
+
+## Requirement tracking
+
+The current requirement-to-implementation and acceptance matrix is [docs/architecture/requirement-traceability.md](docs/architecture/requirement-traceability.md). It distinguishes implemented, tested, device-verified, partial and unimplemented capabilities.
+
+## Brainstorm archive
+
+The archive's provenance and known gaps are recorded in [docs/brainstorm/recovery-notes.md](docs/brainstorm/recovery-notes.md). The founding brief is a reconstructed transcription, not a byte-for-byte export of the original brainstorming conversation.
+
 ## Delivery map
 | Phase | Outcome | Gate |
 |---|---|---|
 | 0 Foundation | Product, architecture, agents, security, CI, empty shells | Rust 3 ABIs + placeholder APK |
 | 1 Local kernel | DB, evidence ledger, entity graph, migrations, export | deterministic and integrity tests |
-| 2 Acquisition + Android Observation | background app signals, capability registry, native capture/import and source adapters | real background signal → typed event → Locco, provenance, revocation and reliability tests |
+| 2 Acquisition + Android Observation | inspectable notification evidence, visible-UI observation, source capability registry and native capture/import | real background signal → source evidence → clickable inspector, provenance, revocation and reliability tests |
 | 3 Local intelligence | on-device runtime, context compiler, retrieval | device latency/RAM and golden set |
 | 4 Workspace | native search, entity/evidence views, review | accessibility and state restoration |
 | 5 Capabilities | approvals, execution, verification | threat review and end-to-end proof |

@@ -1,23 +1,85 @@
-name: Bug report
-description: Report a reproducible Locco defect
+name: Bug or regression report
+description: Preserve a defect in the existing Locco application
 body:
-  - type: textarea
-    id: summary
+  - type: markdown
     attributes:
-      label: What happened?
+      value: |
+        Reports are retained as product work items until independently verified. Do not reset the app or clear data just to make a report disappear.
+  - type: textarea
+    id: original_report
+    attributes:
+      label: Original user report
+      description: Preserve the user's wording verbatim where possible. Do not replace it with an interpretation.
+      placeholder: Exact report, including what was expected and what actually happened.
+    validations:
+      required: true
+  - type: dropdown
+    id: classification
+    attributes:
+      label: Classification
+      options:
+        - Bug
+        - Regression — previously working behavior stopped working
+        - Crash or reliability
+        - Data loss or corruption
+        - Security or privacy
+        - UX or accessibility
+        - Performance or battery
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should Locco do?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What did Locco do instead? Include exact error text when possible.
     validations:
       required: true
   - type: textarea
     id: reproduction
     attributes:
-      label: Steps to reproduce
+      label: Reproduction steps
+      description: Include input/state and whether the problem is consistent or intermittent.
     validations:
       required: true
   - type: input
+    id: app_version
+    attributes:
+      label: Locco version, versionCode and APK SHA-256
+      description: Use "unknown" rather than guessing.
+  - type: input
+    id: package_identity
+    attributes:
+      label: Application ID and install type
+      description: Release/debug, updated from a previous version or clean install.
+  - type: input
     id: device
     attributes:
-      label: Device and Android version
+      label: Device, Android version and ABI
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Impact
+      options:
+        - Critical — data loss, security exposure or app unusable
+        - High — major workflow blocked
+        - Medium — behavior impaired with workaround
+        - Low — minor defect
+    validations:
+      required: true
+  - type: textarea
+    id: existing_behavior
+    attributes:
+      label: Previously working behavior and related reports
+      description: What worked before? Link related LOC issues, PRs or builds.
   - type: textarea
     id: evidence
     attributes:
-      label: Logs or evidence (redact personal data and secrets)
+      label: Logs, screenshots or evidence
+      description: Redact personal content, credentials, tokens and private datasets. State what was redacted.
