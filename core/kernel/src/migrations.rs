@@ -140,9 +140,15 @@ mod tests {
         assert!(migration_statement(7, 1).unwrap().contains("content_text"));
         assert!(migration_statement(7, 2).unwrap().contains("content_hash"));
         assert!(migration_statement(7, migration_statement_count(7)).is_none());
-        assert!(migration_statement(8, 0).unwrap().contains("app_ui_observations"));
-        assert!(migration_statement(8, 0).unwrap().contains("android_accessibility_service"));
-        assert!(migration_statement(8, 1).unwrap().contains("app_ui_observations_received"));
+        assert!(migration_statement(8, 0)
+            .unwrap()
+            .contains("app_ui_observations"));
+        assert!(migration_statement(8, 0)
+            .unwrap()
+            .contains("android_accessibility_service"));
+        assert!(migration_statement(8, 1)
+            .unwrap()
+            .contains("app_ui_observations_received"));
         assert!(migration_statement(8, migration_statement_count(8)).is_none());
     }
 
