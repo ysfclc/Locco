@@ -1,6 +1,6 @@
 # Android App Observation and Interaction Architecture
 
-**Status:** product-critical architecture accepted; metadata receipts and opt-in notification excerpts are on main. A scoped passive Accessibility adapter and separate v8 UI-evidence ledger are in review; real-device and distribution acceptance remain pending.  
+**Status:** product-critical architecture accepted; metadata receipts, opt-in notification excerpts, a scoped passive Accessibility adapter and separate v8 UI-evidence ledger are on main (PR #21, commit `18125137`). Exact-head Rust, Android, security and governance checks passed; real-device and distribution acceptance remain pending.  
 **Origin:** user direction, reinforced by the App Observer and Provider Bridge research in `ysfclc/BusyBee`.  
 **Product owner:** Locco.
 
@@ -121,9 +121,9 @@ Locco should expose possible actions alongside observations, but actions are a s
 
 Never infer that observing an action request authorises replaying it. Never fabricate private endpoints or replay captured requests. No automatic high-impact action (payments, accepting work, sending messages, account changes) without an explicitly approved and verified supported action path.
 
-## 3.5 First visible-UI evidence adapter — implementation in review
+## 3.5 First visible-UI evidence adapter — merged on main; device validation pending
 
-The candidate Android adapter is deliberately narrower than a universal recorder:
+The Android adapter is deliberately narrower than a universal recorder:
 
 - It observes only `TYPE_WINDOW_STATE_CHANGED`, `TYPE_VIEW_CLICKED` and `TYPE_VIEW_SCROLLED`.
 - Android service scope is dynamically restricted to the packages in Locco's existing selected-app allowlist.
@@ -137,6 +137,10 @@ The candidate Android adapter is deliberately narrower than a universal recorder
 The service does not subscribe to text-change events, use `typeAllMask`, request hidden non-important views/interactive windows, record screenshots, use MediaProjection, dispatch gestures, execute actions, inspect app-private storage, bypass TLS or inject into app processes.
 
 This adapter is a best-effort accessibility hierarchy, not a screenshot, DOM, semantic API or guarantee of complete app state. The user must separately accept Android's system service permission and Locco's content-capture disclosure. Accessibility is not being declared as a disability-support tool. Distribution-policy review and the Play Console accessibility declaration remain separate release gates; a green CI run does not establish Play Store approval.
+
+
+
+Automated evidence on the merged PR head `eb80e30061b6edbab4e505437df32d60be8aeadb`: Android workflow 46089767340 passed the debug APK build, Kotlin unit tests and 26/26 emulator instrumentation tests; Rust workflow 46089767293 passed; security workflow 46089767234 passed; governance workflow 46090345497 passed. These checks verify code, migration and emulator behavior, not real third-party app coverage or physical-device performance.
 
 ## 4. Implementation strategy: capability ladder
 
@@ -250,5 +254,5 @@ The ambition is to make more of Android's capabilities useful and composable, no
 - Captured title and text are bounded (512 and 7,680 UTF-8 bytes). Obvious labelled verification codes, credential-like values and payment-card-like digit sequences are redacted before persistence. These heuristics reduce risk but cannot guarantee detection of every sensitive value; the UI warns the user before enabling content capture.
 - A SHA-256 digest identifies the sanitized captured excerpt. The event inspector distinguishes captured source content from metadata and shows the fields Locco withheld or redacted.
 - UsageEvents remain stored as context but are intentionally excluded from the meaningful event feed. They expose only app visibility transitions—not the screen or taps.
-- This is a real improvement to notification evidence, not universal in-app observation. AccessibilityService-based visible UI capture, meaningful action observation, cross-app correlation and the broader evidence graph remain unimplemented.
+- This is a real improvement to notification evidence, not universal in-app observation. The first AccessibilityService-based visible UI capture is now implemented on main, but real-device callback acceptance, outcome verification, cross-app correlation and the broader evidence graph remain incomplete.
 - Existing v1–v6 databases upgrade through additive v7 columns. Older rows are preserved and remain metadata-only.
