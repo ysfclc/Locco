@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Locco</string>
+    <string name="locco_accessibility_service_description">With your separate consent, Locco stores bounded visible accessibility labels and screen or control events from apps you select. Password and editable fields are excluded. Content is kept in encrypted local storage. Some apps and screens may not expose accessible content.</string>
 </resources>

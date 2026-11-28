@@ -71,6 +71,7 @@ def test_fresh_install() -> None:
         "app_observations",
         "app_usage_events",
         "evidence",
+        "app_ui_observations",
     }
     assert expected.issubset(names), expected - names
     assert connection.execute(
@@ -280,9 +281,68 @@ def test_v6_to_v7_notification_content() -> None:
             raise AssertionError(f"v7 accepted invalid {column} length")
 
 
+def test_v7_to_v8_accessibility_evidence() -> None:
+    connection = sqlite3.connect(":memory:")
+    connection.execute("PRAGMA foreign_keys=ON")
+    for version in range(1, 8):
+        apply(connection, version)
+
+    connection.execute("INSERT INTO sessions VALUES('keep-session','Before UI evidence',100)")
+    connection.execute("INSERT INTO notes VALUES('keep-note','keep-session','preserve existing note',101,0)")
+    connection.execute("INSERT INTO sources(id,kind,captured_at) VALUES('keep-source','web_page',102)")
+    connection.execute("INSERT INTO evidence(id,source_id,excerpt,content_hash,captured_at) VALUES('keep-evidence','keep-source','preserve evidence',NULL,103)")
+    connection.execute(
+        "INSERT INTO app_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method,content_title,content_text,content_hash) "
+        "VALUES('keep-notification',?,'com.example.app','notification_posted',104,105,'android_notification_listener','Old title','Old body',?)",
+        ("a" * 64, "b" * 64),
+    )
+
+    apply(connection, 8)
+    names = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    assert "app_ui_observations" in names
+    assert connection.execute("SELECT content_title,content_text,content_hash FROM app_observations WHERE id='keep-notification'").fetchone() == ("Old title","Old body","b" * 64)
+    assert connection.execute("SELECT content FROM notes WHERE id='keep-note'").fetchone() == ("preserve existing note",)
+    assert connection.execute("SELECT excerpt FROM evidence WHERE id='keep-evidence'").fetchone() == ("preserve evidence",)
+    assert connection.execute("SELECT title FROM sessions WHERE id='keep-session'").fetchone() == ("Before UI evidence",)
+
+    row = (
+        "ui-1", "c" * 64, "com.example.app", "control_clicked", 200, 201,
+        "android_accessibility_service", "MainActivity", "Continue", "android.widget.Button",
+        "Checkout screen\\nButton: Continue", "d" * 64, '["password_fields"]', "partial",
+    )
+    connection.execute(
+        "INSERT INTO app_ui_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method,screen_class,target_label,target_class,content_text,content_hash,redacted_fields_json,snapshot_status) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", row
+    )
+    duplicate = ("ui-2",) + row[1:]
+    connection.execute(
+        "INSERT OR IGNORE INTO app_ui_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method,screen_class,target_label,target_class,content_text,content_hash,redacted_fields_json,snapshot_status) "
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", duplicate
+    )
+    assert connection.execute("SELECT count(*) FROM app_ui_observations").fetchone() == (1,)
+    assert connection.execute("SELECT event_type,snapshot_status FROM app_ui_observations").fetchone() == ("control_clicked","partial")
+
+    invalid = (
+        ("wrong-source", "e" * 64, "com.example.app", "control_clicked", 1, 2, "android_notification_listener"),
+        ("wrong-event", "f" * 64, "com.example.app", "notification_posted", 1, 2, "android_accessibility_service"),
+    )
+    for values in invalid:
+        try:
+            connection.execute(
+                "INSERT INTO app_ui_observations(id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method) "
+                "VALUES(?,?,?,?,?,?,?)", values
+            )
+        except sqlite3.IntegrityError:
+            pass
+        else:
+            raise AssertionError("UI evidence schema accepted an invalid source/event pairing")
+
+    connection.close()
+
+
 if __name__ == "__main__":
-    assert ffi.locco_schema_version() == 7
-    assert ffi.locco_migration_statement_count(8) == 0
+    assert ffi.locco_schema_version() == 8
+    assert ffi.locco_migration_statement_count(9) == 0
     test_fresh_install()
     test_populated_v1_upgrade()
     test_v2_to_v3_upgrade_preserves_kernel_data()
@@ -290,4 +350,5 @@ if __name__ == "__main__":
     test_v4_to_v5_evidence_records()
     test_v5_to_v6_note_order()
     test_v6_to_v7_notification_content()
-    print("PASS: Rust ABI migration catalogue through v7; evidence integrity, source FK/cascade, stable note order and opt-in notification content schema.")
+    test_v7_to_v8_accessibility_evidence()
+    print("PASS: Rust ABI migration catalogue through v8; preserved v1-v7 data and added isolated, deduplicated UI evidence.")

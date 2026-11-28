@@ -94,5 +94,8 @@ class LoccoNotificationObserver : NotificationListenerService() {
         const val OBSERVER_PREFS = "locco_observer_v1"
         const val OBSERVED_PACKAGES_KEY = "observed_packages"
         const val CAPTURE_NOTIFICATION_CONTENT_KEY = "capture_notification_content"
+        const val CAPTURE_UI_OBSERVATIONS_KEY = "capture_ui_observations"
+        const val UI_DISCLOSURE_VERSION_KEY = "ui_disclosure_version"
+        const val UI_DISCLOSURE_VERSION = 1
     }
 }
