@@ -118,7 +118,7 @@ class LoccoAccessibilityObserver : AccessibilityService(),
                 snapshot.contentHash.orEmpty()
             ).joinToString("|")
         )
-        val observation = PendingUiObservation(
+        val observation = UiObservationRecord(
             id = UUID.randomUUID().toString(),
             dedupeKey = dedupeKey,
             sourcePackage = sourcePackage,
@@ -217,22 +217,6 @@ class LoccoAccessibilityObserver : AccessibilityService(),
         MessageDigest.getInstance("SHA-256")
             .digest(value.toByteArray(Charsets.UTF_8))
             .joinToString("") { "%02x".format(it) }
-
-    private data class PendingUiObservation(
-        val id: String,
-        val dedupeKey: String,
-        val sourcePackage: String,
-        val eventType: String,
-        val occurredAt: Long,
-        val receivedAt: Long,
-        val screenClass: String?,
-        val targetLabel: String?,
-        val targetClass: String?,
-        val contentText: String?,
-        val contentHash: String?,
-        val redactedFields: List<String>,
-        val snapshotStatus: String
-    )
 
     companion object {
         private const val NOTIFICATION_TIMEOUT_MS = 150L
