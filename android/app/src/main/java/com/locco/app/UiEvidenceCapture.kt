@@ -35,7 +35,7 @@ internal object UiEvidenceCapture {
     const val MAX_NODES = 80
     const val MAX_NODE_BYTES = 160
     const val MAX_TARGET_BYTES = 512
-    const val MAX_SNAPSHOT_BYTES = 8_192
+    const val MAX_SNAPSHOT_BYTES = 7_680
     const val MAX_CLASS_BYTES = 255
 
     fun snapshot(
