@@ -25,6 +25,7 @@ class LoccoAccessibilityObserver : AccessibilityService(),
     private lateinit var workerThread: HandlerThread
     private lateinit var worker: Handler
     private lateinit var prefs: SharedPreferences
+    private val rateLimiter = UiEvidenceRateLimiter()
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -75,9 +76,12 @@ class LoccoAccessibilityObserver : AccessibilityService(),
             else -> return
         }
 
+        val nowUptime = SystemClock.uptimeMillis()
+        if (!rateLimiter.shouldAccept(sourcePackage, eventType, nowUptime)) return
+
         // AccessibilityEvent.eventTime uses uptime. Convert it to an approximate wall clock.
         val receivedAt = System.currentTimeMillis()
-        val elapsedSinceEvent = (SystemClock.uptimeMillis() - event.eventTime).coerceAtLeast(0L)
+        val elapsedSinceEvent = (nowUptime - event.eventTime).coerceAtLeast(0L)
         val occurredAt = (receivedAt - elapsedSinceEvent).coerceAtLeast(0L)
 
         // Copy all data before returning from this callback. Node handles are not retained.
@@ -107,7 +111,7 @@ class LoccoAccessibilityObserver : AccessibilityService(),
             CapturedUiTarget(null, null, emptySet())
         }
         val screenClass = if (eventType == "screen_state_changed") {
-            event.className?.toString()?.take(255)
+            boundedCharSequence(event.className, 255)
         } else {
             null
         }
@@ -194,13 +198,19 @@ class LoccoAccessibilityObserver : AccessibilityService(),
         // Never even read text/contentDescription from hidden, password, or editable nodes.
         val permitted = visible && !password && !editable
         return UiNodeCandidate(
-            text = if (permitted) node.text?.toString() else null,
-            contentDescription = if (permitted) node.contentDescription?.toString() else null,
-            className = node.className?.toString(),
+            text = if (permitted) boundedCharSequence(node.text) else null,
+            contentDescription = if (permitted) boundedCharSequence(node.contentDescription) else null,
+            className = boundedCharSequence(node.className, UiEvidenceCapture.MAX_CLASS_BYTES),
             visibleToUser = visible,
             password = password,
             editable = editable
         )
+    }
+
+    private fun boundedCharSequence(value: CharSequence?, maxChars: Int = 1_024): String? {
+        if (value == null) return null
+        val end = value.length.coerceAtMost(maxChars)
+        return runCatching { value.subSequence(0, end).toString() }.getOrNull()
     }
 
     override fun onInterrupt() {
