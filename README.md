@@ -15,6 +15,8 @@ Acquire → preserve → understand → connect → reason → decide → act �
 
 The complete product definition, evidence-inspection contract, source boundaries, native browser/DOM requirements, Model Hub, general capability system and definition of done are consolidated in [docs/product/locco-product-contract.md](docs/product/locco-product-contract.md).
 
+The launcher identity and adaptive icon system are documented in [docs/product/visual-identity.md](docs/product/visual-identity.md).
+
 ## Requirement tracking
 
 The current requirement-to-implementation and acceptance matrix is [docs/architecture/requirement-traceability.md](docs/architecture/requirement-traceability.md). It distinguishes implemented, tested, device-verified, partial and unimplemented capabilities.
