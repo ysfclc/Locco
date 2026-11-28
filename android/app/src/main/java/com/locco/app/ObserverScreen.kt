@@ -39,6 +39,11 @@ internal fun ObserverScreen() {
     }
     var inspectedEvent by remember { mutableStateOf<AppObservation?>(null) }
     var usageAccess by remember { mutableStateOf(UsageStatsObserver.hasAccess(context)) }
+    var accessibilityAccess by remember { mutableStateOf(accessibilityServiceEnabled(context)) }
+    var uiCaptureEnabled by remember {
+        mutableStateOf(prefs.getBoolean(LoccoNotificationObserver.CAPTURE_UI_OBSERVATIONS_KEY, false))
+    }
+    var showUiDisclosure by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var search by remember { mutableStateOf("") }
     var choosingApps by remember { mutableStateOf(false) }
@@ -82,6 +87,7 @@ internal fun ObserverScreen() {
             result.onSuccess { (notifications, usage, data) ->
                 notificationAccess = notifications
                 usageAccess = usage
+                accessibilityAccess = accessibilityServiceEnabled(context)
                 imported = data.first
                 events = data.second
                 refreshedAt = System.currentTimeMillis()
@@ -157,6 +163,15 @@ internal fun ObserverScreen() {
         ) {
             context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
+        PermissionCard(
+            "Visible screen and interaction access",
+            "Android may expose visible, accessible UI labels and screen/control events for selected apps. Locco does not take screenshots, read typed/password fields, or perform actions.",
+            accessibilityAccess,
+            if (accessibilityAccess) "System access enabled" else "Permission needed",
+            if (accessibilityAccess) "Manage" else "Open settings"
+        ) {
+            context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
         Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
             Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -185,6 +200,58 @@ internal fun ObserverScreen() {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+
+        Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text("Capture visible UI evidence", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            when {
+                                !uiCaptureEnabled -> "Off · no screen text is stored"
+                                !accessibilityAccess -> "Consent saved · Android service still needs enabling"
+                                selected.isEmpty() -> "Enabled · choose apps to observe"
+                                else -> "Enabled for selected apps only"
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = uiCaptureEnabled,
+                        onCheckedChange = { enabled ->
+                            if (enabled) {
+                                showUiDisclosure = true
+                            } else {
+                                uiCaptureEnabled = false
+                                prefs.edit()
+                                    .putBoolean(LoccoNotificationObserver.CAPTURE_UI_OBSERVATIONS_KEY, false)
+                                    .apply()
+                            }
+                        }
+                    )
+                }
+                Text(
+                    "With your separate consent and Android's Accessibility permission, Locco stores bounded text labels " +
+                        "and screen, click or scroll events that selected apps expose to Android. It never records typed " +
+                        "or password-field contents, keyboard text changes, screenshots or app-private data. Some screens " +
+                        "will be unavailable or incomplete. Events stay in encrypted local storage; Locco does not tap or " +
+                        "control other apps.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (uiCaptureEnabled && !accessibilityAccess) {
+                    TextButton(
+                        onClick = {
+                            context.startActivity(
+                                Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            )
+                        },
+                        modifier = Modifier.align(Alignment.End)
+                    ) { Text("Enable Locco in Android settings") }
+                }
             }
         }
 
@@ -264,6 +331,9 @@ internal fun ObserverScreen() {
             "notification_posted" -> "Notification received"
             "app_foregrounded" -> "App became visible"
             "app_backgrounded" -> "App left foreground"
+            "screen_state_changed" -> "Screen state observed"
+            "control_clicked" -> "Accessible control clicked"
+            "container_scrolled" -> "Accessible container scrolled"
             else -> event.eventType.replace('_', ' ').replaceFirstChar { it.uppercase() }
         }
         AlertDialog(
@@ -280,26 +350,53 @@ internal fun ObserverScreen() {
                     EventDetailLine("Received by Locco", DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.MEDIUM).format(Date(event.receivedAt)))
                     EventDetailLine("Acquisition method", event.acquisitionMethod)
                     event.category?.let { EventDetailLine("Notification category", it) }
-                    if (event.eventType == "notification_posted") {
-                        if (event.contentTitle == null && event.contentText == null) {
+                    when {
+                        event.eventType == "notification_posted" -> {
+                            if (event.contentTitle == null && event.contentText == null) {
+                                Text(
+                                    "This event contains metadata only. Notification content capture was off when it arrived; Locco cannot reconstruct older notification text.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                Text("Captured notification title", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                                Text(event.contentTitle ?: "No title exposed by Android", style = MaterialTheme.typography.bodyMedium)
+                                Text("Captured notification text", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                                Text(event.contentText ?: "No message text exposed by Android", style = MaterialTheme.typography.bodyMedium)
+                                event.contentHash?.let { EventDetailLine("Captured content SHA-256", it) }
+                            }
+                        }
+                        event.acquisitionMethod == "android_accessibility_service" -> {
+                            EventDetailLine("Accessible window class", event.screenClass ?: "Not exposed by Android")
+                            EventDetailLine("Observed control", event.targetLabel ?: "No safe accessible label exposed")
+                            EventDetailLine("Control class", event.targetClass ?: "Not exposed by Android")
+                            EventDetailLine("Snapshot coverage", event.snapshotStatus ?: "Unknown")
+                            Text("Accessible UI labels", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                             Text(
-                                "This event contains metadata only. Notification content capture was off when it arrived; Locco cannot reconstruct older notification text.",
+                                event.contentText ?: when (event.snapshotStatus) {
+                                    "unavailable" -> "Android did not expose an accessible text hierarchy for this event."
+                                    else -> "No safe visible labels remained after filtering."
+                                },
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            event.contentHash?.let { EventDetailLine("Accessible snapshot SHA-256", it) }
+                            Text(
+                                when (event.eventType) {
+                                    "control_clicked" -> "Android exposed a click event for an accessible control. This does not prove that the app accepted a request or completed a transaction."
+                                    "container_scrolled" -> "Android exposed a scroll event for an accessible container. The resulting app state is not assumed."
+                                    else -> "Android exposed a window-state change. This is not a screenshot or proof that the app completed an action."
+                                } + " The hierarchy is best-effort and may omit content, custom-rendered surfaces or secure screens.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                        } else {
-                            Text("Captured notification title", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
-                            Text(event.contentTitle ?: "No title exposed by Android", style = MaterialTheme.typography.bodyMedium)
-                            Text("Captured notification text", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
-                            Text(event.contentText ?: "No message text exposed by Android", style = MaterialTheme.typography.bodyMedium)
-                            event.contentHash?.let { EventDetailLine("Captured content SHA-256", it) }
                         }
-                    } else {
-                        Text(
-                            "Android UsageEvents exposed only an app visibility transition. It did not expose the screen contents or an action you took.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        else -> {
+                            Text(
+                                "Android UsageEvents exposed only an app visibility transition. It did not expose the screen contents or an action you took.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                     EventDetailLine("Fields withheld or redacted", event.redactedFields)
                     EventDetailLine("Event ID", event.id)
@@ -307,6 +404,53 @@ internal fun ObserverScreen() {
             },
             confirmButton = {
                 TextButton(onClick = { inspectedEvent = null }) { Text("Close") }
+            }
+        )
+    }
+
+    if (showUiDisclosure) {
+        AlertDialog(
+            onDismissRequest = { showUiDisclosure = false },
+            title = { Text("Before enabling visible UI capture") },
+            text = {
+                Column(
+                    Modifier.fillMaxWidth().heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        "Locco can receive visible, accessible text labels and screen, click or scroll events from apps you select. " +
+                            "The accessible hierarchy can include messages or other on-screen information exposed by those apps."
+                    )
+                    Text(
+                        "Locco excludes password and editable fields and does not subscribe to typed-text changes. " +
+                            "It does not take screenshots, bypass app security, read private app databases, tap controls or perform actions."
+                    )
+                    Text(
+                        "Accessibility data may be incomplete or unavailable for secure and custom-rendered screens. " +
+                            "The information Locco does receive is stored in its encrypted local database; this feature does not send it to a cloud service."
+                    )
+                    Text(
+                        "This consent is separate from enabling Locco in Android Accessibility settings. You can turn capture off here or revoke the Android service at any time."
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        prefs.edit()
+                            .putInt(
+                                LoccoNotificationObserver.UI_DISCLOSURE_VERSION_KEY,
+                                LoccoNotificationObserver.UI_DISCLOSURE_VERSION
+                            )
+                            .putBoolean(LoccoNotificationObserver.CAPTURE_UI_OBSERVATIONS_KEY, true)
+                            .apply()
+                        uiCaptureEnabled = true
+                        showUiDisclosure = false
+                    }
+                ) { Text("I understand and enable capture") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUiDisclosure = false }) { Text("Cancel") }
             }
         )
     }
@@ -350,13 +494,18 @@ private fun ActivityCard(event: AppObservation, appName: String, onClick: () -> 
         "app_foregrounded" -> "App became visible"
         "app_backgrounded" -> "App left foreground"
         "notification_posted" -> if (event.contentText != null || event.contentTitle != null) "Notification received · content captured" else "Notification received · metadata only"
+        "screen_state_changed" -> "Screen state observed"
+        "control_clicked" -> "Accessible control clicked"
+        "container_scrolled" -> "Accessible container scrolled"
         else -> event.eventType.replace('_', ' ').replaceFirstChar { it.uppercase() }
     }
     val method = when (event.acquisitionMethod) {
         "android_usage_events" -> "Android UsageEvents"
         "android_notification_listener" -> "Android notification listener"
+        "android_accessibility_service" -> "Android Accessibility service"
         else -> event.acquisitionMethod.replace('_', ' ')
     }
+    val secondary = event.targetLabel ?: event.category ?: event.snapshotStatus?.let { "Snapshot $it" } ?: "No extra details"
     Card(
         Modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -371,7 +520,7 @@ private fun ActivityCard(event: AppObservation, appName: String, onClick: () -> 
                 Text(appName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Text(title, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    "$method · ${event.category ?: "No category"}",
+                    "$method · $secondary",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -392,6 +541,15 @@ private fun EventDetailLine(label: String, value: String) {
         Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
         Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
+}
+
+private fun accessibilityServiceEnabled(context: Context): Boolean {
+    val enabled = Secure.getString(
+        context.contentResolver,
+        Secure.ENABLED_ACCESSIBILITY_SERVICES
+    ) ?: return false
+    val expected = ComponentName(context, LoccoAccessibilityObserver::class.java)
+    return enabled.split(':').any { ComponentName.unflattenFromString(it) == expected }
 }
 
 private fun discoverLaunchableApps(packageManager: PackageManager, ownPackage: String): List<InstalledAppSource> {
