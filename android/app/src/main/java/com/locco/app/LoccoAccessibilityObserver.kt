@@ -84,7 +84,7 @@ class LoccoAccessibilityObserver : AccessibilityService(),
         val root = runCatching { rootInActiveWindow }.getOrNull()
         val rootMatchesSource = root != null && root.packageName?.toString() == sourcePackage
         val (nodes, nodeLimitReached) = if (rootMatchesSource) {
-            collectVisibleNodes(root!!)
+            collectVisibleNodes(root!!, sourcePackage)
         } else {
             null to false
         }
@@ -99,7 +99,11 @@ class LoccoAccessibilityObserver : AccessibilityService(),
         } else {
             null
         }
-        val target = UiEvidenceCapture.target(targetCandidate)
+        val target = if (targetCandidate != null) {
+            UiEvidenceCapture.target(targetCandidate)
+        } else {
+            CapturedUiTarget(null, null, emptySet())
+        }
         val screenClass = if (eventType == "screen_state_changed") {
             event.className?.toString()?.take(255)
         } else {
@@ -150,7 +154,10 @@ class LoccoAccessibilityObserver : AccessibilityService(),
         }
     }
 
-    private fun collectVisibleNodes(root: AccessibilityNodeInfo): Pair<List<UiNodeCandidate>?, Boolean> {
+    private fun collectVisibleNodes(
+        root: AccessibilityNodeInfo,
+        expectedPackage: String
+    ): Pair<List<UiNodeCandidate>?, Boolean> {
         val result = mutableListOf<UiNodeCandidate>()
         var limitReached = false
 
@@ -159,7 +166,7 @@ class LoccoAccessibilityObserver : AccessibilityService(),
                 limitReached = true
                 return
             }
-            if (node.packageName?.toString() != packageNameForTree) {
+            if (node.packageName?.toString() != expectedPackage) {
                 // A subtree from another package is never copied into this source record.
                 return
             }
@@ -174,24 +181,25 @@ class LoccoAccessibilityObserver : AccessibilityService(),
             }
         }
 
-        // The root package was checked by the callback. Keep a local source identity for
-        // child validation without retaining Android node handles.
-        packageNameForTree = root.packageName?.toString() ?: return null to false
         visit(root, 0)
         return result to limitReached
     }
 
-    private var packageNameForTree: String = ""
-
-    private fun copyNode(node: AccessibilityNodeInfo): UiNodeCandidate =
-        UiNodeCandidate(
-            text = node.text?.toString(),
-            contentDescription = node.contentDescription?.toString(),
+    private fun copyNode(node: AccessibilityNodeInfo): UiNodeCandidate {
+        val visible = node.isVisibleToUser
+        val password = node.isPassword
+        val editable = node.isEditable
+        // Never even read text/contentDescription from hidden, password, or editable nodes.
+        val permitted = visible && !password && !editable
+        return UiNodeCandidate(
+            text = if (permitted) node.text?.toString() else null,
+            contentDescription = if (permitted) node.contentDescription?.toString() else null,
             className = node.className?.toString(),
-            visibleToUser = node.isVisibleToUser,
-            password = node.isPassword,
-            editable = node.isEditable
+            visibleToUser = visible,
+            password = password,
+            editable = editable
         )
+    }
 
     override fun onInterrupt() {
         // Observation is passive; interruption does not trigger an action or retry.
