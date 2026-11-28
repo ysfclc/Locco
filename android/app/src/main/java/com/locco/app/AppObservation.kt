@@ -12,5 +12,9 @@ internal data class AppObservation(
     val redactedFields: String,
     val contentTitle: String? = null,
     val contentText: String? = null,
-    val contentHash: String? = null
+    val contentHash: String? = null,
+    val screenClass: String? = null,
+    val targetLabel: String? = null,
+    val targetClass: String? = null,
+    val snapshotStatus: String? = null
 )
