@@ -3,7 +3,7 @@ name: Android debug APK
 on:
   push:
     branches: [main, feature/locco-source-evidence-api]
-    paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
+    paths: ["core/**", "android/**", "scripts/build-*.sh", "scripts/verify-*.py", ".github/workflows/android.yml"]
   pull_request:
     paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
 
@@ -27,6 +27,8 @@ jobs:
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       - name: Verify launcher icon resources
         run: python3 scripts/verify-android-launcher-icon.py
+      - name: Verify passive UI observation contract
+        run: python3 scripts/verify-android-observation-contract.py
       - name: Cache Cargo registry and build output
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
