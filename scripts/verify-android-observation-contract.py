@@ -70,8 +70,8 @@ def main() -> int:
     assert "setServiceInfo(info)" in service_source
     assert "info.packageNames = if (enabled) allowed.toTypedArray() else emptyArray()" in service_source
     assert "val permitted = visible && !password && !editable" in service_source
-    assert "text = if (permitted) node.text?.toString() else null" in service_source
-    assert "contentDescription = if (permitted) node.contentDescription?.toString() else null" in service_source
+    assert "text = if (permitted) boundedCharSequence(node.text) else null" in service_source
+    assert "contentDescription = if (permitted) boundedCharSequence(node.contentDescription) else null" in service_source
     assert "isCaptureEnabled(latest)" in service_source
     assert "rateLimiter.shouldAccept(sourcePackage, eventType, nowUptime)" in service_source
     assert "boundedCharSequence(node.text)" in service_source
