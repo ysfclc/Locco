@@ -3,7 +3,7 @@
 //! Platform adapters execute these statements inside their database transaction.
 //! They must not define or mutate the schema independently.
 
-pub const SCHEMA_VERSION: u32 = 7;
+pub const SCHEMA_VERSION: u32 = 8;
 
 const V1: &[&str] = &[
     "CREATE TABLE sessions (id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL, created_at INTEGER NOT NULL)",
@@ -55,6 +55,14 @@ const V7: &[&str] = &[
     "ALTER TABLE app_observations ADD COLUMN content_hash TEXT CHECK(content_hash IS NULL OR length(content_hash) = 64)",
 ];
 
+/// Separate, bounded evidence ledger for opt-in visible UI observations.
+/// Notification v3/v7 constraints remain untouched for backwards compatibility.
+const V8: &[&str] = &[
+    "CREATE TABLE app_ui_observations (id TEXT PRIMARY KEY NOT NULL CHECK(length(id) BETWEEN 1 AND 128), dedupe_key TEXT NOT NULL UNIQUE CHECK(length(dedupe_key)=64), source_package TEXT NOT NULL CHECK(length(source_package) BETWEEN 3 AND 255), event_type TEXT NOT NULL CHECK(event_type IN ('screen_state_changed','control_clicked','container_scrolled')), occurred_at INTEGER NOT NULL CHECK(occurred_at >= 0), received_at INTEGER NOT NULL CHECK(received_at >= 0), acquisition_method TEXT NOT NULL CHECK(acquisition_method='android_accessibility_service'), screen_class TEXT CHECK(screen_class IS NULL OR length(screen_class) <= 255), target_label TEXT CHECK(target_label IS NULL OR length(target_label) <= 512), target_class TEXT CHECK(target_class IS NULL OR length(target_class) <= 255), content_text TEXT CHECK(content_text IS NULL OR length(content_text) <= 8192), content_hash TEXT CHECK(content_hash IS NULL OR length(content_hash)=64), redacted_fields_json TEXT NOT NULL DEFAULT '[]', snapshot_status TEXT NOT NULL CHECK(snapshot_status IN ('available','partial','unavailable')))",
+    "CREATE INDEX app_ui_observations_received ON app_ui_observations(received_at DESC)",
+    "CREATE INDEX app_ui_observations_source_time ON app_ui_observations(source_package, occurred_at DESC)",
+];
+
 /// Number of SQL statements in one migration version; zero means unsupported.
 pub fn migration_statement_count(version: u32) -> u32 {
     match version {
@@ -65,6 +73,7 @@ pub fn migration_statement_count(version: u32) -> u32 {
         5 => V5.len() as u32,
         6 => V6.len() as u32,
         7 => V7.len() as u32,
+        8 => V8.len() as u32,
         _ => 0,
     }
 }
@@ -79,6 +88,7 @@ pub fn migration_statement(version: u32, index: u32) -> Option<&'static str> {
         5 => V5,
         6 => V6,
         7 => V7,
+        8 => V8,
         _ => return None,
     };
     statements.get(index as usize).copied()
@@ -90,7 +100,7 @@ mod tests {
 
     #[test]
     fn schema_versions_are_sequential_and_supported() {
-        assert_eq!(SCHEMA_VERSION, 7);
+        assert_eq!(SCHEMA_VERSION, 8);
         assert!(migration_statement_count(1) > 0);
         assert!(migration_statement_count(2) > 0);
         assert!(migration_statement_count(3) > 0);
@@ -98,7 +108,8 @@ mod tests {
         assert!(migration_statement_count(5) > 0);
         assert!(migration_statement_count(6) > 0);
         assert!(migration_statement_count(7) > 0);
-        assert_eq!(migration_statement_count(8), 0);
+        assert!(migration_statement_count(8) > 0);
+        assert_eq!(migration_statement_count(9), 0);
     }
 
     #[test]
@@ -129,6 +140,10 @@ mod tests {
         assert!(migration_statement(7, 1).unwrap().contains("content_text"));
         assert!(migration_statement(7, 2).unwrap().contains("content_hash"));
         assert!(migration_statement(7, migration_statement_count(7)).is_none());
+        assert!(migration_statement(8, 0).unwrap().contains("app_ui_observations"));
+        assert!(migration_statement(8, 0).unwrap().contains("android_accessibility_service"));
+        assert!(migration_statement(8, 1).unwrap().contains("app_ui_observations_received"));
+        assert!(migration_statement(8, migration_statement_count(8)).is_none());
     }
 
     #[test]
