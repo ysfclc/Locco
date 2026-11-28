@@ -5,7 +5,7 @@ on:
     branches: [main, feature/locco-source-evidence-api]
     paths: ["core/**", "android/**", "scripts/build-*.sh", "scripts/verify-*.py", ".github/workflows/android.yml"]
   pull_request:
-    paths: ["core/**", "android/**", "scripts/build-*.sh", ".github/workflows/android.yml"]
+    paths: ["core/**", "android/**", "scripts/build-*.sh", "scripts/verify-*.py", ".github/workflows/android.yml"]
 
 permissions:
   contents: read
