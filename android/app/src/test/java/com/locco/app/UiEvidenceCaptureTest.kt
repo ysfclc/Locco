@@ -115,6 +115,29 @@ class UiEvidenceCaptureTest {
         assertTrue(target.redactedFields.contains("one_time_codes"))
     }
 
+ 
+    @Test
+    fun rateLimiterThrottlesScrollStormsAndKeepsSourcesIndependent() {
+        val limiter = UiEvidenceRateLimiter()
+        assertTrue(limiter.shouldAccept("com.example.one", "container_scrolled", 1_000L))
+        assertFalse(limiter.shouldAccept("com.example.one", "container_scrolled", 1_399L))
+        assertTrue(limiter.shouldAccept("com.example.one", "container_scrolled", 1_400L))
+        assertTrue(limiter.shouldAccept("com.example.two", "container_scrolled", 1_400L))
+        assertTrue(limiter.shouldAccept("com.example.one", "control_clicked", 1_400L))
+        assertFalse(limiter.shouldAccept("com.example.one", "unknown", 2_000L))
+    }
+
+    @Test
+    fun rateLimiterThrottlesRapidClicksAndWindowEventsSeparately() {
+        val limiter = UiEvidenceRateLimiter()
+        assertTrue(limiter.shouldAccept("com.example.app", "control_clicked", 5_000L))
+        assertFalse(limiter.shouldAccept("com.example.app", "control_clicked", 5_119L))
+        assertTrue(limiter.shouldAccept("com.example.app", "control_clicked", 5_120L))
+        assertTrue(limiter.shouldAccept("com.example.app", "screen_state_changed", 5_120L))
+        assertFalse(limiter.shouldAccept("com.example.app", "screen_state_changed", 5_419L))
+        assertTrue(limiter.shouldAccept("com.example.app", "screen_state_changed", 5_420L))
+    }
+
     @Test
     fun emptyAccessibleTreeProducesUnavailableNotAnEmptySuccess() {
         val result = UiEvidenceCapture.snapshot(emptyList())
