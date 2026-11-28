@@ -99,7 +99,9 @@ class LoccoAccessibilityObserver : AccessibilityService(),
         } else {
             null
         }
-        val target = if (targetCandidate != null) {
+        val target = if (
+            eventType == "control_clicked" || eventType == "container_scrolled"
+        ) {
             UiEvidenceCapture.target(targetCandidate)
         } else {
             CapturedUiTarget(null, null, emptySet())
