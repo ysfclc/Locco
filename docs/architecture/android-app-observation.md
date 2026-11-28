@@ -1,6 +1,6 @@
 # Android App Observation and Interaction Architecture
 
-**Status:** product-critical architecture accepted; metadata receipts, opt-in notification excerpts and a clickable evidence inspector are implemented; Accessibility acquisition and real-device acceptance remain pending.  
+**Status:** product-critical architecture accepted; metadata receipts and opt-in notification excerpts are on main. A scoped passive Accessibility adapter and separate v8 UI-evidence ledger are in review; real-device and distribution acceptance remain pending.  
 **Origin:** user direction, reinforced by the App Observer and Provider Bridge research in `ysfclc/BusyBee`.  
 **Product owner:** Locco.
 
@@ -120,6 +120,23 @@ Locco should expose possible actions alongside observations, but actions are a s
 - verify the expected postcondition using a fresh observation.
 
 Never infer that observing an action request authorises replaying it. Never fabricate private endpoints or replay captured requests. No automatic high-impact action (payments, accepting work, sending messages, account changes) without an explicitly approved and verified supported action path.
+
+## 3.5 First visible-UI evidence adapter — implementation in review
+
+The candidate Android adapter is deliberately narrower than a universal recorder:
+
+- It observes only `TYPE_WINDOW_STATE_CHANGED`, `TYPE_VIEW_CLICKED` and `TYPE_VIEW_SCROLLED`.
+- Android service scope is dynamically restricted to the packages in Locco's existing selected-app allowlist.
+- The service receives no event types until the user has separately accepted Locco's in-app disclosure and turned on the default-off UI-capture switch.
+- The disclosure states that accessible UI labels may contain on-screen content, storage is local/encrypted, coverage is incomplete, editable/password fields are excluded, and Locco does not tap or control other apps.
+- Callback data is copied into bounded primitive values before the callback returns. Password, editable and invisible node text/content descriptions are not read. Node count, depth, label length and aggregate payload are bounded.
+- Screen/window class, target label/class, event/receive timestamps, acquisition method, redactions, snapshot status and content hash are retained in a separate schema-v8 `app_ui_observations` table. v3/v7 notification rows and constraints are not rewritten.
+- Queued writes re-check both current consent and app allowlist. Revoking either blocks queued persistence.
+- Unsupported root hierarchies produce an explicit unavailable record. A partial hierarchy is not promoted to a complete screen, and a UI click is never reported as a successful business action.
+
+The service does not subscribe to text-change events, use `typeAllMask`, request hidden non-important views/interactive windows, record screenshots, use MediaProjection, dispatch gestures, execute actions, inspect app-private storage, bypass TLS or inject into app processes.
+
+This adapter is a best-effort accessibility hierarchy, not a screenshot, DOM, semantic API or guarantee of complete app state. The user must separately accept Android's system service permission and Locco's content-capture disclosure. Accessibility is not being declared as a disability-support tool. Distribution-policy review and the Play Console accessibility declaration remain separate release gates; a green CI run does not establish Play Store approval.
 
 ## 4. Implementation strategy: capability ladder
 
