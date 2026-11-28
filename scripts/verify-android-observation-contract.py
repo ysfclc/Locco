@@ -73,6 +73,8 @@ def main() -> int:
     assert "text = if (permitted) node.text?.toString() else null" in service_source
     assert "contentDescription = if (permitted) node.contentDescription?.toString() else null" in service_source
     assert "isCaptureEnabled(latest)" in service_source
+    assert "rateLimiter.shouldAccept(sourcePackage, eventType, nowUptime)" in service_source
+    assert "boundedCharSequence(node.text)" in service_source
     assert "android_accessibility_service" in migration_source
     assert "CREATE TABLE app_ui_observations" in migration_source
     assert "CAPTURE_UI_OBSERVATIONS_KEY" in observer_source
