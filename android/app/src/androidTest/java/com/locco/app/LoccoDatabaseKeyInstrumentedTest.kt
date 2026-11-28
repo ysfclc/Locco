@@ -242,6 +242,90 @@ class LoccoDatabaseKeyInstrumentedTest {
     }
 
     @Test
+    fun schemaV7ToV8UpgradePreservesExistingRowsAndStoresEncryptedUiEvidence() {
+        val session = Session(
+            "v7-preserved-session", "Legacy session", 100L,
+            listOf(Note("v7-preserved-note", "Keep this existing note", 101L))
+        )
+        val oldNotificationContent = checkNotNull(
+            NotificationContentCapture.capture("Old notification", "Preserve this notification body")
+        )
+        val first = LoccoDatabase.create(context)
+        try {
+            first.replaceSessions(listOf(session))
+            first.recordNotificationObservation(
+                id = "v7-preserved-notification",
+                dedupeKey = "a".repeat(64),
+                sourcePackage = "com.locco.migration.fixture",
+                occurredAt = 102L,
+                receivedAt = 103L,
+                category = "message",
+                content = oldNotificationContent
+            )
+            // Recreate a genuine schema-v7 starting point: keep every v7 row but
+            // remove only the additive v8 table and restore SQLite's user_version.
+            first.writableDatabase.execSQL("DROP TABLE app_ui_observations")
+            first.writableDatabase.execSQL("PRAGMA user_version=7")
+        } finally {
+            first.close()
+        }
+
+        val reopened = LoccoDatabase.create(context)
+        try {
+            assertEquals(listOf(session), reopened.readSessions())
+            val oldNotification = reopened.readObservations().single()
+            assertEquals("v7-preserved-notification", oldNotification.id)
+            assertEquals("Old notification", oldNotification.contentTitle)
+            assertEquals("Preserve this notification body", oldNotification.contentText)
+            assertEquals(oldNotificationContent.contentHash, oldNotification.contentHash)
+
+            val sentinel = "LOCCO_UI_EVIDENCE_MIGRATION_SENTINEL_72a9"
+            val uiRecord = UiObservationRecord(
+                id = "v8-ui-event",
+                dedupeKey = "b".repeat(64),
+                sourcePackage = "com.locco.ui.fixture",
+                eventType = "control_clicked",
+                occurredAt = 200L,
+                receivedAt = 201L,
+                screenClass = null,
+                targetLabel = "Continue",
+                targetClass = "android.widget.Button",
+                contentText = "Checkout screen\nButton: $sentinel",
+                contentHash = "c".repeat(64),
+                redactedFields = listOf("password_nodes_excluded"),
+                snapshotStatus = "partial"
+            )
+            reopened.recordUiObservation(uiRecord)
+            val uiEvent = reopened.readObservations().first { it.id == uiRecord.id }
+            assertEquals("control_clicked", uiEvent.eventType)
+            assertEquals("Continue", uiEvent.targetLabel)
+            assertEquals("android.widget.Button", uiEvent.targetClass)
+            assertEquals("partial", uiEvent.snapshotStatus)
+            assertTrue(uiEvent.contentText!!.contains(sentinel))
+            assertTrue(uiEvent.redactedFields.contains("password_nodes_excluded"))
+        } finally {
+            reopened.close()
+        }
+
+        assertFalse(
+            "Accessible UI content must never appear in plaintext database files",
+            containsBytes(database.readBytes(), "LOCCO_UI_EVIDENCE_MIGRATION_SENTINEL_72a9".toByteArray(Charsets.UTF_8))
+        )
+        val afterProcessRestart = LoccoDatabase.create(context)
+        try {
+            assertEquals(listOf(session), afterProcessRestart.readSessions())
+            assertEquals(2, afterProcessRestart.readObservations().size)
+            assertEquals(
+                "LOCCO_UI_EVIDENCE_MIGRATION_SENTINEL_72a9",
+                afterProcessRestart.readObservations().first { it.id == "v8-ui-event" }
+                    .contentText!!.substringAfter("Button: ")
+            )
+        } finally {
+            afterProcessRestart.close()
+        }
+    }
+
+    @Test
     fun sourcesAndEvidencePersistAcrossReopenAndCascadeOnSourceDelete() {
         val source = SourceEntry("source-evidence-roundtrip", "web_page", "https://example.test/article",
             "Fixture article", 1_800_000_000_000L)
