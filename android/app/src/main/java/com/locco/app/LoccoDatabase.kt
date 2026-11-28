@@ -171,6 +171,32 @@ internal class LoccoDatabase private constructor(
         )
     }
 
+    /** Persist one bounded UI observation in the separate v8 evidence ledger. */
+    fun recordUiObservation(observation: UiObservationRecord) {
+        require(observation.eventType in setOf("screen_state_changed", "control_clicked", "container_scrolled"))
+        require(observation.sourcePackage.length in 3..255)
+        require(observation.dedupeKey.matches(Regex("[0-9a-f]{64}")))
+        require(observation.contentHash == null || observation.contentHash.matches(Regex("[0-9a-f]{64}")))
+        require(observation.contentText == null ||
+            observation.contentText.toByteArray(Charsets.UTF_8).size <= 7_680)
+        require(observation.snapshotStatus in setOf("available", "partial", "unavailable"))
+        val redactedFields = JSONArray().apply {
+            observation.redactedFields.distinct().sorted().forEach(::put)
+        }.toString()
+        writableDatabase.execSQL(
+            "INSERT OR IGNORE INTO app_ui_observations(" +
+                "id,dedupe_key,source_package,event_type,occurred_at,received_at,acquisition_method," +
+                "screen_class,target_label,target_class,content_text,content_hash,redacted_fields_json,snapshot_status" +
+                ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            arrayOf(
+                observation.id, observation.dedupeKey, observation.sourcePackage, observation.eventType,
+                observation.occurredAt, observation.receivedAt, "android_accessibility_service",
+                observation.screenClass, observation.targetLabel, observation.targetClass,
+                observation.contentText, observation.contentHash, redactedFields, observation.snapshotStatus
+            )
+        )
+    }
+
     /** Persist package lifecycle transitions without activity or screen details. */
     fun recordUsageObservation(id: String, dedupeKey: String, sourcePackage: String, eventType: String, occurredAt: Long, receivedAt: Long) {
         require(eventType == "app_foregrounded" || eventType == "app_backgrounded")
@@ -199,10 +225,12 @@ internal class LoccoDatabase private constructor(
     }
 
     fun readObservations(limit: Int = 100): List<AppObservation> {
+        val pageSize = limit.coerceIn(1, 500)
         val result = mutableListOf<AppObservation>()
         readableDatabase.rawQuery(
-            "SELECT id,source_package,event_type,occurred_at,received_at,acquisition_method,category,redacted_fields_json,content_title,content_text,content_hash FROM app_observations ORDER BY received_at DESC LIMIT ?",
-            arrayOf(limit.coerceIn(1, 500).toString())
+            "SELECT id,source_package,event_type,occurred_at,received_at,acquisition_method,category,redacted_fields_json,content_title,content_text,content_hash " +
+                "FROM app_observations ORDER BY occurred_at DESC,received_at DESC,id ASC LIMIT ?",
+            arrayOf(pageSize.toString())
         ).use { cursor ->
             while (cursor.moveToNext()) {
                 result += AppObservation(
@@ -220,7 +248,39 @@ internal class LoccoDatabase private constructor(
                 )
             }
         }
+        readableDatabase.rawQuery(
+            "SELECT id,source_package,event_type,occurred_at,received_at,acquisition_method,screen_class," +
+                "target_label,target_class,content_text,content_hash,redacted_fields_json,snapshot_status " +
+                "FROM app_ui_observations ORDER BY occurred_at DESC,received_at DESC,id ASC LIMIT ?",
+            arrayOf(pageSize.toString())
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                result += AppObservation(
+                    id = cursor.getString(0),
+                    sourcePackage = cursor.getString(1),
+                    eventType = cursor.getString(2),
+                    occurredAt = cursor.getLong(3),
+                    receivedAt = cursor.getLong(4),
+                    acquisitionMethod = cursor.getString(5),
+                    category = null,
+                    redactedFields = cursor.getString(11),
+                    contentText = if (cursor.isNull(9)) null else cursor.getString(9),
+                    contentHash = if (cursor.isNull(10)) null else cursor.getString(10),
+                    screenClass = if (cursor.isNull(6)) null else cursor.getString(6),
+                    targetLabel = if (cursor.isNull(7)) null else cursor.getString(7),
+                    targetClass = if (cursor.isNull(8)) null else cursor.getString(8),
+                    snapshotStatus = cursor.getString(12)
+                )
+            }
+        }
         return result
+            .distinctBy { "${it.acquisitionMethod}:${it.id}" }
+            .sortedWith(
+                compareByDescending<AppObservation> { it.occurredAt }
+                    .thenByDescending { it.receivedAt }
+                    .thenBy { it.id }
+            )
+            .take(pageSize)
     }
 
     /** Insert a source and its first evidence as one indivisible capture operation. */
