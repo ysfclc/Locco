@@ -26,6 +26,34 @@ internal data class CapturedUiTarget(
 )
 
 /**
+ * Prevent repeated accessibility callbacks from creating an unbounded evidence stream.
+ * The time base is Android uptime, so wall-clock changes cannot defeat the throttle.
+ */
+internal class UiEvidenceRateLimiter(
+    private val maxTrackedSources: Int = 128
+) {
+    private val lastAccepted = linkedMapOf<String, Long>()
+
+    fun shouldAccept(sourcePackage: String, eventType: String, nowElapsedMs: Long): Boolean {
+        val minimumInterval = when (eventType) {
+            "screen_state_changed" -> 300L
+            "control_clicked" -> 120L
+            "container_scrolled" -> 400L
+            else -> return false
+        }
+        val key = "$sourcePackage|$eventType"
+        val previous = lastAccepted[key]
+        if (previous != null && nowElapsedMs - previous < minimumInterval) return false
+        lastAccepted[key] = nowElapsedMs
+        while (lastAccepted.size > maxTrackedSources) {
+            val oldest = lastAccepted.entries.firstOrNull()?.key ?: break
+            lastAccepted.remove(oldest)
+        }
+        return true
+    }
+}
+
+/**
  * Bounded, best-effort capture of accessible labels.
  *
  * This is not a screenshot, complete screen representation, DOM, or guarantee that
