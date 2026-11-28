@@ -505,7 +505,7 @@ private fun ActivityCard(event: AppObservation, appName: String, onClick: () -> 
         "android_accessibility_service" -> "Android Accessibility service"
         else -> event.acquisitionMethod.replace('_', ' ')
     }
-    val secondary = event.targetLabel ?: event.category ?: event.snapshotStatus?.let { "Snapshot $it" } ?: "No extra details"
+    val secondary = event.targetLabel ?: event.screenClass ?: event.category ?: event.snapshotStatus?.let { "Snapshot $it" } ?: "No extra details"
     Card(
         Modifier.fillMaxWidth().clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
