@@ -13,9 +13,9 @@
 | Durable ID | GitHub record | Subject | Status |
 |---|---|---|---|
 | LOC-0002 | [#2](https://github.com/ysfclc/Locco/issues/2) | Binding product continuity and feedback preservation | Open — governance controls being implemented |
-| LOC-0015 | [#15](https://github.com/ysfclc/Locco/issues/15) | Evidence-backed cross-app activity, inspectable events and consolidated Locco product contract | Open — PR #14 merged as 64938d7; v0.3.0 signed release/device verification pending; broader screen/action observation and product environments remain open |
-| LOC-0019 | [#19](https://github.com/ysfclc/Locco/issues/19) | Proper native adaptive launcher identity, round icon and themed monochrome asset | Open — PR #18 merged as 9bb3907; v0.3.1 signed release and Redmi launcher acceptance pending |
-| LOC-0020 | [#20](https://github.com/ysfclc/Locco/issues/20) | Scoped, inspectable visible-screen and interaction evidence | Open — implementation in review on feature/locco-visible-ui-evidence-v1; v8 migration, Android/emulator/privacy CI and device acceptance pending |
+| LOC-0015 | [#15](https://github.com/ysfclc/Locco/issues/15) | Evidence-backed cross-app activity, inspectable events and consolidated Locco product contract | Open — PR #14 and PR #21 merged; v0.3.0 published; v0.3.1 and physical-device verification pending; cross-app correlation, full action outcomes and product environments remain open |
+| LOC-0019 | [#19](https://github.com/ysfclc/Locco/issues/19) | Proper native adaptive launcher identity, round icon and themed monochrome asset | Open — PR #18 merged as 9bb3907; icon CI passed; v0.3.1 signed release and Redmi launcher acceptance pending |
+| LOC-0020 | [#20](https://github.com/ysfclc/Locco/issues/20) | Scoped, inspectable visible-screen and interaction evidence | Open — PR #21 merged as 1812513; schema v8, all Rust/Android/security/governance CI passed incl. 26 emulator tests; physical-device acceptance pending |
 
 ## Rules
 
